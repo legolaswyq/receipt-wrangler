@@ -73,6 +73,8 @@ describe("ReceiptProcessingSettingsFormComponent", () => {
       model: null,
       isVisionModel: null,
       enforceJsonResponseFormat: true,
+      ocrEngineUrl: null,
+      ocrEngineModel: null,
     });
   });
 
@@ -103,7 +105,43 @@ describe("ReceiptProcessingSettingsFormComponent", () => {
       model: null,
       isVisionModel: settings.isVisionModel,
       enforceJsonResponseFormat: settings.enforceJsonResponseFormat,
+      ocrEngineUrl: null,
+      ocrEngineModel: null,
     });
+  });
+
+  it("should init form with CUSTOM ocr engine settings", () => {
+    const activatedRoute = TestBed.inject(ActivatedRoute);
+    const settings = {
+      name: "name",
+      ocrEngine: OcrEngine.Custom,
+      aiType: AiType.Ollama,
+      url: "http://localhost:11434",
+      model: "qwen2.5:7b",
+      promptId: 1,
+      isVisionModel: false,
+      enforceJsonResponseFormat: true,
+      ocrEngineUrl: "http://localhost:11434/api/chat",
+      ocrEngineModel: "glm-ocr:latest",
+    } as ReceiptProcessingSettings;
+
+    activatedRoute.snapshot.data["receiptProcessingSettings"] = settings;
+    component.ngOnInit();
+
+    expect(component.form.get("ocrEngineUrl")?.value).toBe(settings.ocrEngineUrl);
+    expect(component.form.get("ocrEngineModel")?.value).toBe(settings.ocrEngineModel);
+  });
+
+  it("should require ocrEngineUrl and ocrEngineModel only when ocrEngine is CUSTOM", () => {
+    component.ngOnInit();
+
+    component.form.get("ocrEngine")?.setValue(OcrEngine.Custom);
+    expect(component.form.get("ocrEngineUrl")?.hasError("required")).toBe(true);
+    expect(component.form.get("ocrEngineModel")?.hasError("required")).toBe(true);
+
+    component.form.get("ocrEngine")?.setValue(OcrEngine.Tesseract);
+    expect(component.form.get("ocrEngineUrl")?.hasError("required")).toBe(false);
+    expect(component.form.get("ocrEngineModel")?.hasError("required")).toBe(false);
   });
 
   it("should default enforceJsonResponseFormat to true when undefined", () => {

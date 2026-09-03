@@ -59,7 +59,7 @@ abstract class CheckReceiptProcessingSettingsConnectivityCommand implements Buil
 
   @BuiltValueField(wireName: r'ocrEngine')
   OcrEngine? get ocrEngine;
-  // enum ocrEngineEnum {  TESSERACT,  EASY_OCR,  };
+  // enum ocrEngineEnum {  TESSERACT,  EASY_OCR,  CUSTOM,  };
 
   /// Prompt foreign key
   @BuiltValueField(wireName: r'promptId')

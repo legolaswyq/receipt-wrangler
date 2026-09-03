@@ -3780,6 +3780,7 @@ components:
       enum:
         - "TESSERACT"
         - "EASY_OCR"
+        - "CUSTOM"
     SystemTaskStatus:
       type: string
       enum:
@@ -5971,6 +5972,12 @@ components:
               description: Enforce JSON response format on the LLM provider. Disable if the provider does not support this flag.
             ocrEngine:
               $ref: "#/components/schemas/OcrEngine"
+            ocrEngineUrl:
+              type: string
+              description: URL for the OCR engine's endpoint (used when OcrEngine is CUSTOM, e.g. a self-hosted Ollama vision model)
+            ocrEngineModel:
+              type: string
+              description: Model for the OCR engine (used when OcrEngine is CUSTOM, e.g. a self-hosted Ollama vision model)
             prompt:
               $ref: "#/components/schemas/Prompt"
             promptId:
@@ -6010,6 +6017,12 @@ components:
           description: Enforce JSON response format on the LLM provider. Disable if the provider does not support this flag.
         ocrEngine:
           $ref: "#/components/schemas/OcrEngine"
+        ocrEngineUrl:
+          type: string
+          description: URL for the OCR engine's endpoint (used when OcrEngine is CUSTOM, e.g. a self-hosted Ollama vision model)
+        ocrEngineModel:
+          type: string
+          description: Model for the OCR engine (used when OcrEngine is CUSTOM, e.g. a self-hosted Ollama vision model)
         promptId:
           type: integer
           description: Prompt foreign key

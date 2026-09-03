@@ -10,7 +10,15 @@ class _$ReceiptProcessingSettings extends ReceiptProcessingSettings {
   @override
   final OcrEngine? ocrEngine;
   @override
+  final String? ocrEngineUrl;
+  @override
   final bool? isVisionModel;
+  @override
+  final String? description;
+  @override
+  final String? ocrEngineModel;
+  @override
+  final String? url;
   @override
   final AiType? aiType;
   @override
@@ -18,15 +26,11 @@ class _$ReceiptProcessingSettings extends ReceiptProcessingSettings {
   @override
   final String? name;
   @override
-  final String? description;
-  @override
   final String? model;
   @override
   final bool? enforceJsonResponseFormat;
   @override
   final Prompt? prompt;
-  @override
-  final String? url;
   @override
   final String? key;
   @override
@@ -46,15 +50,17 @@ class _$ReceiptProcessingSettings extends ReceiptProcessingSettings {
 
   _$ReceiptProcessingSettings._(
       {this.ocrEngine,
+      this.ocrEngineUrl,
       this.isVisionModel,
+      this.description,
+      this.ocrEngineModel,
+      this.url,
       this.aiType,
       this.promptId,
       this.name,
-      this.description,
       this.model,
       this.enforceJsonResponseFormat,
       this.prompt,
-      this.url,
       this.key,
       required this.id,
       required this.createdAt,
@@ -76,15 +82,17 @@ class _$ReceiptProcessingSettings extends ReceiptProcessingSettings {
     if (identical(other, this)) return true;
     return other is ReceiptProcessingSettings &&
         ocrEngine == other.ocrEngine &&
+        ocrEngineUrl == other.ocrEngineUrl &&
         isVisionModel == other.isVisionModel &&
+        description == other.description &&
+        ocrEngineModel == other.ocrEngineModel &&
+        url == other.url &&
         aiType == other.aiType &&
         promptId == other.promptId &&
         name == other.name &&
-        description == other.description &&
         model == other.model &&
         enforceJsonResponseFormat == other.enforceJsonResponseFormat &&
         prompt == other.prompt &&
-        url == other.url &&
         key == other.key &&
         id == other.id &&
         createdAt == other.createdAt &&
@@ -97,15 +105,17 @@ class _$ReceiptProcessingSettings extends ReceiptProcessingSettings {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, ocrEngine.hashCode);
+    _$hash = $jc(_$hash, ocrEngineUrl.hashCode);
     _$hash = $jc(_$hash, isVisionModel.hashCode);
+    _$hash = $jc(_$hash, description.hashCode);
+    _$hash = $jc(_$hash, ocrEngineModel.hashCode);
+    _$hash = $jc(_$hash, url.hashCode);
     _$hash = $jc(_$hash, aiType.hashCode);
     _$hash = $jc(_$hash, promptId.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
-    _$hash = $jc(_$hash, description.hashCode);
     _$hash = $jc(_$hash, model.hashCode);
     _$hash = $jc(_$hash, enforceJsonResponseFormat.hashCode);
     _$hash = $jc(_$hash, prompt.hashCode);
-    _$hash = $jc(_$hash, url.hashCode);
     _$hash = $jc(_$hash, key.hashCode);
     _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, createdAt.hashCode);
@@ -120,15 +130,17 @@ class _$ReceiptProcessingSettings extends ReceiptProcessingSettings {
   String toString() {
     return (newBuiltValueToStringHelper(r'ReceiptProcessingSettings')
           ..add('ocrEngine', ocrEngine)
+          ..add('ocrEngineUrl', ocrEngineUrl)
           ..add('isVisionModel', isVisionModel)
+          ..add('description', description)
+          ..add('ocrEngineModel', ocrEngineModel)
+          ..add('url', url)
           ..add('aiType', aiType)
           ..add('promptId', promptId)
           ..add('name', name)
-          ..add('description', description)
           ..add('model', model)
           ..add('enforceJsonResponseFormat', enforceJsonResponseFormat)
           ..add('prompt', prompt)
-          ..add('url', url)
           ..add('key', key)
           ..add('id', id)
           ..add('createdAt', createdAt)
@@ -150,10 +162,29 @@ class ReceiptProcessingSettingsBuilder
   set ocrEngine(covariant OcrEngine? ocrEngine) =>
       _$this._ocrEngine = ocrEngine;
 
+  String? _ocrEngineUrl;
+  String? get ocrEngineUrl => _$this._ocrEngineUrl;
+  set ocrEngineUrl(covariant String? ocrEngineUrl) =>
+      _$this._ocrEngineUrl = ocrEngineUrl;
+
   bool? _isVisionModel;
   bool? get isVisionModel => _$this._isVisionModel;
   set isVisionModel(covariant bool? isVisionModel) =>
       _$this._isVisionModel = isVisionModel;
+
+  String? _description;
+  String? get description => _$this._description;
+  set description(covariant String? description) =>
+      _$this._description = description;
+
+  String? _ocrEngineModel;
+  String? get ocrEngineModel => _$this._ocrEngineModel;
+  set ocrEngineModel(covariant String? ocrEngineModel) =>
+      _$this._ocrEngineModel = ocrEngineModel;
+
+  String? _url;
+  String? get url => _$this._url;
+  set url(covariant String? url) => _$this._url = url;
 
   AiType? _aiType;
   AiType? get aiType => _$this._aiType;
@@ -167,11 +198,6 @@ class ReceiptProcessingSettingsBuilder
   String? get name => _$this._name;
   set name(covariant String? name) => _$this._name = name;
 
-  String? _description;
-  String? get description => _$this._description;
-  set description(covariant String? description) =>
-      _$this._description = description;
-
   String? _model;
   String? get model => _$this._model;
   set model(covariant String? model) => _$this._model = model;
@@ -184,10 +210,6 @@ class ReceiptProcessingSettingsBuilder
   PromptBuilder? _prompt;
   PromptBuilder get prompt => _$this._prompt ??= PromptBuilder();
   set prompt(covariant PromptBuilder? prompt) => _$this._prompt = prompt;
-
-  String? _url;
-  String? get url => _$this._url;
-  set url(covariant String? url) => _$this._url = url;
 
   String? _key;
   String? get key => _$this._key;
@@ -222,15 +244,17 @@ class ReceiptProcessingSettingsBuilder
     final $v = _$v;
     if ($v != null) {
       _ocrEngine = $v.ocrEngine;
+      _ocrEngineUrl = $v.ocrEngineUrl;
       _isVisionModel = $v.isVisionModel;
+      _description = $v.description;
+      _ocrEngineModel = $v.ocrEngineModel;
+      _url = $v.url;
       _aiType = $v.aiType;
       _promptId = $v.promptId;
       _name = $v.name;
-      _description = $v.description;
       _model = $v.model;
       _enforceJsonResponseFormat = $v.enforceJsonResponseFormat;
       _prompt = $v.prompt?.toBuilder();
-      _url = $v.url;
       _key = $v.key;
       _id = $v.id;
       _createdAt = $v.createdAt;
@@ -261,15 +285,17 @@ class ReceiptProcessingSettingsBuilder
       _$result = _$v ??
           _$ReceiptProcessingSettings._(
             ocrEngine: ocrEngine,
+            ocrEngineUrl: ocrEngineUrl,
             isVisionModel: isVisionModel,
+            description: description,
+            ocrEngineModel: ocrEngineModel,
+            url: url,
             aiType: aiType,
             promptId: promptId,
             name: name,
-            description: description,
             model: model,
             enforceJsonResponseFormat: enforceJsonResponseFormat,
             prompt: _prompt?.build(),
-            url: url,
             key: key,
             id: BuiltValueNullFieldError.checkNotNull(
                 id, r'ReceiptProcessingSettings', 'id'),

@@ -29,17 +29,35 @@ part 'receipt_processing_settings.g.dart';
 /// * [isVisionModel] - Is vision model
 /// * [enforceJsonResponseFormat] - Enforce JSON response format on the LLM provider. Disable if the provider does not support this flag.
 /// * [ocrEngine] 
+/// * [ocrEngineUrl] - URL for the OCR engine's endpoint (used when OcrEngine is CUSTOM, e.g. a self-hosted Ollama vision model)
+/// * [ocrEngineModel] - Model for the OCR engine (used when OcrEngine is CUSTOM, e.g. a self-hosted Ollama vision model)
 /// * [prompt] 
 /// * [promptId] - Prompt foreign key
 @BuiltValue()
 abstract class ReceiptProcessingSettings implements BaseModel, Built<ReceiptProcessingSettings, ReceiptProcessingSettingsBuilder> {
   @BuiltValueField(wireName: r'ocrEngine')
   OcrEngine? get ocrEngine;
-  // enum ocrEngineEnum {  TESSERACT,  EASY_OCR,  };
+  // enum ocrEngineEnum {  TESSERACT,  EASY_OCR,  CUSTOM,  };
+
+  /// URL for the OCR engine's endpoint (used when OcrEngine is CUSTOM, e.g. a self-hosted Ollama vision model)
+  @BuiltValueField(wireName: r'ocrEngineUrl')
+  String? get ocrEngineUrl;
 
   /// Is vision model
   @BuiltValueField(wireName: r'isVisionModel')
   bool? get isVisionModel;
+
+  /// Description of the settings
+  @BuiltValueField(wireName: r'description')
+  String? get description;
+
+  /// Model for the OCR engine (used when OcrEngine is CUSTOM, e.g. a self-hosted Ollama vision model)
+  @BuiltValueField(wireName: r'ocrEngineModel')
+  String? get ocrEngineModel;
+
+  /// URL for custom endpoints
+  @BuiltValueField(wireName: r'url')
+  String? get url;
 
   @BuiltValueField(wireName: r'aiType')
   AiType? get aiType;
@@ -53,10 +71,6 @@ abstract class ReceiptProcessingSettings implements BaseModel, Built<ReceiptProc
   @BuiltValueField(wireName: r'name')
   String? get name;
 
-  /// Description of the settings
-  @BuiltValueField(wireName: r'description')
-  String? get description;
-
   /// LLM model
   @BuiltValueField(wireName: r'model')
   String? get model;
@@ -67,10 +81,6 @@ abstract class ReceiptProcessingSettings implements BaseModel, Built<ReceiptProc
 
   @BuiltValueField(wireName: r'prompt')
   Prompt? get prompt;
-
-  /// URL for custom endpoints
-  @BuiltValueField(wireName: r'url')
-  String? get url;
 
   /// Key for endpoints that require authentication
   @BuiltValueField(wireName: r'key')
@@ -109,6 +119,13 @@ class _$ReceiptProcessingSettingsSerializer implements PrimitiveSerializer<Recei
         specifiedType: const FullType(OcrEngine),
       );
     }
+    if (object.ocrEngineUrl != null) {
+      yield r'ocrEngineUrl';
+      yield serializers.serialize(
+        object.ocrEngineUrl,
+        specifiedType: const FullType(String),
+      );
+    }
     if (object.isVisionModel != null) {
       yield r'isVisionModel';
       yield serializers.serialize(
@@ -120,6 +137,13 @@ class _$ReceiptProcessingSettingsSerializer implements PrimitiveSerializer<Recei
       yield r'description';
       yield serializers.serialize(
         object.description,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.ocrEngineModel != null) {
+      yield r'ocrEngineModel';
+      yield serializers.serialize(
+        object.ocrEngineModel,
         specifiedType: const FullType(String),
       );
     }
@@ -240,6 +264,13 @@ class _$ReceiptProcessingSettingsSerializer implements PrimitiveSerializer<Recei
           ) as OcrEngine;
           result.ocrEngine = valueDes;
           break;
+        case r'ocrEngineUrl':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.ocrEngineUrl = valueDes;
+          break;
         case r'isVisionModel':
           final valueDes = serializers.deserialize(
             value,
@@ -253,6 +284,13 @@ class _$ReceiptProcessingSettingsSerializer implements PrimitiveSerializer<Recei
             specifiedType: const FullType(String),
           ) as String;
           result.description = valueDes;
+          break;
+        case r'ocrEngineModel':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.ocrEngineModel = valueDes;
           break;
         case r'url':
           final valueDes = serializers.deserialize(

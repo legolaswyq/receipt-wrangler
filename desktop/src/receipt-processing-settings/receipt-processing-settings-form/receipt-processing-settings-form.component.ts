@@ -12,6 +12,7 @@ import {
   AiType,
   AssociatedEntityType,
   CheckReceiptProcessingSettingsConnectivityCommand,
+  OcrEngine,
   Prompt,
   ReceiptProcessingSettings,
   ReceiptProcessingSettingsService,
@@ -49,6 +50,10 @@ export class ReceiptProcessingSettingsFormComponent extends BaseFormComponent im
   protected readonly openAiCustomSpecificFields: string[] = ["url", "model"];
 
   protected readonly ollamaSpecificFields = ["url", "model", "isVisionModel"];
+
+  protected readonly customOcrSpecificFields = ["ocrEngineUrl", "ocrEngineModel"];
+
+  protected readonly OcrEngine = OcrEngine;
 
   public readonly aiTypeOptions: FormOption[] = aiTypeOptions;
 
@@ -90,10 +95,13 @@ export class ReceiptProcessingSettingsFormComponent extends BaseFormComponent im
       model: [this.originalReceiptProcessingSettings?.model],
       isVisionModel: [this.originalReceiptProcessingSettings?.isVisionModel],
       enforceJsonResponseFormat: [this.originalReceiptProcessingSettings?.enforceJsonResponseFormat ?? true],
+      ocrEngineUrl: [this.originalReceiptProcessingSettings?.ocrEngineUrl],
+      ocrEngineModel: [this.originalReceiptProcessingSettings?.ocrEngineModel],
     });
 
     this.listenForTypeChange();
     this.listenForIsVisionModelChange();
+    this.listenForOcrEngineChange();
 
     if (this.formConfig.mode === FormMode.view) {
       this.form.get("ocrEngine")?.disable();
@@ -101,7 +109,29 @@ export class ReceiptProcessingSettingsFormComponent extends BaseFormComponent im
       this.form.get("promptId")?.disable();
       this.form.get("isVisionModel")?.disable();
       this.form.get("enforceJsonResponseFormat")?.disable();
+      this.form.get("ocrEngineUrl")?.disable();
+      this.form.get("ocrEngineModel")?.disable();
     }
+  }
+
+  private listenForOcrEngineChange(): void {
+    this.form.get("ocrEngine")?.valueChanges
+      .pipe(
+        untilDestroyed(this),
+        startWith(this.form.get("ocrEngine")?.value),
+        tap((ocrEngine: OcrEngine) => {
+          if (ocrEngine === OcrEngine.Custom) {
+            this.customOcrSpecificFields.forEach((field: string) => {
+              this.form.get(field)?.setValidators(Validators.required);
+              this.form.get(field)?.updateValueAndValidity();
+            });
+          } else {
+            this.customOcrSpecificFields.forEach((field: string) => {
+              this.form.get(field)?.setValidators(null);
+              this.form.get(field)?.setErrors(null);
+            });
+          }
+        })).subscribe();
   }
 
   private listenForIsVisionModelChange(): void {

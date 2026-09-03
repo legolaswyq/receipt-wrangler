@@ -84,6 +84,8 @@ part 'paged_data_data_inner.g.dart';
 /// * [isVisionModel] - Is vision model
 /// * [enforceJsonResponseFormat] - Enforce JSON response format on the LLM provider. Disable if the provider does not support this flag.
 /// * [ocrEngine] 
+/// * [ocrEngineUrl] - URL for the OCR engine's endpoint (used when OcrEngine is CUSTOM, e.g. a self-hosted Ollama vision model)
+/// * [ocrEngineModel] - Model for the OCR engine (used when OcrEngine is CUSTOM, e.g. a self-hosted Ollama vision model)
 /// * [promptId] - Prompt foreign key
 /// * [host] - IMAP host
 /// * [port] - IMAP port

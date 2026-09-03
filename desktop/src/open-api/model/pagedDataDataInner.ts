@@ -151,6 +151,14 @@ export interface PagedDataDataInner {
     enforceJsonResponseFormat?: boolean;
     ocrEngine?: OcrEngine;
     /**
+     * URL for the OCR engine\'s endpoint (used when OcrEngine is CUSTOM, e.g. a self-hosted Ollama vision model)
+     */
+    ocrEngineUrl?: string;
+    /**
+     * Model for the OCR engine (used when OcrEngine is CUSTOM, e.g. a self-hosted Ollama vision model)
+     */
+    ocrEngineModel?: string;
+    /**
      * Prompt foreign key
      */
     promptId?: number;

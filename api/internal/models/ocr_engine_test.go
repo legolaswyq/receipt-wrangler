@@ -6,7 +6,7 @@ import (
 )
 
 func TestOcrEngine_Value(t *testing.T) {
-	valid := []OcrEngine{TESSERACT, EASY_OCR, TESSERACT_NEW, EASY_OCR_NEW}
+	valid := []OcrEngine{TESSERACT, EASY_OCR, TESSERACT_NEW, EASY_OCR_NEW, CUSTOM}
 	for _, v := range valid {
 		assertValuerValid(t, string(v), v, string(v))
 	}

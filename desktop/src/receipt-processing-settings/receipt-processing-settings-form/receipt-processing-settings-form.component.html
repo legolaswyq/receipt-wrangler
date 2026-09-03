@@ -40,6 +40,20 @@
       [inputFormControl]="form | formGet: 'ocrEngine'"
       [options]="ocrEngineOptions"
     ></app-select>
+    @if ((form | formGet: 'ocrEngine')?.value === OcrEngine.Custom) {
+      <app-input
+        label="OCR Engine URL"
+        hint="Chat endpoint of the vision model used for OCR text extraction, e.g. http://localhost:11434/api/chat for a local Ollama instance"
+        [readonly]="formConfig.mode | inputReadonly"
+        [inputFormControl]="form | formGet: 'ocrEngineUrl'"
+      ></app-input>
+      <app-input
+        label="OCR Engine Model"
+        hint="Vision model used for OCR text extraction, e.g. glm-ocr:latest or qwen2.5vl:7b for a local Ollama instance"
+        [readonly]="formConfig.mode | inputReadonly"
+        [inputFormControl]="form | formGet: 'ocrEngineModel'"
+      ></app-input>
+    }
     <app-select
       label="Ai Type"
       optionValueKey="value"

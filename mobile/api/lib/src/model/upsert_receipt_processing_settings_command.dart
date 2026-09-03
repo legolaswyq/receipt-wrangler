@@ -22,6 +22,8 @@ part 'upsert_receipt_processing_settings_command.g.dart';
 /// * [isVisionModel] - Is vision model
 /// * [enforceJsonResponseFormat] - Enforce JSON response format on the LLM provider. Disable if the provider does not support this flag.
 /// * [ocrEngine] 
+/// * [ocrEngineUrl] - URL for the OCR engine's endpoint (used when OcrEngine is CUSTOM, e.g. a self-hosted Ollama vision model)
+/// * [ocrEngineModel] - Model for the OCR engine (used when OcrEngine is CUSTOM, e.g. a self-hosted Ollama vision model)
 /// * [promptId] - Prompt foreign key
 @BuiltValue()
 abstract class UpsertReceiptProcessingSettingsCommand implements Built<UpsertReceiptProcessingSettingsCommand, UpsertReceiptProcessingSettingsCommandBuilder> {
@@ -59,7 +61,15 @@ abstract class UpsertReceiptProcessingSettingsCommand implements Built<UpsertRec
 
   @BuiltValueField(wireName: r'ocrEngine')
   OcrEngine get ocrEngine;
-  // enum ocrEngineEnum {  TESSERACT,  EASY_OCR,  };
+  // enum ocrEngineEnum {  TESSERACT,  EASY_OCR,  CUSTOM,  };
+
+  /// URL for the OCR engine's endpoint (used when OcrEngine is CUSTOM, e.g. a self-hosted Ollama vision model)
+  @BuiltValueField(wireName: r'ocrEngineUrl')
+  String? get ocrEngineUrl;
+
+  /// Model for the OCR engine (used when OcrEngine is CUSTOM, e.g. a self-hosted Ollama vision model)
+  @BuiltValueField(wireName: r'ocrEngineModel')
+  String? get ocrEngineModel;
 
   /// Prompt foreign key
   @BuiltValueField(wireName: r'promptId')
@@ -145,6 +155,20 @@ class _$UpsertReceiptProcessingSettingsCommandSerializer implements PrimitiveSer
       object.ocrEngine,
       specifiedType: const FullType(OcrEngine),
     );
+    if (object.ocrEngineUrl != null) {
+      yield r'ocrEngineUrl';
+      yield serializers.serialize(
+        object.ocrEngineUrl,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.ocrEngineModel != null) {
+      yield r'ocrEngineModel';
+      yield serializers.serialize(
+        object.ocrEngineModel,
+        specifiedType: const FullType(String),
+      );
+    }
     yield r'promptId';
     yield serializers.serialize(
       object.promptId,
@@ -235,6 +259,20 @@ class _$UpsertReceiptProcessingSettingsCommandSerializer implements PrimitiveSer
             specifiedType: const FullType(OcrEngine),
           ) as OcrEngine;
           result.ocrEngine = valueDes;
+          break;
+        case r'ocrEngineUrl':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.ocrEngineUrl = valueDes;
+          break;
+        case r'ocrEngineModel':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.ocrEngineModel = valueDes;
           break;
         case r'promptId':
           final valueDes = serializers.deserialize(

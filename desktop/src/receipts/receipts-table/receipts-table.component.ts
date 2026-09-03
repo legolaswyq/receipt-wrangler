@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, OnInit, signal, TemplateRef, ViewEncapsulation, viewChild } from "@angular/core";
+import { AfterViewInit, Component, computed, effect, OnInit, signal, TemplateRef, ViewEncapsulation, viewChild } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { PageEvent } from "@angular/material/paginator";
 import { Sort } from "@angular/material/sort";
@@ -28,7 +28,7 @@ import {
   ReceiptStatus,
   Tag,
 } from "../../open-api";
-import { SnackbarService } from "../../services";
+import { QuickScanProgressJob, QuickScanProgressService, SnackbarService } from "../../services";
 import { ReceiptExportService } from "../../services/receipt-export.service";
 import { ReceiptFilterComponent } from "../../shared-ui/receipt-filter/receipt-filter.component";
 import { AuthState, GroupState } from "../../store";
@@ -48,17 +48,43 @@ import { ColumnConfigurationDialogComponent } from "../column-configuration-dial
   standalone: false
 })
 export class ReceiptsTableComponent implements OnInit, AfterViewInit {
+  // Tracks the last-seen total of completed quick-scan images relevant to this page, so the
+  // effect below can tell "a new one just landed" (reload) from "still the same count" (no-op)
+  // on every jobs() signal change, which fires on every poll tick regardless of progress.
+  private lastQuickScanCompletedTotal = 0;
+
   constructor(
     private activatedRoute: ActivatedRoute,
     private groupsService: GroupsService,
     private matDialog: MatDialog,
+    private quickScanProgressService: QuickScanProgressService,
     private receiptExportService: ReceiptExportService,
     private receiptFilterService: ReceiptFilterService,
     private receiptService: ReceiptService,
     private router: Router,
     private snackbarService: SnackbarService,
     private store: Store,
-  ) {}
+  ) {
+    // Quick scan creates receipts entirely server-side with no push notification, so without
+    // this the new row only ever appears after a manual page refresh. Reload from the server
+    // whenever a quick-scanned image relevant to this page finishes.
+    effect(() => this.handleQuickScanJobsChanged(this.quickScanProgressService.jobs()));
+  }
+
+  // Split out from the effect() above so it can be unit-tested directly, without going through
+  // Angular's effect scheduling (which needs a full change-detection tick to flush).
+  private handleQuickScanJobsChanged(jobs: QuickScanProgressJob[]): void {
+    const isAllGroup = this.group?.isAllGroup ?? false;
+    const groupIdNum = Number(this.groupId);
+    const completedTotal = jobs
+      .filter((job) => isAllGroup || job.groupIds.includes(groupIdNum))
+      .reduce((sum, job) => sum + job.completed, 0);
+
+    if (completedTotal > this.lastQuickScanCompletedTotal) {
+      this.getFilteredReceipts();
+    }
+    this.lastQuickScanCompletedTotal = completedTotal;
+  }
 
   readonly createdAtCell = viewChild.required<TemplateRef<any>>("createdAtCell");
 

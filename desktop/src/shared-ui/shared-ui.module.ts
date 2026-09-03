@@ -2,6 +2,7 @@ import { DragDropModule } from "@angular/cdk/drag-drop";
 import { CommonModule, CurrencyPipe } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { ReactiveFormsModule } from "@angular/forms";
+import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatChipsModule } from "@angular/material/chips";
 import { MatDialogModule } from "@angular/material/dialog";
@@ -9,6 +10,7 @@ import { MatExpansionModule } from "@angular/material/expansion";
 import { MatIconModule } from "@angular/material/icon";
 import { MatListModule } from "@angular/material/list";
 import { MatMenuModule } from "@angular/material/menu";
+import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatTableModule } from "@angular/material/table";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatTooltipModule } from "@angular/material/tooltip";
@@ -66,6 +68,7 @@ import { EditableListComponent } from './editable-list/editable-list.component';
 import { IconAutocompleteComponent } from './icon-autocomplete/icon-autocomplete.component';
 import { PieChartUiComponent } from './pie-chart/pie-chart.component';
 import { LoginQrComponent } from './login-qr/login-qr.component';
+import { QuickScanProgressBannerComponent } from './quick-scan-progress-banner/quick-scan-progress-banner.component';
 
 @NgModule({
   declarations: [
@@ -110,6 +113,7 @@ import { LoginQrComponent } from './login-qr/login-qr.component';
     QueueStartMenuComponent,
     EditableListComponent,
     IconAutocompleteComponent,
+    QuickScanProgressBannerComponent,
   ],
   imports: [
     AutocompleteModule,
@@ -119,12 +123,14 @@ import { LoginQrComponent } from './login-qr/login-qr.component';
     DirectivesModule,
     DragDropModule,
     InputModule,
+    MatButtonModule,
     MatCardModule,
     MatChipsModule,
     MatDialogModule,
     MatExpansionModule,
     MatIconModule,
     MatListModule,
+    MatProgressBarModule,
     MatTableModule,
     MatTabsModule,
     MatTooltipModule,
@@ -183,6 +189,7 @@ import { LoginQrComponent } from './login-qr/login-qr.component';
     IconAutocompleteComponent,
     PieChartUiComponent,
     LoginQrComponent,
+    QuickScanProgressBannerComponent,
   ],
   providers: [CurrencyPipe],
 })

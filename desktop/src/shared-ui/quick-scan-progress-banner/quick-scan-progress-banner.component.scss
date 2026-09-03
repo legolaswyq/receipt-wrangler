@@ -1,0 +1,25 @@
+@use "../../variables.scss" as variables;
+
+.quick-scan-progress-banner {
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-xs;
+  padding: variables.$spacing-sm variables.$spacing-md;
+  margin-bottom: variables.$spacing-md;
+  border-radius: variables.$border-radius-lg;
+  background-color: rgba(25, 118, 210, 0.06);
+  border: 1px solid rgba(25, 118, 210, 0.2);
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: variables.$spacing-sm;
+  }
+
+  button[mat-icon-button] {
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+  }
+}

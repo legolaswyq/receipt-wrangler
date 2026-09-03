@@ -1,0 +1,36 @@
+@for (job of jobs(); track job.id) {
+  <div class="quick-scan-progress-banner" data-testid="quick-scan-progress-banner">
+    <div class="quick-scan-progress-banner__row">
+      @if (isDone(job)) {
+        <span data-testid="quick-scan-progress-text">
+          All {{ job.total }} image{{ job.total === 1 ? "" : "s" }} processed
+        </span>
+      } @else if (job.stillProcessing) {
+        <span data-testid="quick-scan-progress-text">Still processing in the background&hellip;</span>
+      } @else {
+        <span data-testid="quick-scan-progress-text">
+          Extracting text and structuring data&hellip; ({{ job.completed }}/{{ job.total }} image{{
+            job.total === 1 ? "" : "s"
+          }})
+        </span>
+      }
+      <button
+        mat-icon-button
+        aria-label="Dismiss"
+        data-testid="quick-scan-progress-dismiss"
+        (click)="dismiss(job.id)"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    @if (isDone(job)) {
+      <mat-progress-bar mode="determinate" [value]="100"></mat-progress-bar>
+    } @else {
+      <!-- Each image only has two backend stages (OCR text extraction, then AI
+           structuring) with no queryable in-between state, so a single image's
+           progress is a discrete jump, not a smooth fraction. Indeterminate mode
+           gives real, honest motion instead of a static bar sitting at 0%. -->
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+  </div>
+}

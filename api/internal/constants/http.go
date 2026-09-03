@@ -12,4 +12,4 @@ const TextPlain = "text/plain"
 const TextCsv = "text/csv"
 const MultipartFormMaxSize = 50 << 20
 
-const AiHttpTimeout = 10 * time.Minute
+const AiHttpTimeout = 40 * time.Minute

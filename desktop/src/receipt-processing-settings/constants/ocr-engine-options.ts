@@ -9,5 +9,9 @@ export const ocrEngineOptions: FormOption[] = [
   {
     value: OcrEngine.EasyOcr,
     displayValue: "EasyOCR",
+  },
+  {
+    value: OcrEngine.Custom,
+    displayValue: "Custom",
   }
 ];

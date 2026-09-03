@@ -92,6 +92,10 @@
     }
   </div>
 </app-table-header>
+<app-quick-scan-progress-banner
+  [groupId]="groupId"
+  [isAllGroup]="group?.isAllGroup ?? false"
+></app-quick-scan-progress-banner>
 <app-summary-card
   *ngIf="selectedReceiptIds().length"
   @fadeInOut

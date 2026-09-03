@@ -9,10 +9,11 @@
  */
 
 
-export type OcrEngine = 'TESSERACT' | 'EASY_OCR';
+export type OcrEngine = 'TESSERACT' | 'EASY_OCR' | 'CUSTOM';
 
 export const OcrEngine = {
     Tesseract: 'TESSERACT' as OcrEngine,
-    EasyOcr: 'EASY_OCR' as OcrEngine
+    EasyOcr: 'EASY_OCR' as OcrEngine,
+    Custom: 'CUSTOM' as OcrEngine
 };
 

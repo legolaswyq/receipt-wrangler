@@ -7,7 +7,7 @@ import { take, tap } from "rxjs";
 import { ReceiptFileUploadCommand } from "../../interfaces";
 import { setRequired } from "../../form";
 import { Category, GroupReceiptSettings, Permission, ReceiptService, ReceiptStatus, Tag } from "../../open-api";
-import { SnackbarService } from "../../services";
+import { QuickScanProgressService, SnackbarService } from "../../services";
 import { AuthState, GroupState } from "../../store";
 import { codePointMaxLengthValidator, trimmedRequiredValidator } from "../../validators";
 import { UploadImageComponent } from "../upload-image/upload-image.component";
@@ -54,6 +54,7 @@ export class QuickScanDialogComponent implements OnInit {
   constructor(
     private dialogRef: MatDialogRef<QuickScanDialogComponent>,
     private formBuilder: FormBuilder,
+    private quickScanProgressService: QuickScanProgressService,
     private receiptService: ReceiptService,
     private snackbarService: SnackbarService,
     private store: Store
@@ -264,8 +265,10 @@ export class QuickScanDialogComponent implements OnInit {
         .pipe(
           take(1),
           tap(() => {
-            const imageWord = this.images.length === 1 ? "image" : "images";
-            this.snackbarService.success(`Successfully queued ${imageWord} for processing`);
+            // Quick scan is fire-and-forget (no task/receipt id comes back), so progress is
+            // shown via a persistent snackbar that polls for the new receipts to appear
+            // rather than a one-shot "queued" toast.
+            this.quickScanProgressService.trackQuickScan(this.groupIds.value, this.images.length);
             this.dialogRef.close();
           }),
         )

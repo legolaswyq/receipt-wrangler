@@ -41,6 +41,19 @@ func TestUpsertReceiptProcessingSettingsCommand_Validate_ValidInputs(t *testing.
 			},
 			updateKey: true,
 		},
+		"valid OLLAMA with CUSTOM ocr engine, url and model": {
+			command: UpsertReceiptProcessingSettingsCommand{
+				Name:           "Test",
+				AiType:         models.OLLAMA,
+				Url:            "http://localhost:11434",
+				Model:          "qwen2.5:7b",
+				OcrEngine:      models.CUSTOM,
+				OcrEngineUrl:   "http://localhost:11434/api/chat",
+				OcrEngineModel: "glm-ocr:latest",
+				PromptId:       1,
+			},
+			updateKey: true,
+		},
 		"valid OPEN_AI_CUSTOM with url and ocr engine": {
 			command: UpsertReceiptProcessingSettingsCommand{
 				Name:      "Test",
@@ -105,6 +118,48 @@ func TestUpsertReceiptProcessingSettingsCommand_Validate_MissingOcrEngineNonVisi
 
 	if _, exists := vErr.Errors["ocrEngine"]; !exists {
 		utils.PrintTestError(t, "error should exist for field", "ocrEngine")
+	}
+}
+
+func TestUpsertReceiptProcessingSettingsCommand_Validate_CustomMissingUrlAndModel(t *testing.T) {
+	command := UpsertReceiptProcessingSettingsCommand{
+		Name:          "Test",
+		AiType:        models.OLLAMA,
+		Url:           "http://localhost:11434",
+		IsVisionModel: false,
+		OcrEngine:     models.CUSTOM,
+		PromptId:      1,
+	}
+
+	vErr := command.Validate(true)
+
+	if _, exists := vErr.Errors["ocrEngineUrl"]; !exists {
+		utils.PrintTestError(t, "error should exist for field", "ocrEngineUrl")
+	}
+
+	if _, exists := vErr.Errors["ocrEngineModel"]; !exists {
+		utils.PrintTestError(t, "error should exist for field", "ocrEngineModel")
+	}
+}
+
+func TestUpsertReceiptProcessingSettingsCommand_Validate_NonCustomEngineSkipsOcrEngineUrlAndModel(t *testing.T) {
+	command := UpsertReceiptProcessingSettingsCommand{
+		Name:          "Test",
+		AiType:        models.OLLAMA,
+		Url:           "http://localhost:11434",
+		IsVisionModel: false,
+		OcrEngine:     models.TESSERACT_NEW,
+		PromptId:      1,
+	}
+
+	vErr := command.Validate(true)
+
+	if _, exists := vErr.Errors["ocrEngineUrl"]; exists {
+		utils.PrintTestError(t, "ocrEngineUrl error should not exist for non-CUSTOM engine", nil)
+	}
+
+	if _, exists := vErr.Errors["ocrEngineModel"]; exists {
+		utils.PrintTestError(t, "ocrEngineModel error should not exist for non-CUSTOM engine", nil)
 	}
 }
 
@@ -222,6 +277,14 @@ func TestUpsertReceiptProcessingSettingsCommand_IsEmpty(t *testing.T) {
 		},
 		"enforceJsonResponseFormat set": {
 			command:  UpsertReceiptProcessingSettingsCommand{EnforceJsonResponseFormat: true},
+			expected: false,
+		},
+		"ocrEngineUrl set": {
+			command:  UpsertReceiptProcessingSettingsCommand{OcrEngineUrl: "http://localhost:11434/api/chat"},
+			expected: false,
+		},
+		"ocrEngineModel set": {
+			command:  UpsertReceiptProcessingSettingsCommand{OcrEngineModel: "glm-ocr:latest"},
 			expected: false,
 		},
 	}

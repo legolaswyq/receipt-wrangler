@@ -15,6 +15,8 @@ type ReceiptProcessingSettings struct {
 	Key                       string       `json:"-"`
 	Model                     string       `json:"model"`
 	OcrEngine                 *OcrEngine   `json:"ocrEngine"`
+	OcrEngineUrl              string       `json:"ocrEngineUrl"`
+	OcrEngineModel            string       `json:"ocrEngineModel"`
 	Prompt                    Prompt       `json:"prompt"`
 	PromptId                  uint         `json:"promptId"`
 	IsVisionModel             bool         `json:"isVisionModel"`

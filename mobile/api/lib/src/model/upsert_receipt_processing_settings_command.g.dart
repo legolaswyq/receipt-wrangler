@@ -27,6 +27,10 @@ class _$UpsertReceiptProcessingSettingsCommand
   @override
   final OcrEngine ocrEngine;
   @override
+  final String? ocrEngineUrl;
+  @override
+  final String? ocrEngineModel;
+  @override
   final int promptId;
 
   factory _$UpsertReceiptProcessingSettingsCommand(
@@ -45,6 +49,8 @@ class _$UpsertReceiptProcessingSettingsCommand
       this.isVisionModel,
       this.enforceJsonResponseFormat,
       required this.ocrEngine,
+      this.ocrEngineUrl,
+      this.ocrEngineModel,
       required this.promptId})
       : super._();
   @override
@@ -70,6 +76,8 @@ class _$UpsertReceiptProcessingSettingsCommand
         isVisionModel == other.isVisionModel &&
         enforceJsonResponseFormat == other.enforceJsonResponseFormat &&
         ocrEngine == other.ocrEngine &&
+        ocrEngineUrl == other.ocrEngineUrl &&
+        ocrEngineModel == other.ocrEngineModel &&
         promptId == other.promptId;
   }
 
@@ -85,6 +93,8 @@ class _$UpsertReceiptProcessingSettingsCommand
     _$hash = $jc(_$hash, isVisionModel.hashCode);
     _$hash = $jc(_$hash, enforceJsonResponseFormat.hashCode);
     _$hash = $jc(_$hash, ocrEngine.hashCode);
+    _$hash = $jc(_$hash, ocrEngineUrl.hashCode);
+    _$hash = $jc(_$hash, ocrEngineModel.hashCode);
     _$hash = $jc(_$hash, promptId.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -103,6 +113,8 @@ class _$UpsertReceiptProcessingSettingsCommand
           ..add('isVisionModel', isVisionModel)
           ..add('enforceJsonResponseFormat', enforceJsonResponseFormat)
           ..add('ocrEngine', ocrEngine)
+          ..add('ocrEngineUrl', ocrEngineUrl)
+          ..add('ocrEngineModel', ocrEngineModel)
           ..add('promptId', promptId))
         .toString();
   }
@@ -152,6 +164,15 @@ class UpsertReceiptProcessingSettingsCommandBuilder
   OcrEngine? get ocrEngine => _$this._ocrEngine;
   set ocrEngine(OcrEngine? ocrEngine) => _$this._ocrEngine = ocrEngine;
 
+  String? _ocrEngineUrl;
+  String? get ocrEngineUrl => _$this._ocrEngineUrl;
+  set ocrEngineUrl(String? ocrEngineUrl) => _$this._ocrEngineUrl = ocrEngineUrl;
+
+  String? _ocrEngineModel;
+  String? get ocrEngineModel => _$this._ocrEngineModel;
+  set ocrEngineModel(String? ocrEngineModel) =>
+      _$this._ocrEngineModel = ocrEngineModel;
+
   int? _promptId;
   int? get promptId => _$this._promptId;
   set promptId(int? promptId) => _$this._promptId = promptId;
@@ -172,6 +193,8 @@ class UpsertReceiptProcessingSettingsCommandBuilder
       _isVisionModel = $v.isVisionModel;
       _enforceJsonResponseFormat = $v.enforceJsonResponseFormat;
       _ocrEngine = $v.ocrEngine;
+      _ocrEngineUrl = $v.ocrEngineUrl;
+      _ocrEngineModel = $v.ocrEngineModel;
       _promptId = $v.promptId;
       _$v = null;
     }
@@ -207,6 +230,8 @@ class UpsertReceiptProcessingSettingsCommandBuilder
           enforceJsonResponseFormat: enforceJsonResponseFormat,
           ocrEngine: BuiltValueNullFieldError.checkNotNull(ocrEngine,
               r'UpsertReceiptProcessingSettingsCommand', 'ocrEngine'),
+          ocrEngineUrl: ocrEngineUrl,
+          ocrEngineModel: ocrEngineModel,
           promptId: BuiltValueNullFieldError.checkNotNull(
               promptId, r'UpsertReceiptProcessingSettingsCommand', 'promptId'),
         );

@@ -20,4 +20,11 @@ describe("OcrEnginePipe", () => {
 
     expect(result).toEqual("EasyOCR");
   });
+
+  it("transform CUSTOM", () => {
+    const pipe = new OcrEnginePipe();
+    const result = pipe.transform(OcrEngine.Custom);
+
+    expect(result).toEqual("Custom");
+  });
 });

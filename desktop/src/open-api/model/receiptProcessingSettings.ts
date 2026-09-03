@@ -51,6 +51,14 @@ export interface ReceiptProcessingSettings {
      */
     enforceJsonResponseFormat?: boolean;
     ocrEngine?: OcrEngine;
+    /**
+     * URL for the OCR engine\'s endpoint (used when OcrEngine is CUSTOM, e.g. a self-hosted Ollama vision model)
+     */
+    ocrEngineUrl?: string;
+    /**
+     * Model for the OCR engine (used when OcrEngine is CUSTOM, e.g. a self-hosted Ollama vision model)
+     */
+    ocrEngineModel?: string;
     prompt?: Prompt;
     /**
      * Prompt foreign key

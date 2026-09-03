@@ -8,6 +8,7 @@ part of 'ocr_engine.dart';
 
 const OcrEngine _$TESSERACT = const OcrEngine._('TESSERACT');
 const OcrEngine _$EASY_OCR = const OcrEngine._('EASY_OCR');
+const OcrEngine _$CUSTOM = const OcrEngine._('CUSTOM');
 
 OcrEngine _$valueOf(String name) {
   switch (name) {
@@ -15,6 +16,8 @@ OcrEngine _$valueOf(String name) {
       return _$TESSERACT;
     case 'EASY_OCR':
       return _$EASY_OCR;
+    case 'CUSTOM':
+      return _$CUSTOM;
     default:
       throw ArgumentError(name);
   }
@@ -23,12 +26,14 @@ OcrEngine _$valueOf(String name) {
 final BuiltSet<OcrEngine> _$values = BuiltSet<OcrEngine>(const <OcrEngine>[
   _$TESSERACT,
   _$EASY_OCR,
+  _$CUSTOM,
 ]);
 
 class _$OcrEngineMeta {
   const _$OcrEngineMeta();
   OcrEngine get TESSERACT => _$TESSERACT;
   OcrEngine get EASY_OCR => _$EASY_OCR;
+  OcrEngine get CUSTOM => _$CUSTOM;
   OcrEngine valueOf(String name) => _$valueOf(name);
   BuiltSet<OcrEngine> get values => _$values;
 }
@@ -44,10 +49,12 @@ class _$OcrEngineSerializer implements PrimitiveSerializer<OcrEngine> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'TESSERACT': 'TESSERACT',
     'EASY_OCR': 'EASY_OCR',
+    'CUSTOM': 'CUSTOM',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'TESSERACT': 'TESSERACT',
     'EASY_OCR': 'EASY_OCR',
+    'CUSTOM': 'CUSTOM',
   };
 
   @override

@@ -15,6 +15,8 @@ class OcrEngine extends EnumClass {
   static const OcrEngine TESSERACT = _$TESSERACT;
   @BuiltValueEnumConst(wireName: r'EASY_OCR')
   static const OcrEngine EASY_OCR = _$EASY_OCR;
+  @BuiltValueEnumConst(wireName: r'CUSTOM')
+  static const OcrEngine CUSTOM = _$CUSTOM;
 
   static Serializer<OcrEngine> get serializer => _$ocrEngineSerializer;
 
