@@ -211,7 +211,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UpsertCategoryBudgetCommand"
+                $ref: "#/components/schemas/CategoryBudget"
         400:
           $ref: "#/components/responses/BadRequest"
         403:
@@ -4010,6 +4010,9 @@ components:
         description:
           type: string
           description: Description of the category
+        isIncome:
+          type: boolean
+          description: Whether receipts in this category count as income rather than spending.
         updatedAt:
           type: string
           x-go-name: UpdatedAt
@@ -4028,6 +4031,9 @@ components:
         description:
           type: string
           description: Category description
+        isIncome:
+          type: boolean
+          description: Whether receipts in this category count as income rather than spending.
     CategoryView:
       required:
         - id
@@ -6543,9 +6549,28 @@ components:
         amount:
           type: string
           description: Monthly budget target amount for the category
-        filter:
-          $ref: "#/components/schemas/ReceiptPagedRequestFilter"
-          description: Optional filter for receipts
+    CategoryBudget:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: uint64
+        groupId:
+          type: integer
+          format: uint64
+          description: Group foreign key
+        categoryId:
+          type: integer
+          format: uint64
+          description: Category foreign key
+        amount:
+          type: string
+          description: Monthly budget target amount for the category
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      description: A recurring monthly spend target for a single category within a single group
     ReportRequestCommand:
       type: object
       required:
