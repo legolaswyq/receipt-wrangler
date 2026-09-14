@@ -140,6 +140,10 @@ func BuildRootRouter() *chi.Mux {
 	widgetRouter := BuildWidgetRouter()
 	rootRouter.Mount("/api/widget", widgetRouter)
 
+	// Budget router
+	budgetRouter := BuildBudgetRouter()
+	rootRouter.Mount("/api/budget", budgetRouter)
+
 	// Report router
 	reportRouter := BuildReportRouter()
 	rootRouter.Mount("/api/report", reportRouter)

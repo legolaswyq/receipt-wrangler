@@ -164,6 +164,93 @@ paths:
       security:
         - bearerAuth: [ ]
         - apiKeyAuth: [ ]
+  /budget/{groupId}:
+    parameters:
+      - in: path
+        name: groupId
+        schema:
+          type: integer
+        required: true
+        description: Id of group to get or update budget data for
+    post:
+      tags:
+        - Budget
+      summary: Get budget data
+      description: This will get the current month's budget data for a group
+      operationId: getBudgetData
+      responses:
+        200:
+          description: The budget data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetData"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        500:
+          $ref: "#/components/responses/Internal"
+      security:
+        - bearerAuth: [ ]
+        - apiKeyAuth: [ ]
+    put:
+      tags:
+        - Budget
+      summary: Upsert category budget
+      description: This will create or update a category's monthly budget target for a group
+      operationId: upsertBudget
+      requestBody:
+        description: Category budget data to upsert
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertCategoryBudgetCommand"
+      responses:
+        200:
+          description: The upserted category budget
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpsertCategoryBudgetCommand"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        500:
+          $ref: "#/components/responses/Internal"
+      security:
+        - bearerAuth: [ ]
+        - apiKeyAuth: [ ]
+  /budget/{groupId}/{categoryId}:
+    parameters:
+      - in: path
+        name: groupId
+        schema:
+          type: integer
+        required: true
+        description: Id of group the budget belongs to
+      - in: path
+        name: categoryId
+        schema:
+          type: integer
+        required: true
+        description: Id of the category whose budget should be deleted
+    delete:
+      tags:
+        - Budget
+      summary: Delete category budget
+      description: This will delete a category's monthly budget target for a group
+      operationId: deleteBudget
+      responses:
+        200:
+          $ref: "#/components/responses/Ok"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        500:
+          $ref: "#/components/responses/Internal"
+      security:
+        - bearerAuth: [ ]
+        - apiKeyAuth: [ ]
   /report/generate:
     post:
       tags:
@@ -3765,6 +3852,7 @@ components:
         - "GROUP_ACTIVITY"
         - "PIE_CHART"
         - "REPORT"
+        - "BUDGET"
     ChartGrouping:
       type: string
       enum:
@@ -6392,6 +6480,69 @@ components:
         chartGrouping:
           $ref: "#/components/schemas/ChartGrouping"
           description: What to group the pie chart by
+    BudgetCategory:
+      type: object
+      properties:
+        categoryId:
+          type: integer
+          format: uint64
+          description: Category foreign key
+        name:
+          type: string
+          description: Category name
+        target:
+          type: number
+          format: double
+          description: Monthly budget target for the category
+        spent:
+          type: number
+          format: double
+          description: Amount spent against the category this month
+        over:
+          type: boolean
+          description: Whether spent exceeds target
+    BudgetData:
+      type: object
+      required:
+        - categories
+      properties:
+        month:
+          type: string
+          description: The month the budget data covers, formatted YYYY-MM
+        income:
+          type: number
+          format: double
+          description: Total income for the month
+        spent:
+          type: number
+          format: double
+          description: Total expense spend for the month
+        net:
+          type: number
+          format: double
+          description: Income minus spent
+        untracked:
+          type: number
+          format: double
+          description: Expense spend touching no budgeted category
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/BudgetCategory"
+          description: Per-category budget vs. actual for the month
+    UpsertCategoryBudgetCommand:
+      type: object
+      required:
+        - categoryId
+        - amount
+      properties:
+        categoryId:
+          type: integer
+          format: uint64
+          description: Category foreign key
+        amount:
+          type: string
+          description: Monthly budget target amount for the category
         filter:
           $ref: "#/components/schemas/ReceiptPagedRequestFilter"
           description: Optional filter for receipts
