@@ -144,7 +144,7 @@ func UpdateCategory(w http.ResponseWriter, r *http.Request) {
 			categoryRepository := repositories.NewCategoryRepository(nil)
 			category.ID = uintId
 
-			updatedCategory, err := categoryRepository.UpdateCategory(category, "name, description")
+			updatedCategory, err := categoryRepository.UpdateCategory(category, "name, description, is_income")
 			if err != nil {
 				return http.StatusInternalServerError, err
 			}

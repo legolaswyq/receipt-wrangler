@@ -10,6 +10,7 @@ type Category struct {
 	BaseModel
 	Name        string `gorm:"not null; uniqueIndex" json:"name"`
 	Description string `json:"description"`
+	IsIncome    bool   `gorm:"not null;default:false" json:"isIncome"`
 }
 
 func (category *Category) LoadDataFromRequest(w http.ResponseWriter, r *http.Request) error {

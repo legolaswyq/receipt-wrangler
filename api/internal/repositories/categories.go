@@ -104,12 +104,32 @@ func (repository CategoryRepository) GetAllPagedCategories(pagedRequestCommand c
 func (repository CategoryRepository) UpdateCategory(categoryToUpdate models.Category, querySelect string) (models.Category, error) {
 	db := repository.GetDB()
 
-	err := db.Model(models.Category{}).Where("id = ?", categoryToUpdate.ID).Updates(map[string]interface{}{"name": categoryToUpdate.Name, "description": categoryToUpdate.Description}).Error
+	// Map-form Updates writes every listed key regardless of its zero value, unlike GORM's
+	// struct-form Updates/Save, which silently skips zero-value fields (e.g. a bool false). That
+	// matters here because toggling IsIncome off must persist.
+	err := db.Model(models.Category{}).Where("id = ?", categoryToUpdate.ID).Updates(map[string]interface{}{
+		"name":        categoryToUpdate.Name,
+		"description": categoryToUpdate.Description,
+		"is_income":   categoryToUpdate.IsIncome,
+	}).Error
 	if err != nil {
 		return models.Category{}, err
 	}
 
 	return categoryToUpdate, nil
+}
+
+// GetCategoryById fetches a single category by its id.
+func (repository CategoryRepository) GetCategoryById(id string) (models.Category, error) {
+	db := repository.GetDB()
+	var category models.Category
+
+	err := db.Model(models.Category{}).Where("id = ?", id).First(&category).Error
+	if err != nil {
+		return models.Category{}, err
+	}
+
+	return category, nil
 }
 
 func (repository CategoryRepository) DeleteCategory(categoryId uint) error {
