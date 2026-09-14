@@ -8,7 +8,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
 import { Store } from "@ngxs/store";
 import { addHours } from "date-fns";
-import { debounceTime, catchError, finalize, forkJoin, iif, map, of, startWith, switchMap, take, tap } from "rxjs";
+import { debounceTime, catchError, EMPTY, filter, finalize, forkJoin, iif, map, of, startWith, Subscription, switchMap, take, tap } from "rxjs";
 import { CarouselComponent } from "src/carousel/carousel/carousel.component";
 import { DEFAULT_DIALOG_CONFIG, DEFAULT_HOST_CLASS } from "src/constants";
 import { RECEIPT_STATUS_OPTIONS } from "src/constants/receipt-status-options";
@@ -70,8 +70,6 @@ export class ReceiptFormComponent implements OnInit {
   public readonly successDuplicateSnackbar = viewChild.required<TemplateRef<any>>("successDuplicateSnackbar");
 
   public readonly quickActionsDialog = viewChild.required<TemplateRef<any>>("quickActionsDialog");
-
-  public readonly expandedImageTemplate = viewChild.required<TemplateRef<any>>("expandedImageTemplate");
 
   public readonly carouselComponent = viewChild.required(CarouselComponent);
 
@@ -154,8 +152,6 @@ export class ReceiptFormComponent implements OnInit {
 
   public imagesLoading = signal(false);
 
-  public showImages: boolean = true;
-
   public usersToOmit = signal<string[]>([]);
 
   public duplicatedReceiptId = signal("");
@@ -175,6 +171,14 @@ export class ReceiptFormComponent implements OnInit {
   public queueMode: QueueMode | undefined;
 
   public triggerItemListAddMode: boolean = false;
+
+  // Items are always editable (no separate view/edit unlock step) and persist on their
+  // own via updateReceipt whenever the items array changes, rather than waiting on the
+  // page-level Save button. This surfaces that background save's status next to the
+  // Items section header.
+  public autoSaveStatus = signal<"idle" | "saving" | "saved">("idle");
+
+  private autoSaveSubscription?: Subscription;
 
   public triggerShareListAddMode: boolean = false;
 
@@ -253,6 +257,7 @@ export class ReceiptFormComponent implements OnInit {
         this.setHeaderText();
         this.setShowLargeImagePreview();
         this.setQueueData();
+        this.setupAutoSave();
         document.scrollingElement?.scrollTo(0, 0);
       });
   }
@@ -359,20 +364,12 @@ export class ReceiptFormComponent implements OnInit {
         startWith(this.form.get("name")?.value),
         untilDestroyed(this),
         map((name) => {
-          let action = "";
-          switch (this.mode) {
-            case FormMode.add:
-              action = "Add";
-              break;
-            case FormMode.view:
-              action = "View";
-              break;
-            case FormMode.edit:
-              action = "Edit";
-              break;
+          // No separate view/edit mode: an existing receipt is just its name; only "Add" (create)
+          // gets a verb prefix.
+          if (this.mode === FormMode.add) {
+            return `Add ${name} Receipt`;
           }
-
-          return `${action} ${name} Receipt`;
+          return `${name} Receipt`;
         })
       )
     ));
@@ -426,13 +423,23 @@ export class ReceiptFormComponent implements OnInit {
     } else {
       selectedGroupId = Number(selectedGroupId);
     }
+    // Default the receipt amount to track the items total whenever the receipt already has
+    // (non-share) items, so an itemized receipt's Amount always equals the sum of its item
+    // total prices and follows edits automatically. Left off when there are no items, so a
+    // non-itemized receipt keeps its own manually-entered/OCR'd amount rather than snapping to
+    // 0. The user can still uncheck "Sync with items" to enter a manual total (e.g. to cover
+    // tax/fees not itemized).
+    const hasGeneralItems = (this.originalReceipt?.receiptItems ?? []).some(
+      (item) => !item.chargedToUserId
+    );
+
     this.form = this.formBuilder.group({
       name: [this.originalReceipt?.name ?? "", Validators.required],
       amount: [
         this.originalReceipt?.amount ?? "",
         [Validators.required],
       ],
-      syncAmountWithItems: false,
+      syncAmountWithItems: hasGeneralItems,
       categories: this.formBuilder.array(
         this.originalReceipt?.categories ?? []
       ),
@@ -457,13 +464,20 @@ export class ReceiptFormComponent implements OnInit {
       )
     });
 
-    if (this.mode === FormMode.view) {
-      this.form.get("status")?.disable();
-    }
+    // Status is no longer disabled in view mode: the page is editable-by-permission and the
+    // status select's own [readonly] binding handles the non-editable case, keeping the control in
+    // form.value/getRawValue.
 
     this.setupAmountSyncListener();
     this.listenForGroupChanges();
     this.listenForSyncWithItemsChanges();
+
+    // When sync defaults on (itemized receipt), snap the amount to the items total up front
+    // rather than waiting for the first item edit -- so a receipt whose printed total the AI
+    // read differently from its itemized sum immediately shows the item-derived total.
+    if (this.syncAmountWithItems) {
+      this.updateAmountFromItems();
+    }
   }
 
   // Source the category/tag pickers from the selected group's AppData catalog
@@ -1068,29 +1082,6 @@ export class ReceiptFormComponent implements OnInit {
     this.duplicatedSnackbarRef.dismiss();
   }
 
-  public toggleShowImages(): void {
-    this.showImages = !this.showImages;
-  }
-
-  public zoomImageIn(): void {
-    this.carouselComponent().zoomIn();
-  }
-
-  public zoomImageOut(): void {
-    this.carouselComponent().zoomOut();
-  }
-
-  public toggleImagePreviewSize(): void {
-    this.showLargeImagePreview = !this.showLargeImagePreview;
-  }
-
-  public expandImage(): void {
-    this.matDialog.open(this.expandedImageTemplate(), {
-      width: "75%",
-      height: "100%",
-    });
-  }
-
   // TODO: Add functionality to dashboard
   public downloadImage(): void {
     const currentImage = this.images()[this.carouselComponent().currentlyShownImageIndex];
@@ -1102,6 +1093,57 @@ export class ReceiptFormComponent implements OnInit {
         })
       )
       .subscribe();
+  }
+
+  // The receipt page has no separate view/edit mode: for a user who can edit, every field is
+  // editable and the WHOLE form auto-saves (debounced) on any change — name, amount, categories,
+  // items, everything — rather than needing a Save button. Subscribes to the whole form (not just
+  // the items array), and re-subscribes on every route-data emission (this component instance is
+  // reused across queue navigation, which reassigns this.form via initForm() without destroying the
+  // component) so the pipe always reads the current form and never stacks a second save loop.
+  // Skipped in add mode, where there is no receipt yet to PUT to — the Save button creates it.
+  private setupAutoSave(): void {
+    this.autoSaveSubscription?.unsubscribe();
+
+    if (this.mode === FormMode.add) {
+      return;
+    }
+
+    // Subscribing AFTER initForm means the load-time emissions (group-change startWith, amount
+    // sync) have already fired, so this only reacts to genuine post-load edits — no spurious save
+    // on open.
+    this.autoSaveSubscription = this.form.valueChanges
+      .pipe(
+        debounceTime(800),
+        filter(() => !!this.originalReceipt && this.canEditReceipt() && this.form.valid),
+        switchMap(() => {
+          this.autoSaveStatus.set("saving");
+          // getRawValue() so nothing a disabled control might drop is omitted from the payload.
+          return this.receiptService
+            .updateReceipt(this.originalReceipt!.id as number, this.form.getRawValue())
+            .pipe(
+              catchError(() => {
+                this.autoSaveStatus.set("idle");
+                return EMPTY;
+              })
+            );
+        }),
+        untilDestroyed(this)
+      )
+      .subscribe(() => {
+        this.autoSaveStatus.set("saved");
+        setTimeout(() => this.autoSaveStatus.set("idle"), 2000);
+      });
+  }
+
+  // The receipt page is editable-by-permission, not by route: for an existing receipt a user who
+  // can edit sees the "edit" behaviour (fields enabled, comments POST on change) even on /view.
+  // Add mode stays add (nothing to edit yet).
+  public effectiveMode(): FormMode {
+    if (this.mode === FormMode.add) {
+      return FormMode.add;
+    }
+    return this.canEditReceipt() ? FormMode.edit : FormMode.view;
   }
 
   public initItemListAddMode(): void {

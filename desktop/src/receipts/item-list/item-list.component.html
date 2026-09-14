@@ -1,26 +1,12 @@
 <div class="item-list-container">
 
-  <!-- Item Add Form -->
-  @if (isAdding) {
-    <app-item-add-form
-      [categories]="categories()"
-      [tags]="tags()"
-      [selectedGroup]="selectedGroup()"
-      [mode]="mode"
-      [receiptId]="originalReceipt?.id?.toString()"
-      (submitAndContinue)="onItemSubmitAndContinue($event)"
-      (submitAndFinish)="onItemSubmitAndFinish($event)"
-      (cancelled)="onItemCancelled()"
-    ></app-item-add-form>
-  }
-
   <!-- No Items Message -->
-  @if (items().length === 0 && mode === formMode.view && !isAdding) {
+  @if (items().length === 0 && !canEdit()) {
     <div>No items for this receipt</div>
   }
 
   <!-- Items List -->
-  @if (items().length > 0 || isAdding) {
+  @if (items().length > 0 || canEdit()) {
     <mat-accordion multi>
       <mat-expansion-panel #itemsExpansionPanel>
         <mat-expansion-panel-header class="sticky-accordion-header">
@@ -35,75 +21,141 @@
               @if (canEdit()) {
                 <app-add-button
                   tooltip="Add Item (Ctrl+I)"
-                  [disabled]="mode === formMode.view"
-                  (clicked)="startAddMode()"
+                  (clicked)="addInlineItem()"
                 ></app-add-button>
               }
             </div>
           </mat-panel-description>
         </mat-expansion-panel-header>
 
-        <div *ngFor="let itemData of items(); let i = index" class="item-row">
-          <app-card cardStyle="mb-2">
-            <div content class="d-flex flex-column item-form-container">
-              <div class="d-flex justify-content-end">
-                @if (!(mode | inputReadonly)) {
-                  <app-button
-                    matButtonType="iconButton"
-                    icon="call_split"
-                    tooltip="Split Item"
-                    [disabled]="!canEdit()"
-                    (clicked)="splitItem(itemData)"
-                  ></app-button>
-                  <app-delete-button
-                    tooltip="Remove Item"
-                    [disabled]="!canEdit()"
-                    (clicked)="removeItem(itemData)"
-                  ></app-delete-button>
+        <div class="items-table-wrapper">
+          <table class="items-table">
+            <thead>
+              <tr>
+                @if (canEdit()) {
+                  <th class="actions-header"></th>
                 }
-              </div>
-              <div class="row g-0">
-                <app-input
-                  class="col"
-                  #nameField
-                  label="Name"
-                  [inputId]="'name-' + i"
-                  [inputFormControl]="
-                    form() | formGet : 'receiptItems.' + itemData.arrayIndex + '.name'
-                  "
-                  [readonly]="mode | inputReadonly"
-                  (inputBlur)="addInlineItemOnBlur(i)"
-                >
-                </app-input>
-                <app-input
-                  class="col"
-                  label="Amount"
-                  [isCurrency]="true"
-                  [inputFormControl]="
-                    form() | formGet : 'receiptItems.' + itemData.arrayIndex + '.amount'
-                  "
-                  [readonly]="mode | inputReadonly"
-                  (inputBlur)="addInlineItemOnBlur(i)"
-                >
-                </app-input>
+                <th>Name</th>
+                <th>Chinese Name</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Total Price</th>
                 @if (!selectedGroup()?.groupReceiptSettings?.hideItemCategories) {
-                  <app-category-autocomplete
-                    [categories]="categories()"
-                    [inputFormControl]="form() | formGet : 'receiptItems.' + itemData.arrayIndex + '.categories'"
-                    [readonly]="mode | inputReadonly"
-                  ></app-category-autocomplete>
+                  <th>Categories</th>
                 }
-
                 @if (!selectedGroup()?.groupReceiptSettings?.hideItemTags) {
-                  <app-tag-autocomplete
-                    [tags]="tags()"
-                    [inputFormControl]="form() | formGet : 'receiptItems.' + itemData.arrayIndex + '.tags'"
-                    [readonly]="mode | inputReadonly"
-                  ></app-tag-autocomplete>
+                  <th>Tags</th>
                 }
-              </div>
-            </div>
-          </app-card>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let itemData of items(); let i = index" class="item-row">
+                @if (canEdit()) {
+                  <td class="actions-cell">
+                    <app-delete-button
+                      tooltip="Remove Item"
+                      (clicked)="removeItem(itemData)"
+                    ></app-delete-button>
+                  </td>
+                }
+                <td>
+                  <app-input
+                    #nameField
+                    [inputId]="'name-' + i"
+                    [inputFormControl]="
+                      form() | formGet : 'receiptItems.' + itemData.arrayIndex + '.name'
+                    "
+                    [readonly]="!canEdit()"
+                    (inputBlur)="addInlineItemOnBlur(i)"
+                  >
+                  </app-input>
+                </td>
+                <td>
+                  <app-input
+                    [inputFormControl]="
+                      form() | formGet : 'receiptItems.' + itemData.arrayIndex + '.nameZh'
+                    "
+                    [readonly]="!canEdit()"
+                  >
+                  </app-input>
+                </td>
+                <td>
+                  <app-input
+                    type="number"
+                    [inputFormControl]="
+                      form() | formGet : 'receiptItems.' + itemData.arrayIndex + '.quantity'
+                    "
+                    [readonly]="!canEdit()"
+                  >
+                  </app-input>
+                </td>
+                <td>
+                  <app-input
+                    [isCurrency]="true"
+                    [inputFormControl]="
+                      form() | formGet : 'receiptItems.' + itemData.arrayIndex + '.unitPrice'
+                    "
+                    [readonly]="!canEdit()"
+                  >
+                  </app-input>
+                </td>
+                <td class="total-price-cell">
+                  <app-input
+                    [isCurrency]="true"
+                    [inputFormControl]="
+                      form() | formGet : 'receiptItems.' + itemData.arrayIndex + '.amount'
+                    "
+                    [readonly]="!canEdit()"
+                    (inputBlur)="addInlineItemOnBlur(i)"
+                  >
+                  </app-input>
+                  @if (isAmountMismatched(itemData)) {
+                    <mat-icon
+                      class="mismatch-flag"
+                      data-testid="item-amount-mismatch"
+                      matTooltip="Doesn't match Qty × Unit Price"
+                    >warning</mat-icon>
+                  }
+                </td>
+                @if (!selectedGroup()?.groupReceiptSettings?.hideItemCategories) {
+                  <td>
+                    <app-category-autocomplete
+                      [inputId]="'item-category-' + i"
+                      [categories]="categories()"
+                      [inputFormControl]="form() | formGet : 'receiptItems.' + itemData.arrayIndex + '.categories'"
+                      [readonly]="!canEdit()"
+                    ></app-category-autocomplete>
+                  </td>
+                }
+                @if (!selectedGroup()?.groupReceiptSettings?.hideItemTags) {
+                  <td>
+                    <app-tag-autocomplete
+                      [inputId]="'item-tag-' + i"
+                      [tags]="tags()"
+                      [inputFormControl]="form() | formGet : 'receiptItems.' + itemData.arrayIndex + '.tags'"
+                      [readonly]="!canEdit()"
+                    ></app-tag-autocomplete>
+                  </td>
+                }
+              </tr>
+            </tbody>
+            @if (items().length > 0) {
+              <tfoot>
+                <tr class="items-total-row">
+                  <td [attr.colspan]="(canEdit() ? 1 : 0) + 4">Total</td>
+                  <td data-testid="items-total-price">{{ getTotalAmount() | customCurrency }}</td>
+                  @if (!selectedGroup()?.groupReceiptSettings?.hideItemCategories || !selectedGroup()?.groupReceiptSettings?.hideItemTags) {
+                    <td
+                      [attr.colspan]="
+                        (!selectedGroup()?.groupReceiptSettings?.hideItemCategories ? 1 : 0) +
+                        (!selectedGroup()?.groupReceiptSettings?.hideItemTags ? 1 : 0)
+                      "
+                    ></td>
+                  }
+                </tr>
+              </tfoot>
+            }
+          </table>
         </div>
       </mat-expansion-panel>
     </mat-accordion>

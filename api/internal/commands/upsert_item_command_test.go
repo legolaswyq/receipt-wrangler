@@ -175,6 +175,87 @@ func TestUpsertItemCommand_Validate_MultipleErrors(t *testing.T) {
 	}
 }
 
+func TestUpsertItemCommand_ResolveAmount(t *testing.T) {
+	qty := decimal.NewFromInt(3)
+	unitPrice := decimal.NewFromFloat(2.50)
+	amount := decimal.NewFromFloat(7.50)
+
+	tests := map[string]struct {
+		command        UpsertItemCommand
+		expectedAmount decimal.Decimal
+		expectUnitSet  bool
+	}{
+		"amount provided is left untouched even with quantity and unit price": {
+			command: UpsertItemCommand{
+				Amount:    decimal.NewFromFloat(9.99),
+				Quantity:  &qty,
+				UnitPrice: &unitPrice,
+			},
+			expectedAmount: decimal.NewFromFloat(9.99),
+		},
+		"amount computed from quantity and unit price when amount is zero": {
+			command: UpsertItemCommand{
+				Amount:    decimal.Zero,
+				Quantity:  &qty,
+				UnitPrice: &unitPrice,
+			},
+			expectedAmount: amount,
+		},
+		"unit price derived from amount and quantity when unit price missing": {
+			command: UpsertItemCommand{
+				Amount:   amount,
+				Quantity: &qty,
+			},
+			expectedAmount: amount,
+			expectUnitSet:  true,
+		},
+		"no quantity or unit price leaves amount untouched": {
+			command: UpsertItemCommand{
+				Amount: decimal.NewFromFloat(5.00),
+			},
+			expectedAmount: decimal.NewFromFloat(5.00),
+		},
+	}
+
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			test.command.ResolveAmount()
+
+			if !test.command.Amount.Equal(test.expectedAmount) {
+				utils.PrintTestError(t, test.command.Amount.String(), test.expectedAmount.String())
+			}
+
+			if test.expectUnitSet && test.command.UnitPrice == nil {
+				utils.PrintTestError(t, "unit price should have been derived", "nil")
+			}
+		})
+	}
+}
+
+func TestUpsertItemCommand_ResolveAmount_RecursesIntoLinkedItems(t *testing.T) {
+	qty := decimal.NewFromInt(2)
+	unitPrice := decimal.NewFromFloat(4.00)
+
+	command := UpsertItemCommand{
+		Amount: decimal.NewFromFloat(8.00),
+		Name:   "Parent",
+		LinkedItems: []UpsertItemCommand{
+			{
+				Amount:    decimal.Zero,
+				Quantity:  &qty,
+				UnitPrice: &unitPrice,
+				Name:      "Child",
+			},
+		},
+	}
+
+	command.ResolveAmount()
+
+	if !command.LinkedItems[0].Amount.Equal(decimal.NewFromFloat(8.00)) {
+		utils.PrintTestError(t, command.LinkedItems[0].Amount.String(), "8")
+	}
+}
+
 func TestUpsertItemCommand_Validate_NegativeReceiptMagnitudeChecks(t *testing.T) {
 	negativeReceiptAmount := decimal.NewFromFloat(-100.00)
 

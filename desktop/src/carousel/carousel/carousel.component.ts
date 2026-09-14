@@ -1,8 +1,10 @@
-import { Component, OnChanges, SimpleChanges, ViewEncapsulation, input, output } from "@angular/core";
+import { Component, OnChanges, SimpleChanges, ViewEncapsulation, inject, input, output } from "@angular/core";
+import { MatDialog } from "@angular/material/dialog";
 import { UntilDestroy } from "@ngneat/until-destroy";
 import { FormMode } from "src/enums/form-mode.enum";
 import { ReceiptFileUploadCommand } from "../../interfaces";
 import { FileDataView } from "../../open-api";
+import { ImagePreviewDialogComponent } from "../../shared-ui/image-preview-dialog/image-preview-dialog.component";
 
 @UntilDestroy()
 @Component({
@@ -31,6 +33,22 @@ export class CarouselComponent implements OnChanges {
 
   public currentlyShownImageIndex: number = 0;
 
+  private readonly matDialog = inject(MatDialog);
+
+  // Opens a full-width, vertically-scrollable preview of the clicked image -- reading a long
+  // receipt top-to-bottom, rather than the inline zoom the +/- controls provide.
+  public openImagePreview(src: string): void {
+    if (!src) {
+      return;
+    }
+    this.matDialog.open(ImagePreviewDialogComponent, {
+      maxWidth: "95vw",
+      width: "600px",
+      panelClass: "image-preview-dialog-panel",
+      data: { src },
+    });
+  }
+
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes["initialIndex"]) {
       this.currentlyShownImageIndex = this.initialIndex();
@@ -47,12 +65,6 @@ export class CarouselComponent implements OnChanges {
 
   public zoomIn() {
     this.adjustScale(0.1);
-  }
-
-  public onScroll(event: WheelEvent): void {
-    event.preventDefault();
-    let value = event.deltaY * -0.000001;
-    this.adjustScale(value);
   }
 
   public updateCurrentlyShownImage(index: number): void {

@@ -8,6 +8,9 @@ import (
 
 type UpsertItemCommand struct {
 	Amount          decimal.Decimal         `json:"amount"`
+	Quantity        *decimal.Decimal        `json:"quantity"`
+	UnitPrice       *decimal.Decimal        `json:"unitPrice"`
+	NameZh          string                  `json:"nameZh"`
 	ChargedToUserId *uint                   `json:"chargedToUserId"`
 	IsTaxed         bool                    `json:"isTaxed"`
 	Name            string                  `json:"name"`
@@ -16,6 +19,23 @@ type UpsertItemCommand struct {
 	Categories      []UpsertCategoryCommand `json:"categories"`
 	Tags            []UpsertTagCommand      `json:"tags"`
 	LinkedItems     []UpsertItemCommand     `json:"linkedItems"`
+}
+
+// ResolveAmount fills in whichever of amount/quantity/unitPrice the source (AI extraction or a
+// manual entry) left out, preferring values the source actually provided. It recurses into linked
+// items so the same rule applies uniformly.
+func (item *UpsertItemCommand) ResolveAmount() {
+	if item.Quantity != nil && item.UnitPrice != nil && item.Amount.IsZero() {
+		computed := item.Quantity.Mul(*item.UnitPrice)
+		item.Amount = computed
+	} else if item.Quantity != nil && !item.Quantity.IsZero() && item.UnitPrice == nil && !item.Amount.IsZero() {
+		computed := item.Amount.Div(*item.Quantity)
+		item.UnitPrice = &computed
+	}
+
+	for i := range item.LinkedItems {
+		item.LinkedItems[i].ResolveAmount()
+	}
 }
 
 func (item *UpsertItemCommand) Validate(receiptAmount decimal.Decimal, isCreate bool) structs.ValidatorError {

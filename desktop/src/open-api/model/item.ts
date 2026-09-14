@@ -25,6 +25,14 @@ export interface Item {
      */
     amount: string;
     /**
+     * Quantity purchased
+     */
+    quantity?: string;
+    /**
+     * Price for a single unit
+     */
+    unitPrice?: string;
+    /**
      * User foreign key
      */
     chargedToUserId?: number;
@@ -35,6 +43,10 @@ export interface Item {
      * Item name
      */
     name: string;
+    /**
+     * Item name in Chinese
+     */
+    nameZh?: string;
     /**
      * Receipt foreign key
      */

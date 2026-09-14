@@ -626,6 +626,7 @@ class ReceiptApi {
   /// * [categoryIds] 
   /// * [tagIds] 
   /// * [comments] 
+  /// * [combineImages] - When true, all uploaded files are treated as a single long receipt (transcribed, text combined, one structured extraction) producing one receipt with every image attached. Default false = one receipt per file.
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -643,6 +644,7 @@ class ReceiptApi {
     BuiltList<String>? categoryIds,
     BuiltList<String>? tagIds,
     BuiltList<String>? comments,
+    bool? combineImages,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -686,6 +688,7 @@ class ReceiptApi {
         if (categoryIds != null) r'categoryIds': encodeFormParameter(_serializers, categoryIds, const FullType(BuiltList, [FullType(String)])),
         if (tagIds != null) r'tagIds': encodeFormParameter(_serializers, tagIds, const FullType(BuiltList, [FullType(String)])),
         if (comments != null) r'comments': encodeFormParameter(_serializers, comments, const FullType(BuiltList, [FullType(String)])),
+        if (combineImages != null) r'combineImages': encodeFormParameter(_serializers, combineImages, const FullType(bool)),
       });
 
     } catch(error, stackTrace) {

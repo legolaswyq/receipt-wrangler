@@ -1,0 +1,25 @@
+.image-preview-dialog {
+  position: relative;
+
+  &__close {
+    position: sticky;
+    top: 0;
+    left: 100%;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.85);
+  }
+
+  &__scroll {
+    max-height: 85vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    // pull the scroll area up so it starts under the sticky close button rather than below it
+    margin-top: -40px;
+  }
+
+  &__img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+}

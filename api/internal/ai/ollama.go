@@ -36,7 +36,10 @@ func (ollama OllamaClient) GetChatCompletion() (structs.ChatCompletionResult, er
 	}
 
 	if ollama.ReceiptProcessingSettings.EnforceJsonResponseFormat {
-		body["format"] = "json"
+		// Ollama's structured-output mode accepts a full JSON Schema object (not just the
+		// string "json") and grammar-constrains generation to match it, so the response shape
+		// no longer depends on the model having correctly followed prose instructions.
+		body["format"] = ReceiptExtractionSchema()
 	}
 	httpClient := http.Client{}
 	httpClient.Timeout = constants.AiHttpTimeout

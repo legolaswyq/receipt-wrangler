@@ -1026,6 +1026,128 @@ helpers `withAdminApi` + `apiDeleteUserByName` / `apiDeleteGroupById` / `apiDele
 
 ## Quick Scan Configuration
 
+- **Multi-image "one receipt" combine.** The quick-scan dialog (`src/receipts/quick-scan-dialog/`)
+  shows a **"These images are one receipt (multi-page)"** `app-checkbox`
+  (`data-testid="quick-scan-combine"`, the `combineImages` FormControl) whenever 2+ images are
+  uploaded, **on by default** (a multi-image upload is usually one receipt too long for a single
+  photo). When active (`isCombineActive()` = toggle on AND >1 image), the per-image carousel-with-fields
+  collapses to an images-only carousel plus **one shared field set bound to index 0**
+  (group/paid-by/status/categories/tags/comment). On submit it sends `combineImages=true` and repeats
+  the index-0 values across all file slots (the API validates array-len == file count, but the backend
+  reads index 0) so the backend produces **one** receipt with every image attached — transcribe each,
+  combine the text, one structured extraction (see `api/CLAUDE.md` → "Quick Scan multi-image combine").
+  Validity in combine mode is judged on index 0 alone (`isCombineValid()`), and the progress banner is
+  told to expect **1** receipt. `combineImages` is deliberately kept **out of** `form` so `form.value`
+  stays the per-image arrays. Off (or a single image) = the original one-receipt-per-file behavior.
+  Tests: `quick-scan-dialog.component.spec.ts` (combine repeats shared fields + flags `combineImages`;
+  the single-image submits now assert the trailing `false` arg).
+- **The receipts-table header's "Add Receipt" defaults to Quick Scan.** When the viewer holds
+  `group.receipts.quick-scan`, `app-quick-scan-button` (`src/shared-ui/quick-scan-button/`) renders as
+  the primary labeled button (`[buttonText]="'Add Receipt'"`, `data-testid="receipts-quick-scan"`
+  unchanged) and manual entry (`app-add-button` → `/receipts/add`) becomes the secondary icon-only
+  button beside it. Without quick-scan permission (or with `aiPoweredReceipts` off, which hides the
+  quick-scan button via its own `*appFeature` gate), manual add falls back to being the primary labeled
+  button so there is always a way to add a receipt. `QuickScanButtonComponent` gained an optional
+  `buttonText` input for this (defaults to icon-only, unchanged for its other call site in the sidebar).
+- **Item fields: `nameZh` / `quantity` / `unitPrice`.** `buildItemForm` (`src/receipts/utils/form.utils.ts`)
+  and the item add form / item list (`src/receipts/item-add-form/`, `src/receipts/item-list/`) carry three
+  new optional fields alongside name/amount: a Chinese name, quantity, and unit price. None are validated
+  — the backend fills in whichever of quantity/unitPrice/amount (total price) is missing when the other two
+  are present (see `api/CLAUDE.md` → "AI Integration" → line-item extraction), so the desktop form doesn't
+  need to compute it client-side. Populated automatically by quick scan once the AI extracts them; editable
+  like any other item field otherwise.
+  - **The saved-items list is a table, not one card per item** (`src/receipts/item-list/item-list.component.html`,
+    `.items-table`): a header row (Name/Chinese Name/Qty/Unit Price/Total Price/Categories/Tags) with one
+    `<tr>` per item and no per-cell `app-input` labels (the column header is the label), so six items with
+    all five new fields plus categories/tags fit on screen without the old one-`app-card`-per-item stack.
+    Each item's category/tag autocomplete passes an explicit `[inputId]="'item-category-' + i"` /
+    `'item-tag-' + i'` — `app-category-autocomplete`/`app-tag-autocomplete` otherwise derive the DOM id
+    from their hardcoded "Categories"/"Tags" label, which would collide across every row in the table
+    (breaking `<label for>` association past the first). The inline "add new item" flow
+    (`app-item-add-form`, opened via the accordion header's Add button) is unchanged — it keeps its own
+    card layout and keyboard-shortcut-driven rapid-add UX; only the already-added items became a table.
+    The per-row actions column is a single `app-delete-button`, moved to the **first** column (not the
+    last) so it's reachable without scrolling a wide table right; "Split Item" was dropped from this row
+    entirely (the underlying `splitItem()`/`QuickActionsDialogComponent` wiring is untouched — only the
+    button is gone — in case a future entry point wants it back).
+  - **The whole receipt page is editable-by-permission with no separate view/edit mode, and the
+    entire form auto-saves.** There is no "view then click the pencil to edit" step: on
+    `/receipts/:id/view` (and `/edit` — now identical) every field is editable the moment the viewer
+    holds `group.receipts.update`. Field `[readonly]`/control-visibility bindings throughout
+    `receipt-form.component.html` are driven by **`canEditReceipt()`**, not `mode | inputReadonly`
+    (all `mode | inputReadonly` usages were removed); a `effectiveMode()` helper
+    (`add` stays `add`, else `canEditReceipt() ? edit : view`) feeds the few children that still take a
+    `FormMode` (carousel, comments, audit-detail, custom-fields menu label). The **pencil "Edit"
+    button and the separate edit affordance are gone**, the title dropped its `View`/`Edit` verb prefix
+    (an existing receipt is just `"<name> Receipt"`; only create shows `"Add …"`), and `item-list`'s own
+    gates likewise use `canEdit()` (permission) not `mode`.
+  - **Auto-save covers the whole form**, debounced 800ms: `ReceiptFormComponent.setupAutoSave()`
+    subscribes to **`this.form.valueChanges`** (every field, items included — add/remove/edit all flow
+    through the one form) and PUTs the whole receipt via `ReceiptService.updateReceipt` (there is no
+    per-field/per-item endpoint — see `api/CLAUDE.md` → `UpdateReceipt` "wholesale item replace" — so
+    this reuses exactly the payload the old manual Save sent). Gated on `!!this.originalReceipt`
+    (skipped in `FormMode.add`, where the Save button still *creates* the receipt), `canEditReceipt()`,
+    and `this.form.valid` (an invalid in-progress edit defers the save rather than submitting a broken
+    state). Subscribing **after** `initForm()` means the load-time emissions (group-change `startWith`,
+    amount sync) have already fired, so opening a receipt triggers no spurious save. Re-subscribes on
+    every route-data emission (unsubscribing the previous) because the component instance is reused
+    across queue navigation. The form header shows a small "Saving…"/"Saved" status (`autoSaveStatus`
+    signal, `data-testid="receipt-autosave-status"`).
+  - **The page-level Save button is gone for existing receipts** — `app-form-button-bar` now renders
+    only in `FormMode.add` (create) or queue mode (Save advances the queue). The `status` control is no
+    longer `disable()`d in view mode (its `[readonly]` binding handles the non-editable case), so it
+    stays in `form.value`; auto-save still uses `getRawValue()` defensively.
+    Tests: `receipt-form.component.spec.ts` → `describe("item auto-save")` (still valid — item changes
+    flow through the whole-form `valueChanges`).
+  - **"Add Item" appends a blank row directly into the table — there is no separate add-form popup
+    anymore.** The old `ItemAddFormComponent` (a card with its own keyboard-shortcut legend,
+    submit-and-continue/submit-and-finish buttons, rapid-add mode) is **deleted**
+    (`src/receipts/item-add-form/` no longer exists, removed from `receipts.module.ts`) — once items
+    became always-editable inline, a separate "type into a form, then it becomes a row" step was pure
+    friction. Every entry point (both "+" buttons — the accordion header's and the section header's —
+    plus the global Ctrl+I shortcut) now calls `addInlineItem()`, which pushes one blank, immediately-
+    editable row and auto-expands the accordion if collapsed. The pre-existing `addInlineItemOnBlur()` /
+    `checkLastInlineItem()` spreadsheet behavior (chain-adding a new blank row when you finish the last
+    one; dropping a still-blank last row on blur) needed no changes — it already operated on the table
+    rows, so it was previously reachable only via those inline inputs' own blur handlers, dead weight
+    from the add-form era. `isAdding`, `startAddMode()`, `initAddMode()`, and the three
+    `onItemSubmit*`/`onItemCancelled` handlers are gone with it. The empty-state gate changed from
+    `items().length === 0 && !isAdding` to `items().length === 0 && !canEdit()` (a view-only user with a
+    genuinely empty item list sees "No items for this receipt"; anyone who can edit sees the table with
+    its Add button so there's always a way to add the first item, without needing a separate "isAdding"
+    flag to force the accordion open).
+  - **Per-item math is checked, not trusted.** `isAmountMismatched(itemData)` (item-list.component.ts)
+    flags a row whose total price disagrees with quantity × unit price by more than a cent of rounding
+    slack, rendering a `mat-icon` warning (`data-testid="item-amount-mismatch"`, tooltip "Doesn't match
+    Qty × Unit Price") beside the Total Price field — this catches AI-extraction math errors (e.g. the
+    model reading a unit price off the wrong line) without silently "fixing" the number one way or the
+    other. Returns `false` (no flag) whenever quantity or unit price is blank/unreadable — a mismatch
+    needs both operands present to mean anything.
+  - **The table footer sums the items, live.** A `<tfoot>` row reading "Total" / `{{ getTotalAmount() }}`
+    sits at the bottom of the items table (`data-testid="items-total-price"`), matching the literal
+    "sum of every item's total price" — the same figure the accordion header already showed, now also
+    visible without expanding to the header. `getTotalAmount()` was rewritten to read the **live**
+    `FormArray` control values (`receiptItems.controls`) rather than the `items()` signal, which only
+    refreshes on add/remove (via the parent's `refreshComponentsAndSync()` → `setItems()`) — reading the
+    signal would have shown a stale total until the user tabbed to another row after editing an amount.
+    Still excludes shares (`chargedToUserId` set), matching `setItems()`'s own filter.
+  - **The receipt Amount defaults to tracking the items total for an itemized receipt.**
+    `initForm()` seeds `syncAmountWithItems` to `true` whenever the loaded receipt has at least one
+    **general** (non-share) item, and calls `updateAmountFromItems()` once up front so the Amount snaps
+    to the item-derived total on load rather than only on the next item edit — this is what makes a
+    receipt whose printed TOTAL the AI read differently from its itemized sum show the itemized sum
+    ($135.91) instead of the OCR'd total ($187.51). It's gated on "has items" so a **non-itemized**
+    receipt (no items) keeps `syncAmountWithItems: false` and its own manually-entered/OCR'd amount
+    rather than snapping to `$0`. The existing "Sync with items" checkbox still lets the user turn it
+    off to enter a manual total (tax/fees not itemized). `syncAmountWithItems` is a **form-only** field
+    (never persisted to the backend / not on `UpsertReceiptCommand`); it just drives the existing
+    `updateAmountFromItems()` sync + the Amount field's readonly state. Combined with the item auto-save
+    above, editing/adding/removing an item re-derives the Amount and persists the receipt automatically.
+  - Tests: `item-list.component.spec.ts` (new file — `getTotalAmount` incl. the live-edit case and share
+    exclusion, `isAmountMismatched`'s match/mismatch/blank-operand/rounding-slack cases, `addInlineItem`'s
+    permission gate); `receipt-form.component.spec.ts` (sync-defaults-on-for-itemized-receipt and
+    stays-off-with-manual-amount-when-no-items).
+
 - **Group receipt settings** (`src/group/group-receipt-settings/`) has a **Quick Scan** section: per
   field (paid-by, status, categories, tags, comment) a *Show* + *Require* `app-checkbox`, plus a default
   control for paid-by (`app-select` of Uploader/Specific user + a conditional `app-user-autocomplete`) and
@@ -1114,6 +1236,31 @@ helpers `withAdminApi` + `apiDeleteUserByName` / `apiDeleteGroupById` / `apiDele
   - `receipt-feature-gating.spec.ts` now has the **positive** Quick Scan contrast (previously `test.fixme`):
     with the flag injected on, a **Legacy Editor** member (holds `group.receipts.quick-scan`) sees the button
     while the Viewer — same user, same flag — does not.
+
+## Receipt image preview (click to enlarge)
+
+Clicking a receipt image in the carousel (`src/carousel/carousel/`) opens a full-width,
+**vertically-scrollable** preview dialog (`src/shared-ui/image-preview-dialog/`,
+`ImagePreviewDialogComponent` — standalone) rather than zooming inline. This is the natural way to
+read a long/tall receipt top-to-bottom; the carousel's existing +/- zoom controls are unchanged and
+still there for fine inspection. `app-image-viewer` (`src/shared-ui/image-viewer/`) gained an
+`imageClicked` output (emitting the resolved `src` — base64 or the object-URL of an unsaved file), and
+the carousel opens the dialog from it. The dialog's scroll area is `max-height: 85vh; overflow-y:
+auto`, so a receipt taller than the viewport scrolls while one that fits doesn't; the image is
+`width: 100%` of the dialog so it's always readably large. Close via the sticky top-right button
+(`data-testid="image-preview-close"`) or the backdrop. The service is injected (`inject(MatDialog)`),
+so no `MatDialogModule` import was needed in `CarouselModule` (the standalone dialog imports it
+itself).
+
+The receipt form's **Images toolbar** was trimmed to just Upload / Download / Magic Fill / Delete —
+the old inline **hide-images, expand/collapse, fullscreen, zoom-in, zoom-out** buttons were removed
+now that click-to-enlarge covers "look at it bigger". With them went their handlers
+(`toggleShowImages`, `zoomImageIn`/`zoomImageOut`, `toggleImagePreviewSize`, `expandImage`), the
+`showImages` field (images now always render when present), and the `#expandedImageTemplate` +
+`expandedImageTemplate` viewChild (the fullscreen dialog they fed). `showLargeImagePreview` /
+`setShowLargeImagePreview` stay — that's a **user preference** (`showLargeImagePreviews`) driving the
+preview column width, not one of the removed per-receipt toggles. `carouselComponent` stays too (magic
+fill / download still read its `currentlyShownImageIndex`).
 
 ## Magic Fill (receipt form)
 

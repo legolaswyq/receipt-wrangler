@@ -20,7 +20,6 @@ import { MatDialog } from "@angular/material/dialog";
 import { MatExpansionPanel } from "@angular/material/expansion";
 import { ActivatedRoute } from "@angular/router";
 import { Store } from "@ngxs/store";
-import { FormMode } from "src/enums/form-mode.enum";
 import { InputComponent } from "../../input";
 import { Category, Group, Item, Permission, Receipt, Tag } from "../../open-api";
 import { AuthState } from "../../store";
@@ -75,12 +74,6 @@ export class ItemListComponent implements OnInit, OnChanges, OnDestroy {
 
   public items = signal<ItemData[]>([]);
 
-  public isAdding: boolean = false;
-
-  public mode: FormMode = FormMode.view;
-
-  public formMode = FormMode;
-
   protected readonly Permission = Permission;
 
   /**
@@ -106,7 +99,6 @@ export class ItemListComponent implements OnInit, OnChanges, OnDestroy {
 
   public ngOnInit(): void {
     this.originalReceipt = this.activatedRoute.snapshot.data["receipt"];
-    this.mode = this.activatedRoute.snapshot.data["mode"];
     this.canEdit = this.store.selectSignal(
       AuthState.hasGroupPermission(
         this.originalReceipt?.groupId ?? 0,
@@ -119,7 +111,7 @@ export class ItemListComponent implements OnInit, OnChanges, OnDestroy {
 
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes["triggerAddMode"] && changes["triggerAddMode"].currentValue) {
-      this.startAddMode();
+      this.addInlineItem();
     }
     if (changes["form"]) {
       this.setItems();
@@ -128,8 +120,9 @@ export class ItemListComponent implements OnInit, OnChanges, OnDestroy {
 
   @HostListener("document:keydown", ["$event"])
   public handleKeyboardShortcut(event: KeyboardEvent): void {
-    // Only handle shortcuts when in edit mode or when specifically allowed
-    if (this.mode === FormMode.view && !this.isAdding) {
+    // Items are editable whenever the caller holds edit permission, regardless of the
+    // page's view/edit mode -- there is no separate "unlock to edit" step for items.
+    if (!this.canEdit()) {
       return;
     }
 
@@ -149,9 +142,7 @@ export class ItemListComponent implements OnInit, OnChanges, OnDestroy {
   private handleShortcutAction(action: string): void {
     switch (action) {
       case KEYBOARD_SHORTCUT_ACTIONS.ADD_ITEM:
-        if (!this.isAdding) {
-          this.startAddMode();
-        }
+        this.addInlineItem();
         break;
     }
   }
@@ -175,36 +166,6 @@ export class ItemListComponent implements OnInit, OnChanges, OnDestroy {
       }
       this.items.set(itemDataArray);
     }
-  }
-
-  public startAddMode(): void {
-    this.isAdding = true;
-
-    // Auto-expand accordion if collapsed
-    const itemsExpansionPanel = this.itemsExpansionPanel();
-    if (itemsExpansionPanel && !itemsExpansionPanel.expanded) {
-      itemsExpansionPanel.open();
-    }
-  }
-
-  public initAddMode(): void {
-    // Legacy method for backward compatibility
-    this.startAddMode();
-  }
-
-  // Event handlers for the item-add-form component
-  public onItemSubmitAndContinue(item: Item): void {
-    this.itemAdded.emit(item);
-    // Form component handles its own reset for rapid mode
-  }
-
-  public onItemSubmitAndFinish(item: Item): void {
-    this.itemAdded.emit(item);
-    this.isAdding = false;
-  }
-
-  public onItemCancelled(): void {
-    this.isAdding = false;
   }
 
   public removeItem(itemData: ItemData): void {
@@ -245,12 +206,17 @@ export class ItemListComponent implements OnInit, OnChanges, OnDestroy {
       event?.stopImmediatePropagation();
     }
 
-    if (this.mode !== FormMode.view) {
+    if (this.canEdit()) {
       const newItem = {
         name: "",
         chargedToUserId: undefined,
       } as Item;
       this.itemAdded.emit(newItem);
+
+      const itemsExpansionPanel = this.itemsExpansionPanel();
+      if (itemsExpansionPanel && !itemsExpansionPanel.expanded) {
+        itemsExpansionPanel.open();
+      }
     }
   }
 
@@ -266,7 +232,7 @@ export class ItemListComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public checkLastInlineItem(): void {
-    if (this.mode !== FormMode.view) {
+    if (this.canEdit()) {
       const items = this.items();
       if (items && items.length > 1) {
         const lastItem = items[items.length - 1];
@@ -281,16 +247,33 @@ export class ItemListComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
+  // Reads live FormArray control values (not the items() snapshot, which only refreshes on
+  // add/remove) so the total reflects a Total Price edit immediately, without needing to blur
+  // out to the next row first. Excludes shares (chargedToUserId set), matching setItems().
   public getTotalAmount(): number {
-    const items = this.items();
-    if (!items || items.length === 0) {
-      return 0;
-    }
-
-    return items.reduce((total, itemData) => {
-      const amount = parseFloat(itemData.item.amount) || 0;
+    return this.receiptItems.controls.reduce((total, control) => {
+      if (control.get("chargedToUserId")?.value) {
+        return total;
+      }
+      const amount = parseFloat(control.get("amount")?.value) || 0;
       return total + amount;
     }, 0);
+  }
+
+  // An item's total price should equal quantity * unitPrice when the receipt actually printed
+  // both. When the AI extraction's amount disagrees with that calculation (beyond a cent of
+  // rounding slack), flag it rather than silently trusting either value.
+  public isAmountMismatched(itemData: ItemData): boolean {
+    const control = this.receiptItems.at(itemData.arrayIndex);
+    const quantity = parseFloat(control.get("quantity")?.value);
+    const unitPrice = parseFloat(control.get("unitPrice")?.value);
+    const amount = parseFloat(control.get("amount")?.value);
+
+    if (Number.isNaN(quantity) || Number.isNaN(unitPrice) || Number.isNaN(amount)) {
+      return false;
+    }
+
+    return Math.abs(quantity * unitPrice - amount) > 0.01;
   }
 
   // Keyboard event handlers

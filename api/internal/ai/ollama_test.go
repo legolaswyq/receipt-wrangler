@@ -120,8 +120,21 @@ func TestOllamaGetChatCompletion_EnforceJsonFormat(t *testing.T) {
 		utils.PrintTestError(t, err, nil)
 	}
 
-	if captured.Body["format"] != "json" {
-		utils.PrintTestError(t, captured.Body["format"], "json")
+	format, ok := captured.Body["format"].(map[string]interface{})
+	if !ok {
+		utils.PrintTestError(t, captured.Body["format"], "a JSON schema object")
+		return
+	}
+	if format["type"] != "object" {
+		utils.PrintTestError(t, format["type"], "object")
+	}
+	properties, ok := format["properties"].(map[string]interface{})
+	if !ok {
+		utils.PrintTestError(t, format["properties"], "a properties object")
+		return
+	}
+	if _, ok := properties["receiptItems"]; !ok {
+		utils.PrintTestError(t, "receiptItems missing from schema properties", "present")
 	}
 }
 

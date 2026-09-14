@@ -4,8 +4,11 @@ import { Item, ItemStatus } from "../../open-api";
 export function buildItemForm(item?: Item, receiptId?: string, isShare: boolean = true, syncAmountWithItems: boolean = false): FormGroup {
   const formGroup = new FormGroup({
     name: new FormControl(item?.name ?? "", Validators.required),
+    nameZh: new FormControl(item?.nameZh ?? ""),
     chargedToUserId: new FormControl(item?.chargedToUserId ?? undefined, []),
     receiptId: new FormControl(Number(item?.receiptId ?? receiptId)),
+    quantity: new FormControl(item?.quantity ?? undefined),
+    unitPrice: new FormControl(item?.unitPrice ?? undefined),
     amount: new FormControl(item?.amount ?? undefined, [
       Validators.required,
       itemTotalValidator(isShare, syncAmountWithItems),

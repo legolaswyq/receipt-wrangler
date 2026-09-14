@@ -1305,3 +1305,51 @@ func TestQuickScan_SkipsGroupDefaultCustomFieldsWhenDisabled(t *testing.T) {
 		utils.PrintTestError(t, receipt.CustomFields, "no custom field values")
 	}
 }
+
+// TestQuickScan_CombinesMultipleImagesIntoOneReceipt drives QuickScan with TempPaths (several
+// images of one long receipt) and asserts a single receipt is created with every image attached —
+// the multi-page combine path (transcribe each image, combine text, one structured extraction).
+func TestQuickScan_CombinesMultipleImagesIntoOneReceipt(t *testing.T) {
+	defer repositories.TruncateTestDb()
+
+	var body string
+	server := newMutableOllamaServer(t, &body)
+	user, group, _ := seedReceiptImagePipeline(t, server.URL)
+	body = ollamaReceiptResponse(t, fmt.Sprintf(defaultCustomFieldsReceiptAiJSON, user.ID))
+
+	path1 := writeQuickScanTempFile(t)
+	path2 := writeQuickScanTempFile(t)
+
+	created, err := NewReceiptService(nil).QuickScan(QuickScanParams{
+		Token:             &structs.Claims{UserId: user.ID},
+		GroupId:           group.ID,
+		Status:            models.OPEN,
+		TempPaths:         []string{path1, path2},
+		OriginalFileNames: []string{"page1.jpg", "page2.jpg"},
+		AsynqTaskId:       "test-task",
+	})
+	if err != nil {
+		utils.PrintTestError(t, err, "no error creating combined receipt")
+		return
+	}
+
+	receipt, err := repositories.NewReceiptRepository(nil).GetFullyLoadedReceiptById(utils.UintToString(created.ID))
+	if err != nil {
+		utils.PrintTestError(t, err, "no error reading receipt back")
+		return
+	}
+
+	// Both images landed on the ONE created receipt (not one receipt per image — that would leave
+	// this receipt with a single image).
+	if len(receipt.ImageFiles) != 2 {
+		utils.PrintTestError(t, len(receipt.ImageFiles), 2)
+	}
+
+	// Quick scan created exactly one receipt (the seedReceiptImagePipeline fixture also seeds one
+	// unrelated receipt named "r", so scope the count to the combined receipt's name).
+	var combinedCount int64
+	repositories.GetDB().Model(&models.Receipt{}).Where("group_id = ? AND name = ?", group.ID, "Ingested").Count(&combinedCount)
+	if combinedCount != 1 {
+		utils.PrintTestError(t, combinedCount, 1)
+	}
+}

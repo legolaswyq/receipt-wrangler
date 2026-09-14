@@ -128,6 +128,38 @@ func MagicFillFromImage(command commands.MagicFillCommand, groupId string, userI
 	return receiptProcessingService.ReadReceiptImage(filePath)
 }
 
+// MagicFillFromImages is the multi-image counterpart to MagicFillFromImage: it transcribes every
+// image, concatenates the text in the order given, and runs a SINGLE structured extraction over the
+// combined text — for a long receipt photographed across several images. A one-image slice behaves
+// exactly like MagicFillFromImage.
+func MagicFillFromImages(imagesData [][]byte, groupId string, userId uint) (commands.UpsertReceiptCommand, commands.ReceiptProcessingMetadata, error) {
+	fileRepository := repositories.NewFileRepository(nil)
+	receiptProcessingService, err := NewSystemReceiptProcessingService(nil, groupId)
+	if err != nil {
+		return commands.UpsertReceiptCommand{}, commands.ReceiptProcessingMetadata{}, err
+	}
+	// Restrict the AI prompt's candidate categories/tags to this user's grants
+	// (0 when there is no triggering user, e.g. system processing).
+	receiptProcessingService.UserId = userId
+
+	paths := make([]string, 0, len(imagesData))
+	for _, imageData := range imagesData {
+		bytes, err := fileRepository.GetBytesFromImageBytes(imageData)
+		if err != nil {
+			return commands.UpsertReceiptCommand{}, commands.ReceiptProcessingMetadata{}, err
+		}
+
+		filePath, err := fileRepository.WriteTempFile(bytes)
+		if err != nil {
+			return commands.UpsertReceiptCommand{}, commands.ReceiptProcessingMetadata{}, err
+		}
+		defer os.Remove(filePath)
+		paths = append(paths, filePath)
+	}
+
+	return receiptProcessingService.ReadReceiptImagesWithEmailBody(paths, "", false)
+}
+
 func GetReceiptImagesForGroup(groupId string, userId string) ([]models.FileData, error) {
 	db := repositories.GetDB()
 	groupRepository := repositories.NewGroupRepository(nil)

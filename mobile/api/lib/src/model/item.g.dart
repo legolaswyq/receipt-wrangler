@@ -12,6 +12,10 @@ class _$Item extends Item {
   @override
   final String amount;
   @override
+  final String? quantity;
+  @override
+  final String? unitPrice;
+  @override
   final int? chargedToUserId;
   @override
   final String? createdAt;
@@ -21,6 +25,8 @@ class _$Item extends Item {
   final int? id;
   @override
   final String name;
+  @override
+  final String? nameZh;
   @override
   final int receiptId;
   @override
@@ -40,11 +46,14 @@ class _$Item extends Item {
   _$Item._(
       {this.isTaxed,
       required this.amount,
+      this.quantity,
+      this.unitPrice,
       this.chargedToUserId,
       this.createdAt,
       this.createdBy,
       this.id,
       required this.name,
+      this.nameZh,
       required this.receiptId,
       required this.status,
       this.linkedItems,
@@ -65,11 +74,14 @@ class _$Item extends Item {
     return other is Item &&
         isTaxed == other.isTaxed &&
         amount == other.amount &&
+        quantity == other.quantity &&
+        unitPrice == other.unitPrice &&
         chargedToUserId == other.chargedToUserId &&
         createdAt == other.createdAt &&
         createdBy == other.createdBy &&
         id == other.id &&
         name == other.name &&
+        nameZh == other.nameZh &&
         receiptId == other.receiptId &&
         status == other.status &&
         linkedItems == other.linkedItems &&
@@ -83,11 +95,14 @@ class _$Item extends Item {
     var _$hash = 0;
     _$hash = $jc(_$hash, isTaxed.hashCode);
     _$hash = $jc(_$hash, amount.hashCode);
+    _$hash = $jc(_$hash, quantity.hashCode);
+    _$hash = $jc(_$hash, unitPrice.hashCode);
     _$hash = $jc(_$hash, chargedToUserId.hashCode);
     _$hash = $jc(_$hash, createdAt.hashCode);
     _$hash = $jc(_$hash, createdBy.hashCode);
     _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
+    _$hash = $jc(_$hash, nameZh.hashCode);
     _$hash = $jc(_$hash, receiptId.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, linkedItems.hashCode);
@@ -103,11 +118,14 @@ class _$Item extends Item {
     return (newBuiltValueToStringHelper(r'Item')
           ..add('isTaxed', isTaxed)
           ..add('amount', amount)
+          ..add('quantity', quantity)
+          ..add('unitPrice', unitPrice)
           ..add('chargedToUserId', chargedToUserId)
           ..add('createdAt', createdAt)
           ..add('createdBy', createdBy)
           ..add('id', id)
           ..add('name', name)
+          ..add('nameZh', nameZh)
           ..add('receiptId', receiptId)
           ..add('status', status)
           ..add('linkedItems', linkedItems)
@@ -129,6 +147,14 @@ class ItemBuilder implements Builder<Item, ItemBuilder> {
   String? get amount => _$this._amount;
   set amount(String? amount) => _$this._amount = amount;
 
+  String? _quantity;
+  String? get quantity => _$this._quantity;
+  set quantity(String? quantity) => _$this._quantity = quantity;
+
+  String? _unitPrice;
+  String? get unitPrice => _$this._unitPrice;
+  set unitPrice(String? unitPrice) => _$this._unitPrice = unitPrice;
+
   int? _chargedToUserId;
   int? get chargedToUserId => _$this._chargedToUserId;
   set chargedToUserId(int? chargedToUserId) =>
@@ -149,6 +175,10 @@ class ItemBuilder implements Builder<Item, ItemBuilder> {
   String? _name;
   String? get name => _$this._name;
   set name(String? name) => _$this._name = name;
+
+  String? _nameZh;
+  String? get nameZh => _$this._nameZh;
+  set nameZh(String? nameZh) => _$this._nameZh = nameZh;
 
   int? _receiptId;
   int? get receiptId => _$this._receiptId;
@@ -187,11 +217,14 @@ class ItemBuilder implements Builder<Item, ItemBuilder> {
     if ($v != null) {
       _isTaxed = $v.isTaxed;
       _amount = $v.amount;
+      _quantity = $v.quantity;
+      _unitPrice = $v.unitPrice;
       _chargedToUserId = $v.chargedToUserId;
       _createdAt = $v.createdAt;
       _createdBy = $v.createdBy;
       _id = $v.id;
       _name = $v.name;
+      _nameZh = $v.nameZh;
       _receiptId = $v.receiptId;
       _status = $v.status;
       _linkedItems = $v.linkedItems?.toBuilder();
@@ -224,11 +257,14 @@ class ItemBuilder implements Builder<Item, ItemBuilder> {
             isTaxed: isTaxed,
             amount: BuiltValueNullFieldError.checkNotNull(
                 amount, r'Item', 'amount'),
+            quantity: quantity,
+            unitPrice: unitPrice,
             chargedToUserId: chargedToUserId,
             createdAt: createdAt,
             createdBy: createdBy,
             id: id,
             name: BuiltValueNullFieldError.checkNotNull(name, r'Item', 'name'),
+            nameZh: nameZh,
             receiptId: BuiltValueNullFieldError.checkNotNull(
                 receiptId, r'Item', 'receiptId'),
             status: BuiltValueNullFieldError.checkNotNull(

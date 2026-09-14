@@ -107,13 +107,18 @@ describe("QuickScanDialogComponent", () => {
     );
   });
 
-  it("should push new image when there are no user preferences", () => {
+  it("falls back to the first group, the uploader, and OPEN when there are no user preferences", () => {
+    store.reset({
+      auth: { userId: "7" },
+      groups: { groups: [{ id: 5 }], selectedGroupId: "", selectedDashboardId: "" },
+    });
+
     component.fileLoaded({} as any);
 
     expect(component.form.value).toEqual({
-      paidByUserIds: [""],
-      statuses: [""],
-      groupIds: [""],
+      paidByUserIds: [7],
+      statuses: [ReceiptStatus.Open],
+      groupIds: [5],
       categories: [[]],
       tags: [[]],
       comments: [""],
@@ -175,9 +180,48 @@ describe("QuickScanDialogComponent", () => {
 
     // Required category with no selection is invalid; status is required and empty.
     expect(component.categories.at(0).valid).toBe(false);
-    expect(component.statuses.at(0).valid).toBe(false);
+    // Status is required and now defaults to OPEN, so it satisfies the required check.
+    expect(component.statuses.at(0).valid).toBe(true);
     // Hidden paid-by is not required.
     expect(component.paidByUserIds.at(0).valid).toBe(true);
+  });
+
+  it("combines multiple images into one receipt on submit, repeating the shared fields and flagging combineImages", () => {
+    const originalCreateObjectURL = URL.createObjectURL;
+    try {
+      URL.createObjectURL = jest.fn().mockReturnValue("blob");
+      store.reset({
+        auth: { userId: "7" },
+        groups: { groups: [{ id: 3 }], selectedGroupId: "", selectedDashboardId: "" },
+      });
+
+      const receiptService = TestBed.inject(ReceiptService);
+      const serviceSpy = jest
+        .spyOn(receiptService, "quickScanReceipt")
+        .mockReturnValue(of({} as any));
+
+      component.fileLoaded({ file: { name: "page1" } } as any);
+      component.fileLoaded({ file: { name: "page2" } } as any);
+      // Default-on for 2+ images.
+      expect(component.isCombineActive()).toBe(true);
+
+      component.submitButtonClicked();
+
+      // One entry per file (API requires len == files), all the shared index-0 value, and the
+      // combineImages flag true.
+      expect(serviceSpy).toHaveBeenCalledWith(
+        [{ name: "page1" }, { name: "page2" }],
+        [3, 3],
+        [7, 7],
+        [ReceiptStatus.Open, ReceiptStatus.Open],
+        ["", ""],
+        ["", ""],
+        ["", ""],
+        true
+      );
+    } finally {
+      URL.createObjectURL = originalCreateObjectURL;
+    }
   });
 
   it("should send category and tag ids per image on submit", () => {
@@ -225,10 +269,11 @@ describe("QuickScanDialogComponent", () => {
         [fileData.file],
         [2],
         [""],
-        [""],
+        [ReceiptStatus.Open],
         ["10"],
         ["20"],
-        [""]
+        [""],
+        false
       );
     } finally {
       URL.createObjectURL = originalCreateObjectURL;
@@ -432,7 +477,8 @@ describe("QuickScanDialogComponent", () => {
           [""],
           [""],
           [""],
-          ["Client dinner"]
+          ["Client dinner"],
+          false
         );
       } finally {
         URL.createObjectURL = originalCreateObjectURL;

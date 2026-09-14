@@ -3,21 +3,30 @@
   subtitle="View, filter, and manage this group's receipts."
 >
   <div class="d-flex align-items-center">
-    <app-add-button
-      *ngIf="canCreate"
-      class="me-2"
-      data-testid="receipt-add"
-      buttonText="Add Receipt"
-      tooltip="Add Receipt"
-      [buttonRouterLink]="['/receipts/add']"
-    ></app-add-button>
-    <app-quick-scan-button
-      *ngIf="canQuickScan"
-      data-testid="receipts-quick-scan"
-      class="me-2"
-      (afterClosed)="getFilteredReceipts()"
-    >
-    </app-quick-scan-button>
+    @if (canQuickScan) {
+      <app-quick-scan-button
+        data-testid="receipts-quick-scan"
+        class="me-2"
+        buttonText="Add Receipt"
+        (afterClosed)="getFilteredReceipts()"
+      ></app-quick-scan-button>
+      <app-add-button
+        *ngIf="canCreate"
+        class="me-2"
+        color="accent"
+        data-testid="receipt-add"
+        tooltip="Add Receipt Manually"
+        [buttonRouterLink]="['/receipts/add']"
+      ></app-add-button>
+    } @else if (canCreate) {
+      <app-add-button
+        class="me-2"
+        data-testid="receipt-add"
+        buttonText="Add Receipt"
+        tooltip="Add Receipt"
+        [buttonRouterLink]="['/receipts/add']"
+      ></app-add-button>
+    }
     @if (dataSource().data.length > 0) {
       <app-export-button
         [groupId]="groupId"

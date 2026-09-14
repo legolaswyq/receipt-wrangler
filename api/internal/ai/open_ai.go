@@ -94,8 +94,18 @@ func (openAi OpenAiClient) GetChatCompletion() (structs.ChatCompletionResult, er
 	}
 
 	if openAi.ReceiptProcessingSettings.EnforceJsonResponseFormat {
+		// json_schema (rather than the older, shapeless json_object mode) constrains the
+		// response to ReceiptExtractionSchema, so the response shape no longer depends on the
+		// model having correctly followed prose instructions. Strict mode is intentionally left
+		// off: it additionally requires every property to be listed as required (with optional
+		// fields expressed as nullable unions) and additionalProperties: false throughout, which
+		// this schema does not attempt to satisfy.
 		request.ResponseFormat = &openai.ChatCompletionResponseFormat{
-			Type: openai.ChatCompletionResponseFormatTypeJSONObject,
+			Type: openai.ChatCompletionResponseFormatTypeJSONSchema,
+			JSONSchema: &openai.ChatCompletionResponseFormatJSONSchema{
+				Name:   "receipt_extraction",
+				Schema: ReceiptExtractionSchema(),
+			},
 		}
 	}
 

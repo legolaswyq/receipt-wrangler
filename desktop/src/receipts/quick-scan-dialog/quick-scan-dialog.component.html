@@ -9,6 +9,75 @@
     >
       <strong> Select images to upload</strong>
     </div>
+
+    @if (images.length > 1) {
+      <app-checkbox
+        class="mb-2"
+        data-testid="quick-scan-combine"
+        label="These images are one receipt (multi-page)"
+        [inputFormControl]="combineImages"
+      ></app-checkbox>
+    }
+
+    <!-- Combine mode: images-only carousel + one shared field set (index 0) for the whole receipt. -->
+    @if (isCombineActive()) {
+      <carousel
+        [interval]="0"
+        [isAnimated]="true"
+        [showIndicators]="false"
+        [(activeSlide)]="currentlySelectedIndex"
+      >
+        <slide *ngFor="let preview of images; let i = index">
+          <img
+            class="quick-scan-image mb-2"
+            alt="quick scan image"
+            [src]="preview.encodedImage || preview.url ?? ''"
+          >
+        </slide>
+      </carousel>
+      <div class="d-flex flex-column justify-content-center">
+        <app-group-autocomplete
+          [inputFormControl]="form | formGet : 'groupIds.0'"
+        ></app-group-autocomplete>
+        @if (showPaidBy(0)) {
+          <app-user-autocomplete
+            class="w-100"
+            label="Paid By"
+            [inputFormControl]="form | formGet : 'paidByUserIds.0'"
+            [groupId]="form.get('groupIds.0')?.value"
+            [selectGroupMembersOnly]="true"
+          ></app-user-autocomplete>
+        }
+        @if (showStatus(0)) {
+          <app-status-select
+            label="Status"
+            [inputFormControl]="form | formGet : 'statuses.0'"
+          ></app-status-select>
+        }
+        @if (showCategories(0)) {
+          <app-category-autocomplete
+            [inputFormControl]="form | formGet : 'categories.0'"
+            [categories]="categoriesForIndex(0)"
+            [creatable]="false"
+          ></app-category-autocomplete>
+        }
+        @if (showTags(0)) {
+          <app-tag-autocomplete
+            [inputFormControl]="form | formGet : 'tags.0'"
+            [tags]="tagsForIndex(0)"
+            [creatable]="false"
+          ></app-tag-autocomplete>
+        }
+        @if (showComment(0)) {
+          <app-textarea
+            label="Comment"
+            data-testid="quick-scan-comment"
+            [inputFormControl]="form | formGet : 'comments.0'"
+            [additionalErrorMessages]="commentErrorMessages"
+          ></app-textarea>
+        }
+      </div>
+    } @else {
     <carousel
       [interval]="0"
       [isAnimated]="true"
@@ -18,7 +87,7 @@
       <slide *ngFor="let preview of images; let i = index">
         <div class="d-flex flex-column justify-content-center">
           <img
-            class="mb-2"
+            class="quick-scan-image mb-2"
             alt="quick scan image"
             [src]="preview.encodedImage || preview.url ?? ''"
           >
@@ -65,6 +134,7 @@
         </div>
       </slide>
     </carousel>
+    }
 
   </form>
   <app-dialog-footer

@@ -10,8 +10,12 @@ import (
 )
 
 func WriteFile(path string, data []byte) error {
-	// TODO: Fix perms
-	err := os.WriteFile(path, data, 777)
+	// 0644 (owner read/write, group/other read). The previous literal 777 was decimal, i.e. octal
+	// 01411, which left the owner without the write bit — so overwriting an existing file (e.g.
+	// re-uploading a receipt image, or a test re-running against the same path) failed with EACCES
+	// for any non-root process. Docker runs as root and ignores the bit, which is why it went
+	// unnoticed there.
+	err := os.WriteFile(path, data, 0644)
 	if err != nil {
 		return err
 	}

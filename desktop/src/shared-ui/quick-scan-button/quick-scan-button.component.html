@@ -1,8 +1,9 @@
 <app-button
   *appFeature="'aiPoweredReceipts'"
   icon="receipt_long"
-  matButtonType="iconButton"
+  [matButtonType]="buttonText() ? 'matRaisedButton' : 'iconButton'"
+  [buttonText]="buttonText() ?? ''"
   tooltip="Quick Scan"
-  color="accent"
+  color="primary"
   (clicked)="showQuickScanDialog()"
 ></app-button>

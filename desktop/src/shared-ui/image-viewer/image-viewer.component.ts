@@ -1,4 +1,4 @@
-import { Component, HostListener, Input, OnChanges, OnDestroy, SimpleChanges, input, output, signal } from "@angular/core";
+import { Component, Input, OnChanges, OnDestroy, SimpleChanges, input, output, signal } from "@angular/core";
 
 @Component({
     selector: "app-image-viewer",
@@ -7,20 +7,19 @@ import { Component, HostListener, Input, OnChanges, OnDestroy, SimpleChanges, in
     standalone: false
 })
 export class ImageViewerComponent implements OnChanges, OnDestroy {
-  @HostListener("wheel", ["$event"])
-  public onWheel(event: WheelEvent) {
-    this.wheel.emit(event);
-  }
-
   @Input() public imageBase64?: string = "";
 
   public readonly imageFile = input<File>();
 
   public readonly scale = input<number>(1);
 
-  public readonly wheel = output<WheelEvent>();
+  public readonly imageClicked = output<string>();
 
   public imageFileUrl = signal("");
+
+  public onImageClick(): void {
+    this.imageClicked.emit(this.imageBase64 || this.imageFileUrl());
+  }
 
   private activeReader?: FileReader;
 

@@ -10,9 +10,15 @@ class _$UpsertItemCommand extends UpsertItemCommand {
   @override
   final String amount;
   @override
+  final String? quantity;
+  @override
+  final String? unitPrice;
+  @override
   final int? chargedToUserId;
   @override
   final String name;
+  @override
+  final String? nameZh;
   @override
   final int receiptId;
   @override
@@ -30,8 +36,11 @@ class _$UpsertItemCommand extends UpsertItemCommand {
 
   _$UpsertItemCommand._(
       {required this.amount,
+      this.quantity,
+      this.unitPrice,
       this.chargedToUserId,
       required this.name,
+      this.nameZh,
       required this.receiptId,
       required this.status,
       this.categories,
@@ -51,8 +60,11 @@ class _$UpsertItemCommand extends UpsertItemCommand {
     if (identical(other, this)) return true;
     return other is UpsertItemCommand &&
         amount == other.amount &&
+        quantity == other.quantity &&
+        unitPrice == other.unitPrice &&
         chargedToUserId == other.chargedToUserId &&
         name == other.name &&
+        nameZh == other.nameZh &&
         receiptId == other.receiptId &&
         status == other.status &&
         categories == other.categories &&
@@ -64,8 +76,11 @@ class _$UpsertItemCommand extends UpsertItemCommand {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, amount.hashCode);
+    _$hash = $jc(_$hash, quantity.hashCode);
+    _$hash = $jc(_$hash, unitPrice.hashCode);
     _$hash = $jc(_$hash, chargedToUserId.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
+    _$hash = $jc(_$hash, nameZh.hashCode);
     _$hash = $jc(_$hash, receiptId.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, categories.hashCode);
@@ -79,8 +94,11 @@ class _$UpsertItemCommand extends UpsertItemCommand {
   String toString() {
     return (newBuiltValueToStringHelper(r'UpsertItemCommand')
           ..add('amount', amount)
+          ..add('quantity', quantity)
+          ..add('unitPrice', unitPrice)
           ..add('chargedToUserId', chargedToUserId)
           ..add('name', name)
+          ..add('nameZh', nameZh)
           ..add('receiptId', receiptId)
           ..add('status', status)
           ..add('categories', categories)
@@ -98,6 +116,14 @@ class UpsertItemCommandBuilder
   String? get amount => _$this._amount;
   set amount(String? amount) => _$this._amount = amount;
 
+  String? _quantity;
+  String? get quantity => _$this._quantity;
+  set quantity(String? quantity) => _$this._quantity = quantity;
+
+  String? _unitPrice;
+  String? get unitPrice => _$this._unitPrice;
+  set unitPrice(String? unitPrice) => _$this._unitPrice = unitPrice;
+
   int? _chargedToUserId;
   int? get chargedToUserId => _$this._chargedToUserId;
   set chargedToUserId(int? chargedToUserId) =>
@@ -106,6 +132,10 @@ class UpsertItemCommandBuilder
   String? _name;
   String? get name => _$this._name;
   set name(String? name) => _$this._name = name;
+
+  String? _nameZh;
+  String? get nameZh => _$this._nameZh;
+  set nameZh(String? nameZh) => _$this._nameZh = nameZh;
 
   int? _receiptId;
   int? get receiptId => _$this._receiptId;
@@ -140,8 +170,11 @@ class UpsertItemCommandBuilder
     final $v = _$v;
     if ($v != null) {
       _amount = $v.amount;
+      _quantity = $v.quantity;
+      _unitPrice = $v.unitPrice;
       _chargedToUserId = $v.chargedToUserId;
       _name = $v.name;
+      _nameZh = $v.nameZh;
       _receiptId = $v.receiptId;
       _status = $v.status;
       _categories = $v.categories?.toBuilder();
@@ -172,9 +205,12 @@ class UpsertItemCommandBuilder
           _$UpsertItemCommand._(
             amount: BuiltValueNullFieldError.checkNotNull(
                 amount, r'UpsertItemCommand', 'amount'),
+            quantity: quantity,
+            unitPrice: unitPrice,
             chargedToUserId: chargedToUserId,
             name: BuiltValueNullFieldError.checkNotNull(
                 name, r'UpsertItemCommand', 'name'),
+            nameZh: nameZh,
             receiptId: BuiltValueNullFieldError.checkNotNull(
                 receiptId, r'UpsertItemCommand', 'receiptId'),
             status: BuiltValueNullFieldError.checkNotNull(

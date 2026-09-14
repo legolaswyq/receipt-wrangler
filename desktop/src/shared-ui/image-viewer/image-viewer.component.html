@@ -6,7 +6,9 @@
       cdkDrag
       class="viewer-image"
       alt="image"
+      title="Click to enlarge"
       [src]="imageBase64 || imageFileUrl()"
+      (click)="onImageClick()"
     >
   </div>
 }

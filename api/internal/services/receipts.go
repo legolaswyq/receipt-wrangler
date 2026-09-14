@@ -235,16 +235,39 @@ func (service ReceiptService) DeleteReceipt(id string) error {
 // uploaded file's location. Grouped into a struct rather than passed positionally because the
 // positional form ends in several interchangeable strings, which is easy to transpose silently.
 type QuickScanParams struct {
-	Token            *structs.Claims
-	PaidByUserId     uint
-	GroupId          uint
-	Status           models.ReceiptStatus
-	CategoryIds      []uint
-	TagIds           []uint
-	Comment          string
-	TempPath         string
-	OriginalFileName string
-	AsynqTaskId      string
+	Token        *structs.Claims
+	PaidByUserId uint
+	GroupId      uint
+	Status       models.ReceiptStatus
+	CategoryIds  []uint
+	TagIds       []uint
+	Comment      string
+	// TempPath / OriginalFileName carry a single uploaded image (the common case). TempPaths /
+	// OriginalFileNames carry multiple images that together form ONE long receipt — every image is
+	// transcribed, the text combined, and a single structured extraction runs over it, producing one
+	// receipt with all the images attached. When the slices are set they take precedence; otherwise
+	// the single fields are used, so the single-file and rerun paths are unchanged.
+	TempPath          string
+	OriginalFileName  string
+	TempPaths         []string
+	OriginalFileNames []string
+	AsynqTaskId       string
+}
+
+// imagePaths / imageNames return the effective list of temp paths and file names for this quick scan,
+// preferring the multi-image slices and falling back to the single-image fields.
+func (params QuickScanParams) imagePaths() []string {
+	if len(params.TempPaths) > 0 {
+		return params.TempPaths
+	}
+	return []string{params.TempPath}
+}
+
+func (params QuickScanParams) imageNames() []string {
+	if len(params.OriginalFileNames) > 0 {
+		return params.OriginalFileNames
+	}
+	return []string{params.OriginalFileName}
 }
 
 func (service ReceiptService) QuickScan(params QuickScanParams) (models.Receipt, error) {
@@ -255,24 +278,42 @@ func (service ReceiptService) QuickScan(params QuickScanParams) (models.Receipt,
 	var createdReceipt models.Receipt
 
 	fileRepository := repositories.NewFileRepository(service.TX)
-	fileBytes, err := utils.ReadFile(params.TempPath)
-	if err != nil {
-		return models.Receipt{}, err
-	}
 
-	fileInfo, err := os.Stat(params.TempPath)
-	if err != nil {
-		return models.Receipt{}, err
+	// A quick scan can carry one image or several images of a single long receipt; read them all,
+	// keeping the per-image bytes/size/type so every image is attached to the one receipt created.
+	paths := params.imagePaths()
+	names := params.imageNames()
+	type quickScanImage struct {
+		bytes    []byte
+		size     int64
+		fileType string
+		name     string
 	}
+	var err error
+	images := make([]quickScanImage, 0, len(paths))
+	imagesData := make([][]byte, 0, len(paths))
+	for i, path := range paths {
+		fileBytes, readErr := utils.ReadFile(path)
+		if readErr != nil {
+			return models.Receipt{}, readErr
+		}
 
-	validatedFileType, err := fileRepository.ValidateFileType(fileBytes)
-	if err != nil {
-		return models.Receipt{}, err
-	}
+		fileInfo, statErr := os.Stat(path)
+		if statErr != nil {
+			return models.Receipt{}, statErr
+		}
 
-	magicFillCommand := commands.MagicFillCommand{
-		ImageData: fileBytes,
-		Filename:  params.OriginalFileName,
+		validatedFileType, typeErr := fileRepository.ValidateFileType(fileBytes)
+		if typeErr != nil {
+			return models.Receipt{}, typeErr
+		}
+
+		name := ""
+		if i < len(names) {
+			name = names[i]
+		}
+		images = append(images, quickScanImage{bytes: fileBytes, size: fileInfo.Size(), fileType: validatedFileType, name: name})
+		imagesData = append(imagesData, fileBytes)
 	}
 
 	receiptRepository := repositories.NewReceiptRepository(service.TX)
@@ -281,7 +322,7 @@ func (service ReceiptService) QuickScan(params QuickScanParams) (models.Receipt,
 	groupIdString := utils.UintToString(groupId)
 
 	now := time.Now()
-	receiptCommand, receiptProcessingMetadata, magicFillErr := MagicFillFromImage(magicFillCommand, groupIdString, token.UserId)
+	receiptCommand, receiptProcessingMetadata, magicFillErr := MagicFillFromImages(imagesData, groupIdString, token.UserId)
 	finishedAt := time.Now()
 
 	quickScanSystemTasks, taskErr := systemTaskService.CreateSystemTasksFromMetadata(
@@ -409,15 +450,17 @@ func (service ReceiptService) QuickScan(params QuickScanParams) (models.Receipt,
 			return taskErr
 		}
 
-		fileData := models.FileData{
-			Name:      params.OriginalFileName,
-			Size:      uint(fileInfo.Size()),
-			ReceiptId: createdReceipt.ID,
-			FileType:  validatedFileType,
-		}
-		_, err := receiptImageRepository.CreateReceiptImage(fileData, fileBytes)
-		if err != nil {
-			return err
+		for _, image := range images {
+			fileData := models.FileData{
+				Name:      image.name,
+				Size:      uint(image.size),
+				ReceiptId: createdReceipt.ID,
+				FileType:  image.fileType,
+			}
+			_, err := receiptImageRepository.CreateReceiptImage(fileData, image.bytes)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
@@ -426,7 +469,9 @@ func (service ReceiptService) QuickScan(params QuickScanParams) (models.Receipt,
 		return models.Receipt{}, err
 	}
 
-	os.Remove(params.TempPath)
+	for _, path := range paths {
+		os.Remove(path)
+	}
 	return createdReceipt, nil
 }
 

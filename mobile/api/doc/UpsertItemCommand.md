@@ -9,8 +9,11 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **amount** | **String** | Amount the item costs | 
+**quantity** | **String** | Quantity purchased | [optional] 
+**unitPrice** | **String** | Price for a single unit | [optional] 
 **chargedToUserId** | **int** | User foreign key | [optional] 
 **name** | **String** | Item name | 
+**nameZh** | **String** | Item name in Chinese | [optional] 
 **receiptId** | **int** | Receipt foreign key | 
 **status** | [**ItemStatus**](ItemStatus.md) |  | 
 **categories** | [**BuiltList&lt;UpsertCategoryCommand&gt;**](UpsertCategoryCommand.md) | Categories associated to item | [optional] 

@@ -12,13 +12,14 @@ import { BehaviorSubject, of } from "rxjs";
 import { FormMode } from "src/enums/form-mode.enum";
 import { PipesModule } from "src/pipes/pipes.module";
 import { SharedUiModule } from "src/shared-ui/shared-ui.module";
-import { ApiModule, CustomFieldType, Permission, ReceiptImageService, ReceiptStatus } from "../../open-api";
+import { ApiModule, CustomFieldType, Permission, ReceiptImageService, ReceiptService, ReceiptStatus } from "../../open-api";
 import { SnackbarService } from "../../services";
 import { QueueMode } from "../../services/receipt-queue.service";
 import { StatefulMenuItem } from "../../standalone/components/filtered-stateful-menu/stateful-menu-item";
 import { SetPermissions } from "../../store/auth.state.actions";
 import { SetGroups, SetSelectedGroupId } from "../../store/group.state.actions";
 import { StoreModule } from "../../store/store.module";
+import { buildItemForm } from "../utils/form.utils";
 import { ReceiptFormComponent } from "./receipt-form.component";
 
 describe("ReceiptFormComponent", () => {
@@ -105,6 +106,54 @@ describe("ReceiptFormComponent", () => {
       syncAmountWithItems: false,
     });
     jest.useRealTimers();
+  });
+
+  it("defaults amount to the items total for an itemized receipt (sync on)", () => {
+    routeDataSubject.next({
+      mode: FormMode.edit,
+      customFields: [],
+      receipt: {
+        id: 9,
+        name: "R",
+        amount: "187.51",
+        groupId: 1,
+        status: ReceiptStatus.Open,
+        categories: [],
+        tags: [],
+        customFields: [],
+        comments: [],
+        receiptItems: [
+          { name: "A", amount: "100.00", status: "OPEN" },
+          { name: "B", amount: "35.91", status: "OPEN" },
+        ],
+      } as any,
+    });
+
+    expect(component.form.get("syncAmountWithItems")?.value).toBe(true);
+    // Amount snaps to the items total, not the receipt's original OCR'd amount.
+    expect(component.form.get("amount")?.value).toEqual("135.91");
+  });
+
+  it("leaves amount alone with sync off when the receipt has no items", () => {
+    routeDataSubject.next({
+      mode: FormMode.edit,
+      customFields: [],
+      receipt: {
+        id: 9,
+        name: "R",
+        amount: "50.00",
+        groupId: 1,
+        status: ReceiptStatus.Open,
+        categories: [],
+        tags: [],
+        customFields: [],
+        comments: [],
+        receiptItems: [],
+      } as any,
+    });
+
+    expect(component.form.get("syncAmountWithItems")?.value).toBe(false);
+    expect(component.form.get("amount")?.value).toEqual("50.00");
   });
 
   it("should patch magic fill values correctly", () => {
@@ -1045,6 +1094,80 @@ describe("ReceiptFormComponent", () => {
         expect(attachedIds()).toEqual([2]);
         expect(component.customFieldsFormArray.at(0).value.stringValue).toEqual("PO-1");
       });
+    });
+  });
+
+  // Items have no separate view/edit unlock step: they persist on their own whenever the
+  // items array changes, debounced, rather than waiting on the page-level Save button.
+  describe("item auto-save", () => {
+    let store: Store;
+
+    const editableReceipt = {
+      id: 9,
+      name: "R",
+      amount: "1.00",
+      date: "2023-08-05T00:00:00.000Z",
+      groupId: 5,
+      paidByUserId: 1,
+      status: ReceiptStatus.Open,
+      categories: [],
+      tags: [],
+      customFields: [],
+      receiptItems: [],
+    } as any;
+
+    beforeEach(() => {
+      store = TestBed.inject(Store);
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it("saves the receipt after an item change, debounced", () => {
+      jest.useFakeTimers();
+      store.dispatch(new SetPermissions([], { 5: [Permission.GroupReceiptsUpdate] }));
+      routeDataSubject.next({ mode: FormMode.edit, customFields: [], receipt: editableReceipt });
+
+      const updateSpy = jest
+        .spyOn(TestBed.inject(ReceiptService), "updateReceipt")
+        .mockReturnValue(of({} as any));
+
+      component.receiptItemsFormArray.push(buildItemForm({ name: "Apple", amount: "1.00" } as any, editableReceipt.id.toString(), false));
+      expect(updateSpy).not.toHaveBeenCalled();
+
+      jest.advanceTimersByTime(900);
+
+      expect(updateSpy).toHaveBeenCalledWith(9, expect.objectContaining({ name: "R" }));
+    });
+
+    it("does not save while add mode has no persisted receipt yet", () => {
+      jest.useFakeTimers();
+      routeDataSubject.next({ mode: FormMode.add, customFields: [] });
+
+      const updateSpy = jest
+        .spyOn(TestBed.inject(ReceiptService), "updateReceipt")
+        .mockReturnValue(of({} as any));
+
+      component.receiptItemsFormArray.push(buildItemForm({ name: "Apple", amount: "1.00" } as any, editableReceipt.id.toString(), false));
+      jest.advanceTimersByTime(2000);
+
+      expect(updateSpy).not.toHaveBeenCalled();
+    });
+
+    it("does not save without group.receipts.update", () => {
+      jest.useFakeTimers();
+      store.dispatch(new SetPermissions([], {}));
+      routeDataSubject.next({ mode: FormMode.edit, customFields: [], receipt: editableReceipt });
+
+      const updateSpy = jest
+        .spyOn(TestBed.inject(ReceiptService), "updateReceipt")
+        .mockReturnValue(of({} as any));
+
+      component.receiptItemsFormArray.push(buildItemForm({ name: "Apple", amount: "1.00" } as any, editableReceipt.id.toString(), false));
+      jest.advanceTimersByTime(2000);
+
+      expect(updateSpy).not.toHaveBeenCalled();
     });
   });
 });

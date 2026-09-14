@@ -310,6 +310,9 @@ func QuickScan(w http.ResponseWriter, r *http.Request) {
 				return 0, nil
 			}
 
+			// Write every uploaded file to a temp path first.
+			tempPaths := make([]string, 0, len(quickScanCommand.Files))
+			fileNames := make([]string, 0, len(quickScanCommand.Files))
 			for i := 0; i < len(quickScanCommand.Files); i++ {
 				fileBytes := make([]byte, quickScanCommand.FileHeaders[i].Size)
 
@@ -323,28 +326,55 @@ func QuickScan(w http.ResponseWriter, r *http.Request) {
 					return http.StatusInternalServerError, err
 				}
 
-				payload := wranglerasynq.QuickScanTaskPayload{
-					Token:            token,
-					PaidByUserId:     resolvedFields[i].PaidByUserId,
-					GroupId:          quickScanCommand.GroupIds[i],
-					Status:           resolvedFields[i].Status,
-					CategoryIds:      resolvedFields[i].CategoryIds,
-					TagIds:           resolvedFields[i].TagIds,
-					Comment:          resolvedFields[i].Comment,
-					TempPath:         tempPath,
-					OriginalFileName: quickScanCommand.FileHeaders[i].Filename,
-				}
+				tempPaths = append(tempPaths, tempPath)
+				fileNames = append(fileNames, quickScanCommand.FileHeaders[i].Filename)
+			}
 
+			enqueue := func(payload wranglerasynq.QuickScanTaskPayload) (int, error) {
 				payloadBytes, err := json.Marshal(payload)
 				if err != nil {
 					return http.StatusInternalServerError, err
 				}
 
 				task := asynq.NewTask(wranglerasynq.QuickScan, payloadBytes)
-
-				_, err = wranglerasynq.EnqueueTask(task, models.QuickScanQueue)
-				if err != nil {
+				if _, err = wranglerasynq.EnqueueTask(task, models.QuickScanQueue); err != nil {
 					return http.StatusInternalServerError, err
+				}
+				return 0, nil
+			}
+
+			if quickScanCommand.CombineImages && len(tempPaths) > 1 {
+				// All images are one long receipt: enqueue a single task carrying every image, using
+				// the shared (index 0) field values the client sent for the whole receipt.
+				if status, err := enqueue(wranglerasynq.QuickScanTaskPayload{
+					Token:             token,
+					PaidByUserId:      resolvedFields[0].PaidByUserId,
+					GroupId:           quickScanCommand.GroupIds[0],
+					Status:            resolvedFields[0].Status,
+					CategoryIds:       resolvedFields[0].CategoryIds,
+					TagIds:            resolvedFields[0].TagIds,
+					Comment:           resolvedFields[0].Comment,
+					TempPaths:         tempPaths,
+					OriginalFileNames: fileNames,
+				}); err != nil {
+					return status, err
+				}
+			} else {
+				// One receipt per file (batch upload of separate receipts).
+				for i := range tempPaths {
+					if status, err := enqueue(wranglerasynq.QuickScanTaskPayload{
+						Token:            token,
+						PaidByUserId:     resolvedFields[i].PaidByUserId,
+						GroupId:          quickScanCommand.GroupIds[i],
+						Status:           resolvedFields[i].Status,
+						CategoryIds:      resolvedFields[i].CategoryIds,
+						TagIds:           resolvedFields[i].TagIds,
+						Comment:          resolvedFields[i].Comment,
+						TempPath:         tempPaths[i],
+						OriginalFileName: fileNames[i],
+					}); err != nil {
+						return status, err
+					}
 				}
 			}
 

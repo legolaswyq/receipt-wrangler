@@ -4234,6 +4234,14 @@ components:
         amount:
           type: string
           description: Amount the item costs
+        quantity:
+          type: string
+          nullable: true
+          description: Quantity purchased
+        unitPrice:
+          type: string
+          nullable: true
+          description: Price for a single unit
         chargedToUserId:
           type: integer
           description: User foreign key
@@ -4249,6 +4257,9 @@ components:
         name:
           type: string
           description: Item name
+        nameZh:
+          type: string
+          description: Item name in Chinese
         receiptId:
           type: integer
           description: Receipt foreign key
@@ -4931,6 +4942,12 @@ components:
             type: string
             maxLength: 500
             description: Comment for the file at the same index (empty for none)
+        combineImages:
+          type: boolean
+          description: >-
+            When true, all uploaded files are treated as a single long receipt (transcribed,
+            text combined, one structured extraction) producing one receipt with every image
+            attached. Default false = one receipt per file.
     UserPreferences:
       allOf:
         - $ref: "#/components/schemas/BaseModel"
@@ -5618,12 +5635,23 @@ components:
         amount:
           type: string
           description: Amount the item costs
+        quantity:
+          type: string
+          nullable: true
+          description: Quantity purchased
+        unitPrice:
+          type: string
+          nullable: true
+          description: Price for a single unit
         chargedToUserId:
           type: integer
           description: User foreign key
         name:
           type: string
           description: Item name
+        nameZh:
+          type: string
+          description: Item name in Chinese
         receiptId:
           type: integer
           description: Receipt foreign key

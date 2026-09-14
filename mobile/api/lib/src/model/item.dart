@@ -17,11 +17,14 @@ part 'item.g.dart';
 /// Properties:
 /// * [isTaxed] - Is taxed (not used)
 /// * [amount] - Amount the item costs
+/// * [quantity] - Quantity purchased
+/// * [unitPrice] - Price for a single unit
 /// * [chargedToUserId] - User foreign key
 /// * [createdAt] 
 /// * [createdBy] 
 /// * [id] 
 /// * [name] - Item name
+/// * [nameZh] - Item name in Chinese
 /// * [receiptId] - Receipt foreign key
 /// * [status] 
 /// * [linkedItems] - Items linked to this item (for sharing)
@@ -37,6 +40,14 @@ abstract class Item implements Built<Item, ItemBuilder> {
   /// Amount the item costs
   @BuiltValueField(wireName: r'amount')
   String get amount;
+
+  /// Quantity purchased
+  @BuiltValueField(wireName: r'quantity')
+  String? get quantity;
+
+  /// Price for a single unit
+  @BuiltValueField(wireName: r'unitPrice')
+  String? get unitPrice;
 
   /// User foreign key
   @BuiltValueField(wireName: r'chargedToUserId')
@@ -54,6 +65,10 @@ abstract class Item implements Built<Item, ItemBuilder> {
   /// Item name
   @BuiltValueField(wireName: r'name')
   String get name;
+
+  /// Item name in Chinese
+  @BuiltValueField(wireName: r'nameZh')
+  String? get nameZh;
 
   /// Receipt foreign key
   @BuiltValueField(wireName: r'receiptId')
@@ -113,6 +128,20 @@ class _$ItemSerializer implements PrimitiveSerializer<Item> {
       object.amount,
       specifiedType: const FullType(String),
     );
+    if (object.quantity != null) {
+      yield r'quantity';
+      yield serializers.serialize(
+        object.quantity,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.unitPrice != null) {
+      yield r'unitPrice';
+      yield serializers.serialize(
+        object.unitPrice,
+        specifiedType: const FullType(String),
+      );
+    }
     if (object.chargedToUserId != null) {
       yield r'chargedToUserId';
       yield serializers.serialize(
@@ -146,6 +175,13 @@ class _$ItemSerializer implements PrimitiveSerializer<Item> {
       object.name,
       specifiedType: const FullType(String),
     );
+    if (object.nameZh != null) {
+      yield r'nameZh';
+      yield serializers.serialize(
+        object.nameZh,
+        specifiedType: const FullType(String),
+      );
+    }
     yield r'receiptId';
     yield serializers.serialize(
       object.receiptId,
@@ -221,6 +257,20 @@ class _$ItemSerializer implements PrimitiveSerializer<Item> {
           ) as String;
           result.amount = valueDes;
           break;
+        case r'quantity':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.quantity = valueDes;
+          break;
+        case r'unitPrice':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.unitPrice = valueDes;
+          break;
         case r'chargedToUserId':
           final valueDes = serializers.deserialize(
             value,
@@ -255,6 +305,13 @@ class _$ItemSerializer implements PrimitiveSerializer<Item> {
             specifiedType: const FullType(String),
           ) as String;
           result.name = valueDes;
+          break;
+        case r'nameZh':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.nameZh = valueDes;
           break;
         case r'receiptId':
           final valueDes = serializers.deserialize(

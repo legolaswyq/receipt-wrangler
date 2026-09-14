@@ -351,7 +351,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **quickScanReceipt**
-> quickScanReceipt(files, groupIds, paidByUserIds, statuses, categoryIds, tagIds, comments)
+> quickScanReceipt(files, groupIds, paidByUserIds, statuses, categoryIds, tagIds, comments, combineImages)
 
 Quick scan a receipt
 
@@ -373,9 +373,10 @@ final BuiltList<ReceiptStatus> statuses = ; // BuiltList<ReceiptStatus> |
 final BuiltList<String> categoryIds = ; // BuiltList<String> | 
 final BuiltList<String> tagIds = ; // BuiltList<String> | 
 final BuiltList<String> comments = ; // BuiltList<String> | 
+final bool combineImages = true; // bool | When true, all uploaded files are treated as a single long receipt (transcribed, text combined, one structured extraction) producing one receipt with every image attached. Default false = one receipt per file.
 
 try {
-    api.quickScanReceipt(files, groupIds, paidByUserIds, statuses, categoryIds, tagIds, comments);
+    api.quickScanReceipt(files, groupIds, paidByUserIds, statuses, categoryIds, tagIds, comments, combineImages);
 } catch on DioException (e) {
     print('Exception when calling ReceiptApi->quickScanReceipt: $e\n');
 }
@@ -392,6 +393,7 @@ Name | Type | Description  | Notes
  **categoryIds** | [**BuiltList&lt;String&gt;**](String.md)|  | [optional] 
  **tagIds** | [**BuiltList&lt;String&gt;**](String.md)|  | [optional] 
  **comments** | [**BuiltList&lt;String&gt;**](String.md)|  | [optional] 
+ **combineImages** | **bool**| When true, all uploaded files are treated as a single long receipt (transcribed, text combined, one structured extraction) producing one receipt with every image attached. Default false = one receipt per file. | [optional] 
 
 ### Return type
 

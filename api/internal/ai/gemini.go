@@ -45,7 +45,11 @@ func (gemini GeminiClient) GetChatCompletion() (structs.ChatCompletionResult, er
 
 	model := client.GenerativeModel(gemini.ReceiptProcessingSettings.Model)
 	if gemini.ReceiptProcessingSettings.EnforceJsonResponseFormat {
+		// ResponseSchema requires ResponseMIMEType to also be set to constrain generation to
+		// ReceiptExtractionSchema, so the response shape no longer depends on the model having
+		// correctly followed prose instructions.
 		model.GenerationConfig.ResponseMIMEType = "application/json"
+		model.GenerationConfig.ResponseSchema = toGenaiSchema(ReceiptExtractionSchema())
 	}
 	parts := make([]genai.Part, 0)
 	for _, aiMessage := range gemini.Options.Messages {

@@ -45,39 +45,93 @@ app-item-list {
     }
   }
 
-  // Items List
-  .item-form-container:nth-child(even) {
-    background-color: #efefef;
+  // Items table
+  .items-table-wrapper {
+    overflow-x: auto;
   }
 
-  .item-form-container:nth-child(odd) {
-    background-color: #f6f6f6;
+  .items-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: white;
+      text-align: left;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      padding: 4px 8px;
+      white-space: nowrap;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    td {
+      padding: 0 4px;
+      vertical-align: middle;
+      min-width: 140px;
+    }
+
+    .actions-header,
+    .actions-cell {
+      min-width: auto;
+      width: 1%;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .total-price-cell {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      app-input {
+        flex: 1;
+      }
+    }
+
+    .mismatch-flag {
+      color: #d32f2f;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      cursor: help;
+    }
+
+    tfoot {
+      .items-total-row {
+        font-weight: 600;
+        border-top: 2px solid #e0e0e0;
+
+        td {
+          padding: 8px;
+        }
+      }
+    }
   }
 
   .item-row {
-    transition: all 0.2s ease;
-    
-    &:not(:last-child) {
-      border-bottom: 1px solid #e0e0e0;
-      padding-bottom: 8px;
+    transition: background-color 0.2s ease;
+
+    &:nth-child(even) {
+      background-color: #efefef;
     }
-    
-    &:not(:first-child) {
-      padding-top: 8px;
+
+    &:nth-child(odd) {
+      background-color: #f6f6f6;
     }
-    
+
     &:hover {
-      transform: translateX(4px);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      background-color: #e3edfb;
     }
   }
 
   .mat-expansion-panel-body {
     padding: 16px;
-  }
-
-  .item-row .item-form-container {
-    margin-bottom: 0 !important;
   }
 
   // Animations
@@ -114,50 +168,6 @@ app-item-list {
         flex-direction: column;
         gap: 8px;
         align-items: center;
-      }
-    }
-    
-    .add-form-actions {
-      justify-content: center !important;
-    }
-    
-    .keyboard-shortcuts-legend {
-      .shortcuts-grid {
-        flex-direction: column;
-        gap: 12px;
-        
-        .shortcut-item {
-          justify-content: center;
-          
-          kbd {
-            min-width: 140px;
-            text-align: center;
-          }
-        }
-      }
-    }
-  }
-  
-  // Small mobile screens
-  @media (max-width: 480px) {
-    .keyboard-shortcuts-legend {
-      padding: 10px 12px;
-      
-      .legend-title {
-        font-size: 0.85rem;
-      }
-      
-      .shortcuts-grid {
-        .shortcut-item {
-          kbd {
-            font-size: 0.75rem;
-            padding: 3px 8px;
-          }
-          
-          .shortcut-action {
-            font-size: 0.8rem;
-          }
-        }
       }
     }
   }

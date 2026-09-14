@@ -25,6 +25,12 @@ type QuickScanCommand struct {
 	// and TagIds this is free text and is deliberately NOT comma-split — a comment may contain commas
 	// and newlines.
 	Comments []string `json:"comments"`
+	// CombineImages, when true, treats all uploaded files as a single long receipt: they are all
+	// transcribed, the text combined, and one structured extraction runs over it, producing ONE
+	// receipt with every image attached. The per-file field arrays still arrive one entry per file
+	// (the client sends the same shared values for each), and the handler uses index 0 for the
+	// combined receipt. Default false = one receipt per file (batch upload of separate receipts).
+	CombineImages bool `json:"combineImages"`
 }
 
 func (command *QuickScanCommand) LoadDataFromRequest(w http.ResponseWriter, r *http.Request) error {
@@ -122,6 +128,7 @@ func (command *QuickScanCommand) LoadDataFromRequest(w http.ResponseWriter, r *h
 		comments = append(comments, strings.TrimSpace(comment))
 	}
 
+	command.CombineImages = strings.EqualFold(strings.TrimSpace(form.Get("combineImages")), "true")
 	command.Files = files
 	command.FileHeaders = fileHeaders
 	command.PaidByUserIds = paidByUserIds

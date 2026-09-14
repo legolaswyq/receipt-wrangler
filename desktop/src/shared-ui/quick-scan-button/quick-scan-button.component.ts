@@ -1,4 +1,4 @@
-import { Component, output } from "@angular/core";
+import { Component, input, output } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { take, tap } from "rxjs";
 import { DEFAULT_DIALOG_CONFIG } from "../../constants";
@@ -11,6 +11,8 @@ import { QuickScanDialogComponent } from "../../receipts/quick-scan-dialog/quick
     standalone: false
 })
 export class QuickScanButtonComponent {
+  public readonly buttonText = input<string>();
+
   public readonly afterClosed = output<void>();
 
   constructor(private matDialog: MatDialog) {}

@@ -127,11 +127,32 @@ func TestOpenAiGetChatCompletion_EnforceJsonResponseFormat(t *testing.T) {
 
 	respFmt, ok := captured.Body["response_format"].(map[string]interface{})
 	if !ok {
-		utils.PrintTestError(t, captured.Body["response_format"], "json_object response_format object")
+		utils.PrintTestError(t, captured.Body["response_format"], "json_schema response_format object")
 		return
 	}
-	if respFmt["type"] != "json_object" {
-		utils.PrintTestError(t, respFmt["type"], "json_object")
+	if respFmt["type"] != "json_schema" {
+		utils.PrintTestError(t, respFmt["type"], "json_schema")
+	}
+	jsonSchema, ok := respFmt["json_schema"].(map[string]interface{})
+	if !ok {
+		utils.PrintTestError(t, respFmt["json_schema"], "a json_schema object")
+		return
+	}
+	if jsonSchema["name"] != "receipt_extraction" {
+		utils.PrintTestError(t, jsonSchema["name"], "receipt_extraction")
+	}
+	schema, ok := jsonSchema["schema"].(map[string]interface{})
+	if !ok {
+		utils.PrintTestError(t, jsonSchema["schema"], "a schema object")
+		return
+	}
+	properties, ok := schema["properties"].(map[string]interface{})
+	if !ok {
+		utils.PrintTestError(t, schema["properties"], "a properties object")
+		return
+	}
+	if _, ok := properties["receiptItems"]; !ok {
+		utils.PrintTestError(t, "receiptItems missing from schema properties", "present")
 	}
 }
 

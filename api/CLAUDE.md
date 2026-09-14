@@ -176,6 +176,74 @@ pre-installed binary works.
   was **removed**: it mangled the modern Foundry `/openai/v1` endpoint into a 404, and it could never
   match an Azure resource behind a custom domain. Pinned by
   `TestOpenAiGetChatCompletion_AzureUrlIsUsedVerbatim`.
+- **Structured extraction is schema-enforced, not prompt-only.** `internal/ai/schema.go`
+  (`ReceiptExtractionSchema()`) is the single source of truth for the shape of an AI extraction
+  response — name/amount/date/categories/tags/receiptItems, and each item's
+  name/nameZh/quantity/unitPrice/amount/status — expressed as a `jsonschema.Definition`
+  (`github.com/sashabaranov/go-openai/jsonschema`). All three AI clients pass it to the provider's
+  own structured-output mechanism when `ReceiptProcessingSettings.EnforceJsonResponseFormat` is on,
+  so the model's decoder is grammar-constrained to the shape rather than merely asked nicely in
+  prose:
+  - **Ollama** (`internal/ai/ollama.go`) — the `format` field in `/api/chat` accepts a full JSON
+    Schema object (previously it only ever sent the string `"json"`, Ollama's shapeless JSON mode).
+  - **OpenAI** (`internal/ai/open_ai.go`) — `response_format.type = "json_schema"` with the schema
+    attached (previously `"json_object"`, likewise shapeless). **`strict` is deliberately left
+    false**: OpenAI's strict mode additionally requires every property to be listed in `required`
+    (with optional fields expressed as nullable type unions) and `additionalProperties: false`
+    throughout every object — this schema doesn't attempt that, so turning strict on as-is would be
+    rejected by the API.
+  - **Gemini** (`internal/ai/gemini.go`) — `GenerationConfig.ResponseSchema`, alongside the existing
+    `ResponseMIMEType = "application/json"` (both must be set together). The `generative-ai-go` SDK
+    has its own Go `genai.Schema` type rather than accepting raw JSON, so `toGenaiSchema()` in
+    `schema.go` converts the canonical schema into it field-for-field.
+  - **Nearly every field is schema-`required`, even fields that can legitimately be empty/zero.**
+    In JSON Schema, `required` only forces a key to be *present* — it says nothing about its value,
+    so an *optional* property is a property the model is free to omit outright even when it already
+    has the value in hand. Confirmed live against a real Ollama request (`qwen2.5:latest`): with
+    `receiptItems`/`categories`/`tags` merely optional, the model dropped them entirely despite the
+    prompt asking for them; with an item's `quantity`/`unitPrice`/`nameZh` merely optional, the model
+    would compute `amount = quantity * unitPrice` correctly and *still* leave the inputs out of the
+    JSON. Every field on both the receipt and the item is now listed in `required`
+    (`Required: []string{"name", "amount", "date", "categories", "tags", "receiptItems"}` and, per
+    item, `Required: []string{"name", "nameZh", "quantity", "unitPrice", "amount", "status"}`), each
+    with an honest fallback value described in its schema `Description` for when it's genuinely
+    unreadable (`0` for amount, `1` for quantity, `""` for nameZh, empty arrays for the top-level
+    collections) — required-but-empty is what makes "the receipt has no items" and "the model forgot
+    to mention its items" distinguishable outcomes. `nameZh`'s description also explicitly says to
+    copy the printed Chinese text verbatim rather than translate the English name, since the model
+    was observed doing the latter once it was forced to always produce a value.
+  - **The prompt text still carries the same shape as prose too** (`services/prompts.go`), left in
+    deliberately rather than trimmed down: `EnforceJsonResponseFormat` is a per-install opt-out
+    (`gorm:"default:true"`, but some installs may have turned it off for a provider that mishandles
+    `response_format`), and an install with it off would otherwise get zero structural guidance at
+    all. The schema is the enforcement mechanism when it's on; the prose is the fallback when it's
+    off — redundant, not competing, sources of the same shape.
+  - Tests: `internal/ai/schema_test.go` (the schema's own shape, and the Gemini type conversion);
+    `TestOllamaGetChatCompletion_EnforceJsonFormat` /
+    `TestOpenAiGetChatCompletion_EnforceJsonResponseFormat` updated to assert the new
+    schema-bearing request bodies instead of the old bare `"json"` / `"json_object"` values.
+- **Line-item extraction (`nameZh`/`quantity`/`unitPrice`).** `models.Item` /
+  `commands.UpsertItemCommand` carry `Quantity *decimal.Decimal`, `UnitPrice *decimal.Decimal` (both
+  pointers so "not provided" is distinguishable from a real zero) and `NameZh string`. The default
+  prompt (`services/prompts.go` `CreateDefaultPrompt`) asks the model for a `receiptItems` array with
+  `name`/`nameZh`/`quantity`/`unitPrice`/`amount` per line item — previously the default prompt asked
+  for none of this, so quick-scanned receipts never got items at all. `UpsertItemCommand.ResolveAmount()`
+  (called from `UpsertReceiptCommand.Validate`, before item validation, so it covers manual create/update
+  and quick scan alike) fills in whichever of amount/quantity/unitPrice the source left out: amount from
+  `quantity * unitPrice` when amount is zero, or unitPrice from `amount / quantity` when unitPrice is
+  missing and quantity is nonzero. It never overrides a value the source actually gave, and recurses into
+  `LinkedItems`.
+  - **This needed a one-time data migration, not just a code change.** `PromptService.CreateDefaultPrompt`
+    seeds the "Default Prompt" row **once**, on first boot (`if defaultPromptCount > 0 { return error }`);
+    an already-running install's stored prompt text is frozen at whatever the Go source looked like the
+    day it was seeded, so editing `CreateDefaultPrompt`'s text alone never reaches existing databases —
+    only fresh installs pick it up. `repositories/data_migrations_default_prompt.go`
+    (`addLineItemsToDefaultPrompt`, registered in the `dataMigrations` ledger — see "Legacy role
+    assignment" above for the mechanism) rewrites the "Default Prompt" row's text to the line-items
+    version, but **only when it is still byte-for-byte identical** to the pre-line-items seed text — an
+    administrator who customized the seeded prompt is untouched, and so is any group already running a
+    different, custom prompt (which was never populating items in the first place and still won't until
+    an admin edits it via Manage Prompts).
 
 ### Configuration
 - Configuration loaded from JSON files in `config/` directory
@@ -1222,6 +1290,42 @@ repo; the same layer also serves a `/app/setup` platform redirect for the app-no
 See `mobile/CLAUDE.md` → "App Links / Universal Links — server-URL pre-fill (login)". Tests:
 `commands/upsert_system_settings_command_test.go` (validation), `services/system_settings_test.go`
 (`BuildLoginQrUrl` compose/encoding + `GetFeatureConfig` mapping).
+
+## Quick Scan multi-image combine (one long receipt across several photos)
+
+A quick scan can upload several images that are **one long receipt** (too tall for a single photo)
+rather than several separate receipts. `QuickScanCommand.CombineImages` (multipart `combineImages`,
+`swagger.yml`) drives this:
+
+- **`combineImages=false` (default): one receipt per file** — the handler
+  (`handlers/receipts.go` `QuickScan`) loops the files, enqueuing one `QuickScanTaskPayload` each
+  (single `TempPath`/`OriginalFileName`), exactly as before.
+- **`combineImages=true` (and >1 file): one receipt for all files** — the handler enqueues a
+  **single** task carrying every image via `TempPaths`/`OriginalFileNames` and the shared field values
+  from index 0 (the client still sends the per-file arrays one-entry-per-file to satisfy
+  `QuickScanCommand.Validate`'s len==files rule; only index 0 is read here).
+- **The combine happens in the existing receipt-processing pipeline.**
+  `ReceiptService.QuickScan` reads all `imagePaths()`/`imageNames()` (falling back to the single
+  `TempPath` when the slices are empty, so the per-file and rerun paths are untouched), calls the new
+  `MagicFillFromImages([][]byte, ...)` — which writes each image to a temp file and calls
+  `ReadReceiptImagesWithEmailBody(paths, "", false)` — and attaches **every** image to the one created
+  receipt. `ReadReceiptImagesWithEmailBody` already did exactly the wanted flow: transcribe/OCR each
+  image, join the text (`combineOcrResults` with `ocrImageSeparator`), then a **single** structured
+  extraction over the combined text (for a CUSTOM/vision OCR engine each image is transcribed by the
+  vision model, then one Ollama extraction; see "AI Integration").
+- Desktop: the Quick Scan dialog shows a **"These images are one receipt (multi-page)"** toggle
+  (`data-testid="quick-scan-combine"`), on by default for 2+ images, which collapses the per-image
+  field UI into one shared set bound to index 0 and sends `combineImages`. See `desktop/CLAUDE.md` →
+  "Quick Scan Configuration".
+- Tests: `services/quick_scan_ingest_test.go` → `TestQuickScan_CombinesMultipleImagesIntoOneReceipt`
+  (one receipt, both images attached).
+
+**Unrelated bug fixed while here: `utils.WriteFile` wrote files with mode `777` — a *decimal*
+literal (octal `01411`), leaving the owner without the write bit.** Any non-root process
+overwriting an existing data file (re-uploading a receipt image, or a test re-running against the
+same path) failed with `EACCES`; Docker runs as root and ignores the bit, which is why it went
+unnoticed in CI but broke the quick-scan test suite when run locally as a non-root user. Fixed to
+octal `0644`.
 
 ## Quick Scan Field Configuration
 

@@ -33,7 +33,7 @@
               class="w-100"
               label="Name"
               [inputFormControl]="form | formGet : 'name'"
-              [readonly]="mode | inputReadonly"
+              [readonly]="!canEditReceipt()"
             ></app-input>
             <div class="d-flex align-items-center w-100">
               <app-input
@@ -42,9 +42,9 @@
                 type="text"
                 [isCurrency]="true"
                 [inputFormControl]="form | formGet : 'amount'"
-                [readonly]="(mode | inputReadonly) || syncAmountWithItems"
+                [readonly]="!canEditReceipt() || syncAmountWithItems"
               ></app-input>
-              @if (!(mode | inputReadonly)) {
+              @if (canEditReceipt()) {
                 <app-checkbox
                   label="Sync with items"
                   [inputFormControl]="form | formGet : 'syncAmountWithItems'"
@@ -58,7 +58,7 @@
                 [inputFormControl]="form | formGet : 'categories'"
                 [categories]="categories"
                 [creatable]="canCreateCategories()"
-                [readonly]="mode | inputReadonly"
+                [readonly]="!canEditReceipt()"
               ></app-category-autocomplete>
             }
             @if (!this.selectedGroup()?.groupReceiptSettings?.hideReceiptTags) {
@@ -67,20 +67,20 @@
                 [inputFormControl]="form | formGet : 'tags'"
                 [tags]="tags"
                 [creatable]="canCreateTags()"
-                [readonly]="mode | inputReadonly"
+                [readonly]="!canEditReceipt()"
               ></app-tag-autocomplete>
             }
             <app-datepicker
               label="Date"
               class="w-100"
               [inputFormControl]="form | formGet : 'date'"
-              [readonly]="mode | inputReadonly"
+              [readonly]="!canEditReceipt()"
             ></app-datepicker>
             <app-group-autocomplete
               class="w-100"
               data-testid="receipt-group"
               [inputFormControl]="form | formGet : 'groupId'"
-              [readonly]="mode | inputReadonly"
+              [readonly]="!canEditReceipt()"
             >
             </app-group-autocomplete>
             <app-user-autocomplete
@@ -89,7 +89,7 @@
               label="Paid By"
               [inputFormControl]="form | formGet : 'paidByUserId'"
               [usersToOmit]="usersToOmit()"
-              [readonly]="mode | inputReadonly"
+              [readonly]="!canEditReceipt()"
             ></app-user-autocomplete>
             <app-select
               class="w-100"
@@ -97,7 +97,7 @@
               optionValueKey="value"
               optionDisplayKey="displayValue"
               [inputFormControl]="form | formGet : 'status'"
-              [readonly]="mode | inputReadonly"
+              [readonly]="!canEditReceipt()"
               [options]="receiptStatusOptions"
             ></app-select>
             @for (customField of customFieldsFormArray.controls; track customField.value["customFieldId"]) {
@@ -105,7 +105,7 @@
                 class="w-100"
                 [formGroup]="$any(customField)"
                 [customFields]="customFields"
-                [readonly]="mode | inputReadonly"
+                [readonly]="!canEditReceipt()"
               ></app-custom-field>
             }
           </div>
@@ -127,8 +127,7 @@
               <div
                 *ngIf="
                 images() &&
-                (images().length > 0 || filesToUpload().length > 0) &&
-                showImages
+                (images().length > 0 || filesToUpload().length > 0)
               "
                 [ngClass]="{
               'col-3': !showLargeImagePreview
@@ -142,11 +141,9 @@
                 <app-carousel
                   [images]="images()"
                   [imagePreviews]="filesToUpload()"
-                  [mode]="mode"
+                  [mode]="effectiveMode()"
                   [hideButtonControls]="true"
-                  [disabled]="
-                  mode !== formMode.edit || (showProgressBar() ?? false)
-                "
+                  [disabled]="!canEditReceipt() || (showProgressBar() ?? false)"
                 ></app-carousel>
               </div>
             </div>
@@ -195,7 +192,7 @@
               [receiptId]="originalReceipt?.id"
               [groupId]="originalReceipt?.groupId"
               [comments]="originalReceipt?.comments ?? []"
-              [mode]="mode"
+              [mode]="effectiveMode()"
               (commentsUpdated)="updateComments($event)"
             ></app-receipt-comments>
           </app-form-section>
@@ -204,7 +201,10 @@
     </div>
   </div>
 
+  <!-- The Save button only appears for creating a new receipt or advancing a queue; an existing
+       receipt auto-saves every change, so it needs no manual Save. -->
   <app-form-button-bar
+    *ngIf="mode === formMode.add || queueIndex >= 0"
     [mode]="queueIndex >= 0 ? FormMode.edit : mode"
     [justifyContentEnd]="false"
   >
@@ -221,9 +221,9 @@
       </div>
       <div class="d-flex col align-items-center justify-content-end">
         <app-submit-button
-          *ngIf="!(mode | inputReadonly)"
+          *ngIf="canEditReceipt()"
           [onlyIcon]="false"
-          [mode]="mode"
+          [mode]="effectiveMode()"
           [disabled]="!canEditReceipt()"
           [disableOnLoading]="true"
           [buttonText]="submitButtonText"
@@ -275,16 +275,11 @@
 </ng-template>
 
 <ng-template #formHeaderButtons>
-  <app-button
-    *ngIf="mode | inputReadonly"
-    class="ms-1"
-    color="accent"
-    matButtonType="iconButton"
-    tooltip="Edit"
-    icon="edit"
-    [disabled]="!canEditReceipt()"
-    [buttonRouterLink]="[editLink]"
-  ></app-button>
+  @if (autoSaveStatus() !== "idle") {
+    <span class="items-autosave-status" data-testid="receipt-autosave-status">
+      {{ autoSaveStatus() === "saving" ? "Saving…" : "Saved" }}
+    </span>
+  }
   @if (canManageCustomFields()) {
     <app-filtered-stateful-menu
       data-testid="receipt-manage-custom-fields"
@@ -293,14 +288,14 @@
       icon="list_alt"
       tooltip="Manage custom fields"
       color="accent"
-      [readonly]="mode | inputReadonly"
+      [readonly]="!canEditReceipt()"
       [items]="customFieldsStatefulMenuItems"
-      [headerText]="(mode | inputReadonly) ? 'View Custom Fields' : 'Edit Custom Fields'"
+      [headerText]="!canEditReceipt() ? 'View Custom Fields' : 'Edit Custom Fields'"
       (itemSelected)="customFieldChanged($event)"
     ></app-filtered-stateful-menu>
   }
   <app-button
-    *ngIf="mode | inputReadonly"
+    *ngIf="mode !== formMode.add"
     class="ms-1"
     color="accent"
     matButtonType="iconButton"
@@ -313,20 +308,19 @@
 
 <ng-template #itemsSectionHeaderButtons>
   <app-button
-    *ngIf="!(mode | inputReadonly)"
+    *ngIf="canEditReceipt()"
     type="button"
     matButtonType="iconButton"
     icon="add"
     tooltip="Add item"
     color="accent"
     (clicked)="initItemListAddMode()"
-    [disabled]="!canEditReceipt()"
   ></app-button>
 </ng-template>
 
 <ng-template #sharesSectionHeaderButtons>
   <app-button
-    *ngIf="!(mode | inputReadonly)"
+    *ngIf="canEditReceipt()"
     type="button"
     matButtonType="iconButton"
     icon="add"
@@ -336,7 +330,7 @@
     [disabled]="!canEditReceipt()"
   ></app-button>
   <app-button
-    *ngIf="!(mode | inputReadonly)"
+    *ngIf="canEditReceipt()"
     class="mb-4"
     customIcon="split"
     color="accent"
@@ -349,7 +343,7 @@
 
 <ng-template #imagesSectionHeaderButtons>
   <app-button
-    *ngIf="!(mode | inputReadonly)"
+    *ngIf="canEditReceipt()"
     class="mb-4"
     color="accent"
     matButtonType="iconButton"
@@ -370,51 +364,10 @@
         (clicked)="downloadImage()"
       ></app-button>
     }
-    <app-button
-      class="mb-4"
-      color="accent"
-      matButtonType="iconButton"
-      [icon]="showImages ? 'visibility_off' : 'visibility'"
-      [tooltip]="showImages ? 'Hide Images' : 'Show Images'"
-      [disabled]="(showProgressBar() ?? false)"
-      (clicked)="toggleShowImages()"
-    ></app-button>
-    <app-button
-      matButtonType="iconButton"
-      color="accent"
-      [icon]="showLargeImagePreview ? 'unfold_less' : 'unfold_more'"
-      [tooltip]="showLargeImagePreview ? 'Collapse Image' : 'Expand Image'"
-      [disabled]="(showProgressBar() ?? false)"
-      (clicked)="toggleImagePreviewSize()"
-    ></app-button>
-    <app-button
-      matButtonType="iconButton"
-      icon="fullscreen"
-      tooltip="Show Fullscreen Image"
-      color="accent"
-      [disabled]="(showProgressBar() ?? false)"
-      (clicked)="expandImage()"
-    ></app-button>
-    <app-button
-      matButtonType="iconButton"
-      icon="zoom_in"
-      tooltip="Zoom In"
-      color="accent"
-      [disabled]="(showProgressBar() ?? false)"
-      (clicked)="zoomImageIn()"
-    ></app-button>
-    <app-button
-      matButtonType="iconButton"
-      icon="zoom_out"
-      tooltip="Zoom Out"
-      color="accent"
-      [disabled]="(showProgressBar() ?? false)"
-      (clicked)="zoomImageOut()"
-    ></app-button>
   }
   <app-button
     *ngIf="
-      !(mode | inputReadonly) &&
+      canEditReceipt() &&
       (images().length > 0 || filesToUpload().length > 0) &&
       aiPoweredReceipts()
     "
@@ -427,7 +380,7 @@
   ></app-button>
   <app-button
     *ngIf="
-      !(mode | inputReadonly) && (images().length > 0 || filesToUpload().length > 0)
+      canEditReceipt() && (images().length > 0 || filesToUpload().length > 0)
     "
     matButtonType="iconButton"
     icon="delete"
@@ -436,14 +389,4 @@
     [disabled]="!canEditReceipt() || (showProgressBar() ?? false)"
     (clicked)="removeImage()"
   ></app-button>
-</ng-template>
-
-<ng-template #expandedImageTemplate>
-  <app-carousel
-    [images]="images()"
-    [imagePreviews]="filesToUpload()"
-    [mode]="mode"
-    [hideButtonControls]="true"
-    [initialIndex]="carouselComponent().currentlyShownImageIndex"
-  ></app-carousel>
 </ng-template>

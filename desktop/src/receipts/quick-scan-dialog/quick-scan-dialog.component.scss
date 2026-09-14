@@ -8,5 +8,16 @@ app-quick-scan-dialog {
     width: auto;
     height: 200px;
   }
+
+  // Fit each uploaded receipt image inside the dialog: full width, capped height, aspect kept.
+  // Without this a tall receipt renders at natural size and overflows the slide with no way to
+  // scroll or zoom out.
+  .quick-scan-image {
+    display: block;
+    margin-inline: auto;
+    max-width: 100%;
+    max-height: 45vh;
+    object-fit: contain;
+  }
 }
 

@@ -80,6 +80,10 @@ func (receipt *UpsertReceiptCommand) Validate(tokenUserId uint, isCreate bool) s
 		}
 	}
 
+	for i := range receipt.Items {
+		receipt.Items[i].ResolveAmount()
+	}
+
 	for i, item := range receipt.Items {
 		basePath := "receiptItems." + fmt.Sprintf("%d", i)
 		itemErrors := item.Validate(receipt.Amount, isCreate)

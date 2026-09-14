@@ -17,7 +17,7 @@
       [imageBase64]="preview?.encodedImage"
       [imageFile]="$any(preview.file)"
       [scale]="scale"
-      (wheel)="onScroll($event)"
+      (imageClicked)="openImagePreview($event)"
     ></app-image-viewer>
   </slide>
 
@@ -33,7 +33,7 @@
       *ngIf="image?.encodedImage"
       [imageBase64]="image.encodedImage"
       [scale]="scale"
-      (wheel)="onScroll($event)"
+      (imageClicked)="openImagePreview($event)"
     ></app-image-viewer>
   </slide>
 </carousel>
