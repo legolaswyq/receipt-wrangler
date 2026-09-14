@@ -139,6 +139,10 @@ const (
 
 	GroupWidgetsRead = "group.widgets.read"
 
+	GroupBudgetsRead   = "group.budgets.read"
+	GroupBudgetsUpdate = "group.budgets.update"
+	GroupBudgetsDelete = "group.budgets.delete"
+
 	GroupReportsRead = "group.reports.read"
 
 	GroupActivitiesRead  = "group.activities.read"
@@ -259,6 +263,10 @@ var registry = []Descriptor{
 	{GroupDashboardsDelete, "Delete Dashboards", "Remove dashboards.", "Dashboards", ScopeGroup},
 
 	{GroupWidgetsRead, "Read Widgets", "Read widget data (charts, summaries).", "Dashboards", ScopeGroup},
+
+	{GroupBudgetsRead, "Read Budgets", "View category budgets and budget progress.", "Budgets", ScopeGroup},
+	{GroupBudgetsUpdate, "Set Budgets", "Create or change a category's monthly budget target.", "Budgets", ScopeGroup},
+	{GroupBudgetsDelete, "Delete Budgets", "Remove a category's budget target.", "Budgets", ScopeGroup},
 
 	{GroupReportsRead, "Read Reports", "Generate and download reports over the group's receipts.", "Reports", ScopeGroup},
 
