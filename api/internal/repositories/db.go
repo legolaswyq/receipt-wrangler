@@ -131,6 +131,7 @@ func MakeMigrations() error {
 		&models.FileData{},
 		&models.Tag{},
 		&models.Category{},
+		&models.CategoryBudget{},
 		&models.Group{},
 		&models.GroupRoleDefinition{},
 		&models.GroupRolePermission{},
