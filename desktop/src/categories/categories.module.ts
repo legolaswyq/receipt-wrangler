@@ -1,6 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { ReactiveFormsModule } from "@angular/forms";
+import { CheckboxModule } from "src/checkbox/checkbox.module";
 import { SharedUiModule } from "src/shared-ui/shared-ui.module";
 import { TableModule } from "src/table/table.module";
 import { DuplicateValidator } from "src/validators/duplicate-validator";
@@ -15,6 +16,7 @@ import { CategoryTableComponent } from "./category-table/category-table.componen
   declarations: [CategoryTableComponent, CategoryForm],
   imports: [
     CategoriesRoutingModule,
+    CheckboxModule,
     CommonModule,
     DirectivesModule,
     InputModule,

@@ -4055,6 +4055,9 @@ components:
         description:
           type: string
           description: Description of the category
+        isIncome:
+          type: boolean
+          description: Whether receipts in this category count as income rather than spending.
         updatedAt:
           type: string
         numberOfReceipts:

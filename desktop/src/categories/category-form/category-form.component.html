@@ -9,6 +9,10 @@
         label="Description"
         [inputFormControl]="form | formGet : 'description'"
       ></app-input>
+      <app-checkbox
+        label="This is an income category"
+        [inputFormControl]="form | formGet : 'isIncome'"
+      ></app-checkbox>
     </div>
 
     <app-dialog-footer

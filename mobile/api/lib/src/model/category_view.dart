@@ -16,6 +16,7 @@ part 'category_view.g.dart';
 /// * [id] 
 /// * [name] - Name of the category
 /// * [description] - Description of the category
+/// * [isIncome] - Whether receipts in this category count as income rather than spending.
 /// * [updatedAt] 
 /// * [numberOfReceipts] - Number of receipts associated with this category
 @BuiltValue()
@@ -36,6 +37,10 @@ abstract class CategoryView implements Built<CategoryView, CategoryViewBuilder> 
   /// Description of the category
   @BuiltValueField(wireName: r'description')
   String? get description;
+
+  /// Whether receipts in this category count as income rather than spending.
+  @BuiltValueField(wireName: r'isIncome')
+  bool? get isIncome;
 
   @BuiltValueField(wireName: r'updatedAt')
   String? get updatedAt;
@@ -96,6 +101,13 @@ class _$CategoryViewSerializer implements PrimitiveSerializer<CategoryView> {
       yield serializers.serialize(
         object.description,
         specifiedType: const FullType(String),
+      );
+    }
+    if (object.isIncome != null) {
+      yield r'isIncome';
+      yield serializers.serialize(
+        object.isIncome,
+        specifiedType: const FullType(bool),
       );
     }
     if (object.updatedAt != null) {
@@ -167,6 +179,13 @@ class _$CategoryViewSerializer implements PrimitiveSerializer<CategoryView> {
             specifiedType: const FullType(String),
           ) as String;
           result.description = valueDes;
+          break;
+        case r'isIncome':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
+          result.isIncome = valueDes;
           break;
         case r'updatedAt':
           final valueDes = serializers.deserialize(

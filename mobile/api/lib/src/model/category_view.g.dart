@@ -18,6 +18,8 @@ class _$CategoryView extends CategoryView {
   @override
   final String? description;
   @override
+  final bool? isIncome;
+  @override
   final String? updatedAt;
   @override
   final int numberOfReceipts;
@@ -31,6 +33,7 @@ class _$CategoryView extends CategoryView {
       required this.id,
       required this.name,
       this.description,
+      this.isIncome,
       this.updatedAt,
       required this.numberOfReceipts})
       : super._();
@@ -50,6 +53,7 @@ class _$CategoryView extends CategoryView {
         id == other.id &&
         name == other.name &&
         description == other.description &&
+        isIncome == other.isIncome &&
         updatedAt == other.updatedAt &&
         numberOfReceipts == other.numberOfReceipts;
   }
@@ -62,6 +66,7 @@ class _$CategoryView extends CategoryView {
     _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, description.hashCode);
+    _$hash = $jc(_$hash, isIncome.hashCode);
     _$hash = $jc(_$hash, updatedAt.hashCode);
     _$hash = $jc(_$hash, numberOfReceipts.hashCode);
     _$hash = $jf(_$hash);
@@ -76,6 +81,7 @@ class _$CategoryView extends CategoryView {
           ..add('id', id)
           ..add('name', name)
           ..add('description', description)
+          ..add('isIncome', isIncome)
           ..add('updatedAt', updatedAt)
           ..add('numberOfReceipts', numberOfReceipts))
         .toString();
@@ -106,6 +112,10 @@ class CategoryViewBuilder
   String? get description => _$this._description;
   set description(String? description) => _$this._description = description;
 
+  bool? _isIncome;
+  bool? get isIncome => _$this._isIncome;
+  set isIncome(bool? isIncome) => _$this._isIncome = isIncome;
+
   String? _updatedAt;
   String? get updatedAt => _$this._updatedAt;
   set updatedAt(String? updatedAt) => _$this._updatedAt = updatedAt;
@@ -127,6 +137,7 @@ class CategoryViewBuilder
       _id = $v.id;
       _name = $v.name;
       _description = $v.description;
+      _isIncome = $v.isIncome;
       _updatedAt = $v.updatedAt;
       _numberOfReceipts = $v.numberOfReceipts;
       _$v = null;
@@ -156,6 +167,7 @@ class CategoryViewBuilder
           name: BuiltValueNullFieldError.checkNotNull(
               name, r'CategoryView', 'name'),
           description: description,
+          isIncome: isIncome,
           updatedAt: updatedAt,
           numberOfReceipts: BuiltValueNullFieldError.checkNotNull(
               numberOfReceipts, r'CategoryView', 'numberOfReceipts'),

@@ -61,7 +61,24 @@ describe("CategoryForm", () => {
     expect(component.form.value).toEqual({
       name: "test",
       description: "test",
+      isIncome: false,
     });
+  });
+
+  it("should include an isIncome control seeded from the category", () => {
+    const category: CategoryView & { isIncome?: boolean } = {
+      id: 1,
+      name: "test",
+      description: "test",
+      numberOfReceipts: 1,
+      isIncome: true,
+    };
+    component.category = category;
+
+    component.ngOnInit();
+
+    expect(component.form.get("isIncome")).toBeTruthy();
+    expect(component.form.value.isIncome).toBe(true);
   });
 
   it("should submit form with correct data, when editing", () => {
@@ -91,6 +108,7 @@ describe("CategoryForm", () => {
         id: 1,
         name: "test",
         description: "test",
+        isIncome: false,
       },
     );
   });
@@ -116,6 +134,7 @@ describe("CategoryForm", () => {
     expect(categoryServiceSpy).toHaveBeenCalledWith({
       name: "test",
       description: "test",
+      isIncome: false,
     });
   });
 });

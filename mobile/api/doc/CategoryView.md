@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **id** | **int** |  | 
 **name** | **String** | Name of the category | 
 **description** | **String** | Description of the category | [optional] 
+**isIncome** | **bool** | Whether receipts in this category count as income rather than spending. | [optional] 
 **updatedAt** | **String** |  | [optional] 
 **numberOfReceipts** | **int** | Number of receipts associated with this category | 
 

@@ -38,6 +38,7 @@ export class CategoryForm implements OnInit {
     this.form = this.formBuilder.group({
       name: [name, Validators.required, nameValidator],
       description: [this.category?.description ?? ""],
+      isIncome: [this.category?.isIncome ?? false],
     });
   }
 
@@ -47,6 +48,7 @@ export class CategoryForm implements OnInit {
         id: this.category?.id,
         name: this.form.value.name,
         description: this.form.value.description,
+        isIncome: this.form.value.isIncome,
       };
       this.categoryService
         .updateCategory(category.id as number, category)

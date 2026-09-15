@@ -329,8 +329,3 @@ lib/src/model/widget.dart
 lib/src/model/widget_type.dart
 lib/src/serializers.dart
 pubspec.yaml
-test/budget_api_test.dart
-test/budget_category_test.dart
-test/budget_data_test.dart
-test/category_budget_test.dart
-test/upsert_category_budget_command_test.dart
