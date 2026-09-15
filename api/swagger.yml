@@ -6486,6 +6486,9 @@ components:
         chartGrouping:
           $ref: "#/components/schemas/ChartGrouping"
           description: What to group the pie chart by
+        filter:
+          $ref: "#/components/schemas/ReceiptPagedRequestFilter"
+          description: Optional filter for receipts
     BudgetCategory:
       type: object
       properties:
