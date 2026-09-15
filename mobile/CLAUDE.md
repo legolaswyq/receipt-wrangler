@@ -345,6 +345,17 @@ the swagger, so `Claims` carries only identity claims and the field is gone from
 Run `flutter analyze` after a regen; these surface as compile errors. (Hand-editing generated files
 is otherwise forbidden — these are the documented exception.)
 
+**Budgets (`WidgetType.BUDGET`, `Category.isIncome`) — regen-only on mobile.** The desktop budget
+dashboard widget (see `api/CLAUDE.md` → "Budgets" and root `CLAUDE.md` → "Budgets") added a `BUDGET`
+value to the closed `WidgetType` enum, `isIncome` to `Category`/`CategoryView`, and the
+budget models/API to the generated client. **There is no mobile budget-widget renderer in v1** — the
+mobile app is a regen-only consumer here, so a dashboard containing a `BUDGET` widget renders via the
+widget-type `switch`'s default (no crash) rather than a budget UI. The **enum-safety caveat applies**:
+`WidgetType` is a closed built_value enum, so an already-released Android build predating this change
+would fail to deserialize a dashboard payload that includes a `BUDGET` widget — rebuild the app before
+loading such a dashboard (same class as the two documented login outages; here it hits the dashboard
+fetch, not login). The regen re-triggers the two dart-dio default-value patches above.
+
 ### Quick Scan field configuration
 
 The Quick Scan per-image form (`lib/receipts/widgets/quick_scan_form.dart`) respects the selected

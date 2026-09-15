@@ -269,6 +269,29 @@ A group can declare custom fields that are **always pre-added** to its receipts,
   `desktop/e2e/group-default-custom-fields.spec.ts` and
   `mobile/integration_test/receipt_default_custom_fields_test.dart`.
 
+### Budgets
+
+A dashboard budgeting layer: recurring **monthly** per-category spend targets with progress bars, plus
+income-vs-expense separation. The pieces must agree:
+
+- **Backend** owns the data and the math — `Category.IsIncome` (income vs spend, amounts stay positive),
+  the per-group `CategoryBudget` model, `BudgetService.GetBudgetData` (current-month income/spent/net/
+  untracked, reusing the pie-chart grant + paid-by scoping), the `/api/budget/*` endpoints, and the
+  `group.budgets.*` permissions. See `api/CLAUDE.md` → "Budgets".
+- **Desktop** renders and edits it — the `BUDGET` dashboard widget (summary + per-category progress bars
+  + inline target editing) and the income-flag checkbox on the category form. See `desktop/CLAUDE.md` →
+  "Budget dashboard widget".
+- **Mobile is regen-only in v1** — the generated client carries `WidgetType.BUDGET`, `Category.isIncome`,
+  and the budget models, but there is **no mobile budget-widget renderer**; a `BUDGET` widget falls to
+  the dashboard `switch` default. `WidgetType` is a **closed enum**, so this was a client-regen-in-the-
+  same-change item and already-released Android builds must be rebuilt before loading a dashboard with a
+  budget widget. See `mobile/CLAUDE.md` → "Budgets".
+- **`amount` serializes as a decimal STRING** on the wire (matching `Item.quantity`); an empty budget
+  set is fine (the widget shows an empty state / "Untracked" only).
+- **Income data caveat:** because income is now identified by the `isIncome` category flag with positive
+  amounts, any legacy/seed data that modelled income as *negative* amounts will read wrong until
+  re-seeded positive + flagged.
+
 ### State Management Patterns
 - **Backend**: Service layer handles business logic, repositories handle data access
 - **Desktop**: NGXS store with actions/selectors, persistent storage for auth/preferences

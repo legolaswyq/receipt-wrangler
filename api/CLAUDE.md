@@ -1562,6 +1562,51 @@ this screen. `UpdateGroupReceiptSettingsCommand.Validate` therefore checks nothi
   `handlers/group_default_custom_fields_test.go` (400 unknown id writes nothing, 403 without the
   permission, a save omitting both keys leaves the stored config untouched, `[]` on the wire).
 
+## Budgets (monthly per-category spend targets)
+
+A budgeting layer for the dashboard: recurring **monthly** spend targets per category, per group,
+plus income-vs-expense separation. Three-component feature (see root `CLAUDE.md` → "Budgets").
+
+- **Income vs expense is a category flag, not a sign.** `Category.IsIncome` (`models/category.go`,
+  `not null;default:false`, on the contract as `isIncome` on `Category`, `CategoryView`, and
+  `UpsertCategoryCommand`). Amounts stay **positive** — negative is still reserved for refunds/credits
+  (the AI prompt convention). `UpdateCategory` writes the column through GORM's **map form** so
+  toggling it back to `false` sticks (same reason as `UpdateAppRole`). `CategoryView` embeds `Category`
+  in Go, so it already returns `isIncome`; the swagger `CategoryView` schema lists it explicitly (flat
+  schema, no `allOf`) so the generated clients carry it.
+- **`CategoryBudget` model** (`models/category_budget.go`): `{GroupId, CategoryId, Amount decimal}`
+  with a composite `uniqueIndex(group_id, category_id)` — one target per category per group.
+  Registered in `MakeMigrations`. `repositories/category_budgets.go`: `UpsertBudget` uses
+  `clause.OnConflict` on those two columns (conflict target MUST match the unique index);
+  `GetBudgetsByGroupId`, `DeleteBudget`, and the cascade helpers `DeleteBudgetsByCategoryId` /
+  `DeleteBudgetsByGroupId` (explicit deletes wired into `DeleteCategory`'s transaction and
+  `GroupService.DeleteGroup`, matching the grant/default-custom-field cascade pattern — the raw
+  deletes don't FK-cascade).
+- **`BudgetService.GetBudgetData(userId, groupId, now)`** (`services/budget.go`) reuses the pie-chart
+  receipt-scoping verbatim (`IntersectReceiptFilterWithGrants` → `GetPagedReceiptsByGroupId` with the
+  `PaidByListResolver` → `SubstituteRestrictedCategoriesTags`), so grants + paid-by + the all-group
+  union all apply. `now` is a **parameter** (deterministic tests); the handler passes `time.Now()`.
+  Computation (all in `shopspring/decimal`, converted to float only at the response boundary):
+  - Month window `[first-of-month, first-of-next-month)` in `now`'s location; receipts outside are excluded.
+  - A receipt with **≥1 income-flagged category** is income: its full amount adds to `Income`, and it is
+    excluded from `Spent`, the per-category bars, and `Untracked`.
+  - `Spent` = Σ expense amounts (each receipt once). Per-category `Spent` = Σ expense amounts over
+    receipts containing that budgeted category (fan-out double-count across categories is intended,
+    matching the pie chart). `Untracked` = Σ expense amounts over receipts with no budgeted category.
+  - `Net = Income − Spent`; `Over = catSpent > target`.
+- **Endpoints** (`handlers/budgets.go`, `routers/budget.go`, mounted at `/api/budget`):
+  `POST /budget/{groupId}` (data, `group.budgets.read`), `PUT /budget/{groupId}` (upsert one target,
+  `group.budgets.update`, returns the persisted `CategoryBudget`), `DELETE /budget/{groupId}/{categoryId}`
+  (`group.budgets.delete`). `amount` is a **string on the wire** (decimal convention, like
+  `Item.quantity`). Handlers mirror the pie-chart handler's `structs.Handler` shape.
+- **Permissions**: `group.budgets.read/update/delete` in the registry + swagger `Permission` enum
+  (no separate `create` — upsert covers it). **Legacy Owner** picks them up automatically
+  (`LegacyGroupOwnerKeys` = every group-scope key); no data migration.
+- **Tests**: `repositories/category_budgets_test.go` (upsert/list/delete, unique-constraint,
+  category-delete cascade), `services/budget_test.go` (the income/spend/untracked/month split),
+  `handlers/budgets_test.go` (200 data, 400 on `amount<=0`), `repositories/categories_test.go`
+  (`IsIncome` round-trip incl. toggle-off).
+
 ## Reporting Engine (`internal/reporting`)
 
 A **pure** report engine: `(ReportSpec + FieldCatalog + []Row + MetaInput) → ReportModel`. It

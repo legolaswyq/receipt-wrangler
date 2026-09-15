@@ -1288,6 +1288,23 @@ Two cross-component seams support this (each with its own focused spec):
   value whose `customFieldId` isn't in the loaded catalog pool is skipped, and adding one flips its
   manage-fields menu entry to selected via an immutable array replace (zoneless CD).
 
+## Budget dashboard widget
+
+The `BUDGET` dashboard widget (`src/dashboard/budget/budget.component.ts`, standalone; registered in
+`dashboard.module.ts` imports, the dashboard renderer `ngSwitch`, `dashboard-form` (empty config case,
+name only), and `widget-options.ts`). It shows the **current month's** Income / Spent / Net summary, a
+progress bar per **budgeted** category (red via `.over` when spent > target), an **Untracked** line for
+expense with no budgeted category, and an empty-state when no targets are set. Data comes from the
+generated **`BudgetService.getBudgetData(groupId)`** (see `api/CLAUDE.md` → "Budgets" for the
+computation). **Inline editing:** clicking a target shows a number input; `saveTarget` calls
+`upsertBudget(groupId, { categoryId, amount: String(amount) })` (amount is the decimal-string wire
+type) then reloads. Optional numeric model fields are coalesced with `?? 0` in the template because the
+generated `BudgetData`/`BudgetCategory` fields are `number | undefined` and `customCurrency` needs a
+number. Income is separated from spend by the category `isIncome` flag, set on the **category form**
+(`src/categories/category-form/`): an "income category" `app-checkbox` bound to `Category.isIncome`
+(needs `CheckboxModule` in `categories.module.ts`). Tests: `budget.component.spec.ts`,
+`category-form.component.spec.ts`.
+
 ## Reports (Report Builder)
 
 The **Report Builder** (`src/reports/`) is a two-pane screen for building and downloading receipt
