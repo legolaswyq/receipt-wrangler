@@ -1,0 +1,46 @@
+:host {
+  .budget-summary {
+    .summary-item {
+      small {
+        color: var(--bs-secondary, #6c757d);
+      }
+
+      .negative {
+        color: var(--bs-danger, #dc3545);
+      }
+    }
+  }
+
+  .budget-row {
+    .category-name {
+      font-weight: 500;
+    }
+
+    .target-value {
+      cursor: pointer;
+
+      &.over {
+        color: var(--bs-danger, #dc3545);
+        font-weight: 600;
+      }
+    }
+
+    .target-input {
+      width: 6rem;
+      text-align: right;
+    }
+  }
+
+  .progress {
+    height: 8px;
+    margin-top: 4px;
+  }
+
+  .progress-bar.over {
+    background-color: var(--bs-danger, #dc3545);
+  }
+
+  .untracked {
+    color: var(--bs-secondary, #6c757d);
+  }
+}

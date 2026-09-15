@@ -1,0 +1,74 @@
+<app-card cardStyle="dashboard-card">
+  <ng-container header>
+    <div class="d-flex justify-content-between align-items-center">
+      <h3>{{ widget().name || 'Budget' }}</h3>
+      <span class="badge bg-secondary">{{ data()?.month }}</span>
+    </div>
+  </ng-container>
+  <ng-container content>
+    @if (isLoading()) {
+      <div class="text-center p-3">Loading…</div>
+    } @else if (data()) {
+      <div class="budget-summary d-flex justify-content-between mb-3">
+        <div class="summary-item">
+          <small>Income</small>
+          <div class="income">{{ (data()!.income ?? 0) | customCurrency }}</div>
+        </div>
+        <div class="summary-item">
+          <small>Spent</small>
+          <div class="spent">{{ (data()!.spent ?? 0) | customCurrency }}</div>
+        </div>
+        <div class="summary-item">
+          <small>Net</small>
+          <div [class.negative]="(data()!.net ?? 0) < 0">{{ (data()!.net ?? 0) | customCurrency }}</div>
+        </div>
+      </div>
+
+      @for (category of data()!.categories; track category.categoryId) {
+        <div class="budget-row mb-2" [attr.data-testid]="'budget-row-' + category.categoryId">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="category-name">{{ category.name }}</span>
+            @if (editingCategoryId() === category.categoryId) {
+              <input
+                #targetInput
+                class="target-input"
+                type="number"
+                min="0"
+                step="0.01"
+                [value]="category.target"
+                (blur)="saveTarget(category, +targetInput.value)"
+                (keyup.enter)="saveTarget(category, +targetInput.value)"
+              />
+            } @else {
+              <span
+                class="target-value"
+                [class.over]="isOver(category)"
+                (click)="startEdit(category)"
+              >
+                {{ (category.spent ?? 0) | customCurrency }} / {{ (category.target ?? 0) | customCurrency }}
+              </span>
+            }
+          </div>
+          <div class="progress">
+            <div
+              class="progress-bar"
+              [class.over]="isOver(category)"
+              [style.width.%]="progressPercent(category)"
+            ></div>
+          </div>
+        </div>
+      }
+
+      @if ((data()!.untracked ?? 0) > 0) {
+        <div class="budget-row untracked d-flex justify-content-between mt-2">
+          <span>Untracked</span>
+          <span>{{ (data()!.untracked ?? 0) | customCurrency }}</span>
+        </div>
+      }
+
+      @if (data()!.categories.length === 0) {
+        <div class="text-muted small">No category budgets set yet.</div>
+      }
+    }
+  </ng-container>
+</app-card>
