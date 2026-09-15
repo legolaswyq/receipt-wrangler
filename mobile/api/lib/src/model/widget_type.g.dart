@@ -11,6 +11,7 @@ const WidgetType _$FILTERED_RECEIPTS = const WidgetType._('FILTERED_RECEIPTS');
 const WidgetType _$GROUP_ACTIVITY = const WidgetType._('GROUP_ACTIVITY');
 const WidgetType _$PIE_CHART = const WidgetType._('PIE_CHART');
 const WidgetType _$REPORT = const WidgetType._('REPORT');
+const WidgetType _$BUDGET = const WidgetType._('BUDGET');
 
 WidgetType _$valueOf(String name) {
   switch (name) {
@@ -24,6 +25,8 @@ WidgetType _$valueOf(String name) {
       return _$PIE_CHART;
     case 'REPORT':
       return _$REPORT;
+    case 'BUDGET':
+      return _$BUDGET;
     default:
       throw ArgumentError(name);
   }
@@ -35,6 +38,7 @@ final BuiltSet<WidgetType> _$values = BuiltSet<WidgetType>(const <WidgetType>[
   _$GROUP_ACTIVITY,
   _$PIE_CHART,
   _$REPORT,
+  _$BUDGET,
 ]);
 
 class _$WidgetTypeMeta {
@@ -44,6 +48,7 @@ class _$WidgetTypeMeta {
   WidgetType get GROUP_ACTIVITY => _$GROUP_ACTIVITY;
   WidgetType get PIE_CHART => _$PIE_CHART;
   WidgetType get REPORT => _$REPORT;
+  WidgetType get BUDGET => _$BUDGET;
   WidgetType valueOf(String name) => _$valueOf(name);
   BuiltSet<WidgetType> get values => _$values;
 }
@@ -62,6 +67,7 @@ class _$WidgetTypeSerializer implements PrimitiveSerializer<WidgetType> {
     'GROUP_ACTIVITY': 'GROUP_ACTIVITY',
     'PIE_CHART': 'PIE_CHART',
     'REPORT': 'REPORT',
+    'BUDGET': 'BUDGET',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'GROUP_SUMMARY': 'GROUP_SUMMARY',
@@ -69,6 +75,7 @@ class _$WidgetTypeSerializer implements PrimitiveSerializer<WidgetType> {
     'GROUP_ACTIVITY': 'GROUP_ACTIVITY',
     'PIE_CHART': 'PIE_CHART',
     'REPORT': 'REPORT',
+    'BUDGET': 'BUDGET',
   };
 
   @override

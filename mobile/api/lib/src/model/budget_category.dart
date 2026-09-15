@@ -6,79 +6,93 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'upsert_category_command.g.dart';
+part 'budget_category.g.dart';
 
-/// UpsertCategoryCommand
+/// BudgetCategory
 ///
 /// Properties:
-/// * [id] - Category id
+/// * [categoryId] - Category foreign key
 /// * [name] - Category name
-/// * [description] - Category description
-/// * [isIncome] - Whether receipts in this category count as income rather than spending.
+/// * [target] - Monthly budget target for the category
+/// * [spent] - Amount spent against the category this month
+/// * [over] - Whether spent exceeds target
 @BuiltValue()
-abstract class UpsertCategoryCommand implements Built<UpsertCategoryCommand, UpsertCategoryCommandBuilder> {
-  /// Category id
-  @BuiltValueField(wireName: r'id')
-  int? get id;
+abstract class BudgetCategory implements Built<BudgetCategory, BudgetCategoryBuilder> {
+  /// Category foreign key
+  @BuiltValueField(wireName: r'categoryId')
+  int? get categoryId;
 
   /// Category name
   @BuiltValueField(wireName: r'name')
-  String get name;
+  String? get name;
 
-  /// Category description
-  @BuiltValueField(wireName: r'description')
-  String? get description;
+  /// Monthly budget target for the category
+  @BuiltValueField(wireName: r'target')
+  double? get target;
 
-  /// Whether receipts in this category count as income rather than spending.
-  @BuiltValueField(wireName: r'isIncome')
-  bool? get isIncome;
+  /// Amount spent against the category this month
+  @BuiltValueField(wireName: r'spent')
+  double? get spent;
 
-  UpsertCategoryCommand._();
+  /// Whether spent exceeds target
+  @BuiltValueField(wireName: r'over')
+  bool? get over;
 
-  factory UpsertCategoryCommand([void updates(UpsertCategoryCommandBuilder b)]) = _$UpsertCategoryCommand;
+  BudgetCategory._();
+
+  factory BudgetCategory([void updates(BudgetCategoryBuilder b)]) = _$BudgetCategory;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(UpsertCategoryCommandBuilder b) => b;
+  static void _defaults(BudgetCategoryBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<UpsertCategoryCommand> get serializer => _$UpsertCategoryCommandSerializer();
+  static Serializer<BudgetCategory> get serializer => _$BudgetCategorySerializer();
 }
 
-class _$UpsertCategoryCommandSerializer implements PrimitiveSerializer<UpsertCategoryCommand> {
+class _$BudgetCategorySerializer implements PrimitiveSerializer<BudgetCategory> {
   @override
-  final Iterable<Type> types = const [UpsertCategoryCommand, _$UpsertCategoryCommand];
+  final Iterable<Type> types = const [BudgetCategory, _$BudgetCategory];
 
   @override
-  final String wireName = r'UpsertCategoryCommand';
+  final String wireName = r'BudgetCategory';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    UpsertCategoryCommand object, {
+    BudgetCategory object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    if (object.id != null) {
-      yield r'id';
+    if (object.categoryId != null) {
+      yield r'categoryId';
       yield serializers.serialize(
-        object.id,
+        object.categoryId,
         specifiedType: const FullType(int),
       );
     }
-    yield r'name';
-    yield serializers.serialize(
-      object.name,
-      specifiedType: const FullType(String),
-    );
-    if (object.description != null) {
-      yield r'description';
+    if (object.name != null) {
+      yield r'name';
       yield serializers.serialize(
-        object.description,
+        object.name,
         specifiedType: const FullType(String),
       );
     }
-    if (object.isIncome != null) {
-      yield r'isIncome';
+    if (object.target != null) {
+      yield r'target';
       yield serializers.serialize(
-        object.isIncome,
+        object.target,
+        specifiedType: const FullType(double),
+      );
+    }
+    if (object.spent != null) {
+      yield r'spent';
+      yield serializers.serialize(
+        object.spent,
+        specifiedType: const FullType(double),
+      );
+    }
+    if (object.over != null) {
+      yield r'over';
+      yield serializers.serialize(
+        object.over,
         specifiedType: const FullType(bool),
       );
     }
@@ -87,7 +101,7 @@ class _$UpsertCategoryCommandSerializer implements PrimitiveSerializer<UpsertCat
   @override
   Object serialize(
     Serializers serializers,
-    UpsertCategoryCommand object, {
+    BudgetCategory object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
@@ -98,19 +112,19 @@ class _$UpsertCategoryCommandSerializer implements PrimitiveSerializer<UpsertCat
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required UpsertCategoryCommandBuilder result,
+    required BudgetCategoryBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'id':
+        case r'categoryId':
           final valueDes = serializers.deserialize(
             value,
             specifiedType: const FullType(int),
           ) as int;
-          result.id = valueDes;
+          result.categoryId = valueDes;
           break;
         case r'name':
           final valueDes = serializers.deserialize(
@@ -119,19 +133,26 @@ class _$UpsertCategoryCommandSerializer implements PrimitiveSerializer<UpsertCat
           ) as String;
           result.name = valueDes;
           break;
-        case r'description':
+        case r'target':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
-          result.description = valueDes;
+            specifiedType: const FullType(double),
+          ) as double;
+          result.target = valueDes;
           break;
-        case r'isIncome':
+        case r'spent':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(double),
+          ) as double;
+          result.spent = valueDes;
+          break;
+        case r'over':
           final valueDes = serializers.deserialize(
             value,
             specifiedType: const FullType(bool),
           ) as bool;
-          result.isIncome = valueDes;
+          result.over = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -142,12 +163,12 @@ class _$UpsertCategoryCommandSerializer implements PrimitiveSerializer<UpsertCat
   }
 
   @override
-  UpsertCategoryCommand deserialize(
+  BudgetCategory deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = UpsertCategoryCommandBuilder();
+    final result = BudgetCategoryBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

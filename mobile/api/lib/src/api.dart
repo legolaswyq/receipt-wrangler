@@ -11,6 +11,7 @@ import 'package:openapi/src/auth/bearer_auth.dart';
 import 'package:openapi/src/auth/oauth.dart';
 import 'package:openapi/src/api/api_key_api.dart';
 import 'package:openapi/src/api/auth_api.dart';
+import 'package:openapi/src/api/budget_api.dart';
 import 'package:openapi/src/api/category_api.dart';
 import 'package:openapi/src/api/comment_api.dart';
 import 'package:openapi/src/api/custom_field_api.dart';
@@ -100,6 +101,12 @@ class Openapi {
   /// by doing that all interceptors will not be executed
   AuthApi getAuthApi() {
     return AuthApi(dio, serializers);
+  }
+
+  /// Get BudgetApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  BudgetApi getBudgetApi() {
+    return BudgetApi(dio, serializers);
   }
 
   /// Get CategoryApi instance, base route and serializer can be overridden by a given but be careful,

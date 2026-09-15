@@ -22,5 +22,9 @@ export interface UpsertCategoryCommand {
      * Category description
      */
     description?: string;
+    /**
+     * Whether receipts in this category count as income rather than spending.
+     */
+    isIncome?: boolean;
 }
 

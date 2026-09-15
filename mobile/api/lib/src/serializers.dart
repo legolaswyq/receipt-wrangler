@@ -26,9 +26,12 @@ import 'package:openapi/src/model/associated_api_keys.dart';
 import 'package:openapi/src/model/associated_entity_type.dart';
 import 'package:openapi/src/model/associated_group.dart';
 import 'package:openapi/src/model/base_model.dart';
+import 'package:openapi/src/model/budget_category.dart';
+import 'package:openapi/src/model/budget_data.dart';
 import 'package:openapi/src/model/bulk_status_update_command.dart';
 import 'package:openapi/src/model/bulk_user_delete_command.dart';
 import 'package:openapi/src/model/category.dart';
+import 'package:openapi/src/model/category_budget.dart';
 import 'package:openapi/src/model/category_view.dart';
 import 'package:openapi/src/model/chart_grouping.dart';
 import 'package:openapi/src/model/check_email_connectivity_command.dart';
@@ -117,6 +120,7 @@ import 'package:openapi/src/model/update_group_receipt_settings_command.dart';
 import 'package:openapi/src/model/update_group_settings_command.dart';
 import 'package:openapi/src/model/update_profile_command.dart';
 import 'package:openapi/src/model/upsert_api_key_command.dart';
+import 'package:openapi/src/model/upsert_category_budget_command.dart';
 import 'package:openapi/src/model/upsert_category_command.dart';
 import 'package:openapi/src/model/upsert_comment_command.dart';
 import 'package:openapi/src/model/upsert_custom_field_command.dart';
@@ -157,9 +161,12 @@ part 'serializers.g.dart';
   AssociatedEntityType,
   AssociatedGroup,
   BaseModel,$BaseModel,
+  BudgetCategory,
+  BudgetData,
   BulkStatusUpdateCommand,
   BulkUserDeleteCommand,
   Category,
+  CategoryBudget,
   CategoryView,
   ChartGrouping,
   CheckEmailConnectivityCommand,
@@ -248,6 +255,7 @@ part 'serializers.g.dart';
   UpdateGroupSettingsCommand,
   UpdateProfileCommand,
   UpsertApiKeyCommand,
+  UpsertCategoryBudgetCommand,
   UpsertCategoryCommand,
   UpsertCommentCommand,
   UpsertCustomFieldCommand,

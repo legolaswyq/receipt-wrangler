@@ -27,6 +27,7 @@ Name | Type | Description | Notes
 **updatedAt** | **String** |  | [optional] 
 **createdByString** | **String** | Created by entity's name | [optional] [default to '']
 **description** | **String** | Custom Field description | [optional] 
+**isIncome** | **bool** | Whether receipts in this category count as income rather than spending. | [optional] 
 **prompt** | [**Prompt**](Prompt.md) |  | 
 **groupSettings** | [**GroupSettings**](GroupSettings.md) |  | [optional] 
 **groupReceiptSettings** | [**GroupReceiptSettings**](GroupReceiptSettings.md) |  | 

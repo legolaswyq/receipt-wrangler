@@ -24,6 +24,10 @@ export interface Category {
      * Description of the category
      */
     description?: string;
+    /**
+     * Whether receipts in this category count as income rather than spending.
+     */
+    isIncome?: boolean;
     updatedAt?: string;
 }
 

@@ -95,6 +95,10 @@ export interface PagedDataDataInner {
      * Custom Field description
      */
     description?: string;
+    /**
+     * Whether receipts in this category count as income rather than spending.
+     */
+    isIncome?: boolean;
     prompt: Prompt;
     groupSettings?: GroupSettings;
     groupReceiptSettings: GroupReceiptSettings;

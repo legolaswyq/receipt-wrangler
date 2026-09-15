@@ -59,6 +59,7 @@ part 'paged_data_data_inner.g.dart';
 /// * [updatedAt] 
 /// * [createdByString] - Created by entity's name
 /// * [description] - Custom Field description
+/// * [isIncome] - Whether receipts in this category count as income rather than spending.
 /// * [prompt] 
 /// * [groupSettings] 
 /// * [groupReceiptSettings] 

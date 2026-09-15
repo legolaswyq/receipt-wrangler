@@ -73,6 +73,9 @@ Class | Method | HTTP request | Description
 [*AuthApi*](doc/AuthApi.md) | [**login**](doc/AuthApi.md#login) | **POST** /login/ | Login
 [*AuthApi*](doc/AuthApi.md) | [**logout**](doc/AuthApi.md#logout) | **POST** /logout/ | Logout
 [*AuthApi*](doc/AuthApi.md) | [**signUp**](doc/AuthApi.md#signup) | **POST** /signUp | Signs up
+[*BudgetApi*](doc/BudgetApi.md) | [**deleteBudget**](doc/BudgetApi.md#deletebudget) | **DELETE** /budget/{groupId}/{categoryId} | Delete category budget
+[*BudgetApi*](doc/BudgetApi.md) | [**getBudgetData**](doc/BudgetApi.md#getbudgetdata) | **POST** /budget/{groupId} | Get budget data
+[*BudgetApi*](doc/BudgetApi.md) | [**upsertBudget**](doc/BudgetApi.md#upsertbudget) | **PUT** /budget/{groupId} | Upsert category budget
 [*CategoryApi*](doc/CategoryApi.md) | [**createCategory**](doc/CategoryApi.md#createcategory) | **POST** /category/ | Create category
 [*CategoryApi*](doc/CategoryApi.md) | [**deleteCategory**](doc/CategoryApi.md#deletecategory) | **DELETE** /category/{categoryId} | Delete category
 [*CategoryApi*](doc/CategoryApi.md) | [**getAllCategories**](doc/CategoryApi.md#getallcategories) | **GET** /category/ | Get all categories
@@ -204,9 +207,12 @@ Class | Method | HTTP request | Description
  - [AssociatedEntityType](doc/AssociatedEntityType.md)
  - [AssociatedGroup](doc/AssociatedGroup.md)
  - [BaseModel](doc/BaseModel.md)
+ - [BudgetCategory](doc/BudgetCategory.md)
+ - [BudgetData](doc/BudgetData.md)
  - [BulkStatusUpdateCommand](doc/BulkStatusUpdateCommand.md)
  - [BulkUserDeleteCommand](doc/BulkUserDeleteCommand.md)
  - [Category](doc/Category.md)
+ - [CategoryBudget](doc/CategoryBudget.md)
  - [CategoryView](doc/CategoryView.md)
  - [ChartGrouping](doc/ChartGrouping.md)
  - [CheckEmailConnectivityCommand](doc/CheckEmailConnectivityCommand.md)
@@ -295,6 +301,7 @@ Class | Method | HTTP request | Description
  - [UpdateGroupSettingsCommand](doc/UpdateGroupSettingsCommand.md)
  - [UpdateProfileCommand](doc/UpdateProfileCommand.md)
  - [UpsertApiKeyCommand](doc/UpsertApiKeyCommand.md)
+ - [UpsertCategoryBudgetCommand](doc/UpsertCategoryBudgetCommand.md)
  - [UpsertCategoryCommand](doc/UpsertCategoryCommand.md)
  - [UpsertCommentCommand](doc/UpsertCommentCommand.md)
  - [UpsertCustomFieldCommand](doc/UpsertCustomFieldCommand.md)

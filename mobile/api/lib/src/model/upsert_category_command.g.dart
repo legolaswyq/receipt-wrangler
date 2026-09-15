@@ -13,12 +13,15 @@ class _$UpsertCategoryCommand extends UpsertCategoryCommand {
   final String name;
   @override
   final String? description;
+  @override
+  final bool? isIncome;
 
   factory _$UpsertCategoryCommand(
           [void Function(UpsertCategoryCommandBuilder)? updates]) =>
       (UpsertCategoryCommandBuilder()..update(updates))._build();
 
-  _$UpsertCategoryCommand._({this.id, required this.name, this.description})
+  _$UpsertCategoryCommand._(
+      {this.id, required this.name, this.description, this.isIncome})
       : super._();
   @override
   UpsertCategoryCommand rebuild(
@@ -35,7 +38,8 @@ class _$UpsertCategoryCommand extends UpsertCategoryCommand {
     return other is UpsertCategoryCommand &&
         id == other.id &&
         name == other.name &&
-        description == other.description;
+        description == other.description &&
+        isIncome == other.isIncome;
   }
 
   @override
@@ -44,6 +48,7 @@ class _$UpsertCategoryCommand extends UpsertCategoryCommand {
     _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, description.hashCode);
+    _$hash = $jc(_$hash, isIncome.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -53,7 +58,8 @@ class _$UpsertCategoryCommand extends UpsertCategoryCommand {
     return (newBuiltValueToStringHelper(r'UpsertCategoryCommand')
           ..add('id', id)
           ..add('name', name)
-          ..add('description', description))
+          ..add('description', description)
+          ..add('isIncome', isIncome))
         .toString();
   }
 }
@@ -74,6 +80,10 @@ class UpsertCategoryCommandBuilder
   String? get description => _$this._description;
   set description(String? description) => _$this._description = description;
 
+  bool? _isIncome;
+  bool? get isIncome => _$this._isIncome;
+  set isIncome(bool? isIncome) => _$this._isIncome = isIncome;
+
   UpsertCategoryCommandBuilder() {
     UpsertCategoryCommand._defaults(this);
   }
@@ -84,6 +94,7 @@ class UpsertCategoryCommandBuilder
       _id = $v.id;
       _name = $v.name;
       _description = $v.description;
+      _isIncome = $v.isIncome;
       _$v = null;
     }
     return this;
@@ -109,6 +120,7 @@ class UpsertCategoryCommandBuilder
           name: BuiltValueNullFieldError.checkNotNull(
               name, r'UpsertCategoryCommand', 'name'),
           description: description,
+          isIncome: isIncome,
         );
     replace(_$result);
     return _$result;

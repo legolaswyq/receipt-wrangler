@@ -18,6 +18,8 @@ class _$Category extends Category {
   @override
   final String? description;
   @override
+  final bool? isIncome;
+  @override
   final String? updatedAt;
 
   factory _$Category([void Function(CategoryBuilder)? updates]) =>
@@ -29,6 +31,7 @@ class _$Category extends Category {
       this.id,
       this.name,
       this.description,
+      this.isIncome,
       this.updatedAt})
       : super._();
   @override
@@ -47,6 +50,7 @@ class _$Category extends Category {
         id == other.id &&
         name == other.name &&
         description == other.description &&
+        isIncome == other.isIncome &&
         updatedAt == other.updatedAt;
   }
 
@@ -58,6 +62,7 @@ class _$Category extends Category {
     _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, description.hashCode);
+    _$hash = $jc(_$hash, isIncome.hashCode);
     _$hash = $jc(_$hash, updatedAt.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -71,6 +76,7 @@ class _$Category extends Category {
           ..add('id', id)
           ..add('name', name)
           ..add('description', description)
+          ..add('isIncome', isIncome)
           ..add('updatedAt', updatedAt))
         .toString();
   }
@@ -99,6 +105,10 @@ class CategoryBuilder implements Builder<Category, CategoryBuilder> {
   String? get description => _$this._description;
   set description(String? description) => _$this._description = description;
 
+  bool? _isIncome;
+  bool? get isIncome => _$this._isIncome;
+  set isIncome(bool? isIncome) => _$this._isIncome = isIncome;
+
   String? _updatedAt;
   String? get updatedAt => _$this._updatedAt;
   set updatedAt(String? updatedAt) => _$this._updatedAt = updatedAt;
@@ -115,6 +125,7 @@ class CategoryBuilder implements Builder<Category, CategoryBuilder> {
       _id = $v.id;
       _name = $v.name;
       _description = $v.description;
+      _isIncome = $v.isIncome;
       _updatedAt = $v.updatedAt;
       _$v = null;
     }
@@ -142,6 +153,7 @@ class CategoryBuilder implements Builder<Category, CategoryBuilder> {
           id: id,
           name: name,
           description: description,
+          isIncome: isIncome,
           updatedAt: updatedAt,
         );
     replace(_$result);

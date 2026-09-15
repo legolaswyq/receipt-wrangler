@@ -15,10 +15,14 @@ doc/AssociatedEntityType.md
 doc/AssociatedGroup.md
 doc/AuthApi.md
 doc/BaseModel.md
+doc/BudgetApi.md
+doc/BudgetCategory.md
+doc/BudgetData.md
 doc/BulkStatusUpdateCommand.md
 doc/BulkUserDeleteCommand.md
 doc/Category.md
 doc/CategoryApi.md
+doc/CategoryBudget.md
 doc/CategoryView.md
 doc/ChartGrouping.md
 doc/CheckEmailConnectivityCommand.md
@@ -127,6 +131,7 @@ doc/UpdateGroupReceiptSettingsCommand.md
 doc/UpdateGroupSettingsCommand.md
 doc/UpdateProfileCommand.md
 doc/UpsertApiKeyCommand.md
+doc/UpsertCategoryBudgetCommand.md
 doc/UpsertCategoryCommand.md
 doc/UpsertCommentCommand.md
 doc/UpsertCustomFieldCommand.md
@@ -158,6 +163,7 @@ lib/openapi.dart
 lib/src/api.dart
 lib/src/api/api_key_api.dart
 lib/src/api/auth_api.dart
+lib/src/api/budget_api.dart
 lib/src/api/category_api.dart
 lib/src/api/comment_api.dart
 lib/src/api/custom_field_api.dart
@@ -201,9 +207,12 @@ lib/src/model/associated_api_keys.dart
 lib/src/model/associated_entity_type.dart
 lib/src/model/associated_group.dart
 lib/src/model/base_model.dart
+lib/src/model/budget_category.dart
+lib/src/model/budget_data.dart
 lib/src/model/bulk_status_update_command.dart
 lib/src/model/bulk_user_delete_command.dart
 lib/src/model/category.dart
+lib/src/model/category_budget.dart
 lib/src/model/category_view.dart
 lib/src/model/chart_grouping.dart
 lib/src/model/check_email_connectivity_command.dart
@@ -293,6 +302,7 @@ lib/src/model/update_group_receipt_settings_command.dart
 lib/src/model/update_group_settings_command.dart
 lib/src/model/update_profile_command.dart
 lib/src/model/upsert_api_key_command.dart
+lib/src/model/upsert_category_budget_command.dart
 lib/src/model/upsert_category_command.dart
 lib/src/model/upsert_comment_command.dart
 lib/src/model/upsert_custom_field_command.dart
@@ -319,3 +329,8 @@ lib/src/model/widget.dart
 lib/src/model/widget_type.dart
 lib/src/serializers.dart
 pubspec.yaml
+test/budget_api_test.dart
+test/budget_category_test.dart
+test/budget_data_test.dart
+test/category_budget_test.dart
+test/upsert_category_budget_command_test.dart

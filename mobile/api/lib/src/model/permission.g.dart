@@ -179,6 +179,12 @@ const Permission _$groupPeriodDashboardsPeriodDelete =
     const Permission._('groupPeriodDashboardsPeriodDelete');
 const Permission _$groupPeriodWidgetsPeriodRead =
     const Permission._('groupPeriodWidgetsPeriodRead');
+const Permission _$groupPeriodBudgetsPeriodRead =
+    const Permission._('groupPeriodBudgetsPeriodRead');
+const Permission _$groupPeriodBudgetsPeriodUpdate =
+    const Permission._('groupPeriodBudgetsPeriodUpdate');
+const Permission _$groupPeriodBudgetsPeriodDelete =
+    const Permission._('groupPeriodBudgetsPeriodDelete');
 const Permission _$groupPeriodReportsPeriodRead =
     const Permission._('groupPeriodReportsPeriodRead');
 const Permission _$groupPeriodActivitiesPeriodRead =
@@ -366,6 +372,12 @@ Permission _$valueOf(String name) {
       return _$groupPeriodDashboardsPeriodDelete;
     case 'groupPeriodWidgetsPeriodRead':
       return _$groupPeriodWidgetsPeriodRead;
+    case 'groupPeriodBudgetsPeriodRead':
+      return _$groupPeriodBudgetsPeriodRead;
+    case 'groupPeriodBudgetsPeriodUpdate':
+      return _$groupPeriodBudgetsPeriodUpdate;
+    case 'groupPeriodBudgetsPeriodDelete':
+      return _$groupPeriodBudgetsPeriodDelete;
     case 'groupPeriodReportsPeriodRead':
       return _$groupPeriodReportsPeriodRead;
     case 'groupPeriodActivitiesPeriodRead':
@@ -468,6 +480,9 @@ final BuiltSet<Permission> _$values = BuiltSet<Permission>(const <Permission>[
   _$groupPeriodDashboardsPeriodUpdate,
   _$groupPeriodDashboardsPeriodDelete,
   _$groupPeriodWidgetsPeriodRead,
+  _$groupPeriodBudgetsPeriodRead,
+  _$groupPeriodBudgetsPeriodUpdate,
+  _$groupPeriodBudgetsPeriodDelete,
   _$groupPeriodReportsPeriodRead,
   _$groupPeriodActivitiesPeriodRead,
   _$groupPeriodActivitiesPeriodRerun,
@@ -617,6 +632,11 @@ class _$PermissionMeta {
   Permission get groupPeriodDashboardsPeriodDelete =>
       _$groupPeriodDashboardsPeriodDelete;
   Permission get groupPeriodWidgetsPeriodRead => _$groupPeriodWidgetsPeriodRead;
+  Permission get groupPeriodBudgetsPeriodRead => _$groupPeriodBudgetsPeriodRead;
+  Permission get groupPeriodBudgetsPeriodUpdate =>
+      _$groupPeriodBudgetsPeriodUpdate;
+  Permission get groupPeriodBudgetsPeriodDelete =>
+      _$groupPeriodBudgetsPeriodDelete;
   Permission get groupPeriodReportsPeriodRead => _$groupPeriodReportsPeriodRead;
   Permission get groupPeriodActivitiesPeriodRead =>
       _$groupPeriodActivitiesPeriodRead;
@@ -729,6 +749,9 @@ class _$PermissionSerializer implements PrimitiveSerializer<Permission> {
     'groupPeriodDashboardsPeriodUpdate': 'group.dashboards.update',
     'groupPeriodDashboardsPeriodDelete': 'group.dashboards.delete',
     'groupPeriodWidgetsPeriodRead': 'group.widgets.read',
+    'groupPeriodBudgetsPeriodRead': 'group.budgets.read',
+    'groupPeriodBudgetsPeriodUpdate': 'group.budgets.update',
+    'groupPeriodBudgetsPeriodDelete': 'group.budgets.delete',
     'groupPeriodReportsPeriodRead': 'group.reports.read',
     'groupPeriodActivitiesPeriodRead': 'group.activities.read',
     'groupPeriodActivitiesPeriodRerun': 'group.activities.rerun',
@@ -828,6 +851,9 @@ class _$PermissionSerializer implements PrimitiveSerializer<Permission> {
     'group.dashboards.update': 'groupPeriodDashboardsPeriodUpdate',
     'group.dashboards.delete': 'groupPeriodDashboardsPeriodDelete',
     'group.widgets.read': 'groupPeriodWidgetsPeriodRead',
+    'group.budgets.read': 'groupPeriodBudgetsPeriodRead',
+    'group.budgets.update': 'groupPeriodBudgetsPeriodUpdate',
+    'group.budgets.delete': 'groupPeriodBudgetsPeriodDelete',
     'group.reports.read': 'groupPeriodReportsPeriodRead',
     'group.activities.read': 'groupPeriodActivitiesPeriodRead',
     'group.activities.rerun': 'groupPeriodActivitiesPeriodRerun',

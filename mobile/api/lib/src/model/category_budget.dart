@@ -6,81 +6,63 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'category.g.dart';
+part 'category_budget.g.dart';
 
-/// Category to relate receipts to
+/// A recurring monthly spend target for a single category within a single group
 ///
 /// Properties:
-/// * [createdAt] 
-/// * [createdBy] 
 /// * [id] 
-/// * [name] - Name of the category
-/// * [description] - Description of the category
-/// * [isIncome] - Whether receipts in this category count as income rather than spending.
+/// * [groupId] - Group foreign key
+/// * [categoryId] - Category foreign key
+/// * [amount] - Monthly budget target amount for the category
+/// * [createdAt] 
 /// * [updatedAt] 
 @BuiltValue()
-abstract class Category implements Built<Category, CategoryBuilder> {
-  @BuiltValueField(wireName: r'createdAt')
-  String? get createdAt;
-
-  @BuiltValueField(wireName: r'createdBy')
-  int? get createdBy;
-
+abstract class CategoryBudget implements Built<CategoryBudget, CategoryBudgetBuilder> {
   @BuiltValueField(wireName: r'id')
   int? get id;
 
-  /// Name of the category
-  @BuiltValueField(wireName: r'name')
-  String? get name;
+  /// Group foreign key
+  @BuiltValueField(wireName: r'groupId')
+  int? get groupId;
 
-  /// Description of the category
-  @BuiltValueField(wireName: r'description')
-  String? get description;
+  /// Category foreign key
+  @BuiltValueField(wireName: r'categoryId')
+  int? get categoryId;
 
-  /// Whether receipts in this category count as income rather than spending.
-  @BuiltValueField(wireName: r'isIncome')
-  bool? get isIncome;
+  /// Monthly budget target amount for the category
+  @BuiltValueField(wireName: r'amount')
+  String? get amount;
+
+  @BuiltValueField(wireName: r'createdAt')
+  String? get createdAt;
 
   @BuiltValueField(wireName: r'updatedAt')
   String? get updatedAt;
 
-  Category._();
+  CategoryBudget._();
 
-  factory Category([void updates(CategoryBuilder b)]) = _$Category;
+  factory CategoryBudget([void updates(CategoryBudgetBuilder b)]) = _$CategoryBudget;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CategoryBuilder b) => b;
+  static void _defaults(CategoryBudgetBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<Category> get serializer => _$CategorySerializer();
+  static Serializer<CategoryBudget> get serializer => _$CategoryBudgetSerializer();
 }
 
-class _$CategorySerializer implements PrimitiveSerializer<Category> {
+class _$CategoryBudgetSerializer implements PrimitiveSerializer<CategoryBudget> {
   @override
-  final Iterable<Type> types = const [Category, _$Category];
+  final Iterable<Type> types = const [CategoryBudget, _$CategoryBudget];
 
   @override
-  final String wireName = r'Category';
+  final String wireName = r'CategoryBudget';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    Category object, {
+    CategoryBudget object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    if (object.createdAt != null) {
-      yield r'createdAt';
-      yield serializers.serialize(
-        object.createdAt,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.createdBy != null) {
-      yield r'createdBy';
-      yield serializers.serialize(
-        object.createdBy,
-        specifiedType: const FullType(int),
-      );
-    }
     if (object.id != null) {
       yield r'id';
       yield serializers.serialize(
@@ -88,25 +70,32 @@ class _$CategorySerializer implements PrimitiveSerializer<Category> {
         specifiedType: const FullType(int),
       );
     }
-    if (object.name != null) {
-      yield r'name';
+    if (object.groupId != null) {
+      yield r'groupId';
       yield serializers.serialize(
-        object.name,
+        object.groupId,
+        specifiedType: const FullType(int),
+      );
+    }
+    if (object.categoryId != null) {
+      yield r'categoryId';
+      yield serializers.serialize(
+        object.categoryId,
+        specifiedType: const FullType(int),
+      );
+    }
+    if (object.amount != null) {
+      yield r'amount';
+      yield serializers.serialize(
+        object.amount,
         specifiedType: const FullType(String),
       );
     }
-    if (object.description != null) {
-      yield r'description';
+    if (object.createdAt != null) {
+      yield r'createdAt';
       yield serializers.serialize(
-        object.description,
+        object.createdAt,
         specifiedType: const FullType(String),
-      );
-    }
-    if (object.isIncome != null) {
-      yield r'isIncome';
-      yield serializers.serialize(
-        object.isIncome,
-        specifiedType: const FullType(bool),
       );
     }
     if (object.updatedAt != null) {
@@ -121,7 +110,7 @@ class _$CategorySerializer implements PrimitiveSerializer<Category> {
   @override
   Object serialize(
     Serializers serializers,
-    Category object, {
+    CategoryBudget object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
@@ -132,27 +121,13 @@ class _$CategorySerializer implements PrimitiveSerializer<Category> {
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required CategoryBuilder result,
+    required CategoryBudgetBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'createdAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
-          result.createdAt = valueDes;
-          break;
-        case r'createdBy':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
-          result.createdBy = valueDes;
-          break;
         case r'id':
           final valueDes = serializers.deserialize(
             value,
@@ -160,26 +135,33 @@ class _$CategorySerializer implements PrimitiveSerializer<Category> {
           ) as int;
           result.id = valueDes;
           break;
-        case r'name':
+        case r'groupId':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.groupId = valueDes;
+          break;
+        case r'categoryId':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.categoryId = valueDes;
+          break;
+        case r'amount':
           final valueDes = serializers.deserialize(
             value,
             specifiedType: const FullType(String),
           ) as String;
-          result.name = valueDes;
+          result.amount = valueDes;
           break;
-        case r'description':
+        case r'createdAt':
           final valueDes = serializers.deserialize(
             value,
             specifiedType: const FullType(String),
           ) as String;
-          result.description = valueDes;
-          break;
-        case r'isIncome':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
-          result.isIncome = valueDes;
+          result.createdAt = valueDes;
           break;
         case r'updatedAt':
           final valueDes = serializers.deserialize(
@@ -197,12 +179,12 @@ class _$CategorySerializer implements PrimitiveSerializer<Category> {
   }
 
   @override
-  Category deserialize(
+  CategoryBudget deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = CategoryBuilder();
+    final result = CategoryBudgetBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(
