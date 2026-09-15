@@ -6,7 +6,7 @@ import (
 )
 
 func TestWidgetType_Value(t *testing.T) {
-	valid := []WidgetType{GROUP_SUMMARY, FILTERED_RECEIPTS, GROUP_ACTIVITY, PIE_CHART, REPORT}
+	valid := []WidgetType{GROUP_SUMMARY, FILTERED_RECEIPTS, GROUP_ACTIVITY, PIE_CHART, REPORT, BUDGET}
 	for _, v := range valid {
 		assertValuerValid(t, string(v), v, string(v))
 	}

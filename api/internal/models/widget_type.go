@@ -13,6 +13,7 @@ const (
 	GROUP_ACTIVITY    WidgetType = "GROUP_ACTIVITY"
 	PIE_CHART         WidgetType = "PIE_CHART"
 	REPORT            WidgetType = "REPORT"
+	BUDGET            WidgetType = "BUDGET"
 )
 
 func (widgetType *WidgetType) Scan(value string) error {
@@ -25,7 +26,8 @@ func (widgetType WidgetType) Value() (driver.Value, error) {
 		widgetType != FILTERED_RECEIPTS &&
 		widgetType != GROUP_ACTIVITY &&
 		widgetType != PIE_CHART &&
-		widgetType != REPORT {
+		widgetType != REPORT &&
+		widgetType != BUDGET {
 		return nil, errors.New("invalid widget type")
 	}
 	return string(widgetType), nil
