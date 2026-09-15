@@ -141,6 +141,15 @@ func (repository CategoryRepository) DeleteCategory(categoryId uint) error {
 			return err
 		}
 
+		// Remove the category from every group's budget set. The membership delete
+		// is raw (no FK cascade), so this must be explicit, matching the other
+		// cascade helpers in this codebase.
+		budgetRepository := NewCategoryBudgetRepository(tx)
+		err = budgetRepository.DeleteBudgetsByCategoryId(tx, categoryId)
+		if err != nil {
+			return err
+		}
+
 		err = tx.Where("id = ?", categoryId).Delete(&models.Category{}).Error
 		if err != nil {
 			return err

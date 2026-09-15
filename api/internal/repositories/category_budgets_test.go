@@ -1,6 +1,7 @@
 package repositories_test
 
 import (
+	"receipt-wrangler/api/internal/models"
 	"receipt-wrangler/api/internal/repositories"
 	"testing"
 
@@ -38,5 +39,28 @@ func TestCategoryBudgetUpsertAndList(t *testing.T) {
 	budgets, _ = repo.GetBudgetsByGroupId(1)
 	if len(budgets) != 0 {
 		t.Errorf("expected 0 budgets after delete, got %d", len(budgets))
+	}
+}
+
+func TestDeleteCategoryRemovesBudgets(t *testing.T) {
+	defer repositories.TruncateTestDb()
+	catRepo := repositories.NewCategoryRepository(nil)
+	budgetRepo := repositories.NewCategoryBudgetRepository(nil)
+
+	cat, err := catRepo.CreateCategory(models.Category{Name: "Dining Out"})
+	if err != nil {
+		t.Fatalf("create category: %v", err)
+	}
+	if _, err := budgetRepo.UpsertBudget(1, cat.ID, decimal.NewFromInt(400)); err != nil {
+		t.Fatalf("upsert budget: %v", err)
+	}
+
+	if err := catRepo.DeleteCategory(cat.ID); err != nil {
+		t.Fatalf("delete category: %v", err)
+	}
+
+	budgets, _ := budgetRepo.GetBudgetsByGroupId(1)
+	if len(budgets) != 0 {
+		t.Errorf("expected budgets removed with category, got %d", len(budgets))
 	}
 }
