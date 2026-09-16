@@ -1602,10 +1602,14 @@ plus income-vs-expense separation. Three-component feature (see root `CLAUDE.md`
 - **Permissions**: `group.budgets.read/update/delete` in the registry + swagger `Permission` enum
   (no separate `create` — upsert covers it). **Legacy Owner** picks them up automatically
   (`LegacyGroupOwnerKeys` = every group-scope key); no data migration.
+- **The pie chart is a spending chart and also excludes income.** `PieChartService.GetPieChartData`
+  drops any receipt carrying an income-flagged category (`excludeIncomeReceipts`, same rule as
+  `BudgetService`) before grouping — for **all** groupings (categories/tags/paid-by), so income never
+  shows as a slice. Because `IsIncome` defaults false, installs that never flag income are unaffected.
 - **Tests**: `repositories/category_budgets_test.go` (upsert/list/delete, unique-constraint,
   category-delete cascade), `services/budget_test.go` (the income/spend/untracked/month split),
-  `handlers/budgets_test.go` (200 data, 400 on `amount<=0`), `repositories/categories_test.go`
-  (`IsIncome` round-trip incl. toggle-off).
+  `services/pie_chart_test.go` (`_ExcludesIncomeCategories`), `handlers/budgets_test.go` (200 data,
+  400 on `amount<=0`), `repositories/categories_test.go` (`IsIncome` round-trip incl. toggle-off).
 
 ## Reporting Engine (`internal/reporting`)
 

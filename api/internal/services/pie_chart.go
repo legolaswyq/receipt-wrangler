@@ -72,6 +72,11 @@ func (service PieChartService) GetPieChartData(
 		return structs.PieChartData{}, err
 	}
 
+	// The pie chart is a spending chart, so drop receipts in income-flagged
+	// categories (mirrors BudgetService.GetBudgetData). Income categories default
+	// to IsIncome=false, so installs that never flag income are unaffected.
+	receipts = excludeIncomeReceipts(receipts)
+
 	pieChartData := structs.PieChartData{
 		Data: []structs.PieChartDataPoint{},
 	}
@@ -89,6 +94,26 @@ func (service PieChartService) GetPieChartData(
 	}
 
 	return pieChartData, nil
+}
+
+// excludeIncomeReceipts drops any receipt that carries at least one income-flagged
+// category, so a spending pie chart never counts income (which is modelled as a
+// positive amount in an IsIncome category). Same rule as BudgetService.
+func excludeIncomeReceipts(receipts []models.Receipt) []models.Receipt {
+	result := make([]models.Receipt, 0, len(receipts))
+	for _, receipt := range receipts {
+		isIncome := false
+		for _, category := range receipt.Categories {
+			if category.IsIncome {
+				isIncome = true
+				break
+			}
+		}
+		if !isIncome {
+			result = append(result, receipt)
+		}
+	}
+	return result
 }
 
 func (service PieChartService) groupByCategories(receipts []models.Receipt) []structs.PieChartDataPoint {
