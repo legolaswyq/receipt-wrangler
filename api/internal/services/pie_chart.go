@@ -1,6 +1,8 @@
 package services
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 	"receipt-wrangler/api/internal/commands"
 	"receipt-wrangler/api/internal/models"
@@ -77,6 +79,9 @@ func (service PieChartService) GetPieChartData(
 	// to IsIncome=false, so installs that never flag income are unaffected.
 	receipts = excludeIncomeReceipts(receipts)
 
+	// Narrow to the widget's selected date range (all-time when both are empty).
+	receipts = filterReceiptsByDateRange(receipts, command.StartDate, command.EndDate)
+
 	pieChartData := structs.PieChartData{
 		Data: []structs.PieChartDataPoint{},
 	}
@@ -94,6 +99,35 @@ func (service PieChartService) GetPieChartData(
 	}
 
 	return pieChartData, nil
+}
+
+// filterReceiptsByDateRange keeps receipts whose Date falls in [start, end).
+// Each bound is an optional RFC3339 timestamp; an empty or unparseable bound is
+// treated as open, so both empty means no filtering (all-time).
+func filterReceiptsByDateRange(receipts []models.Receipt, startDate string, endDate string) []models.Receipt {
+	var start, end time.Time
+	hasStart, hasEnd := false, false
+	if parsed, err := time.Parse(time.RFC3339, startDate); err == nil {
+		start, hasStart = parsed, true
+	}
+	if parsed, err := time.Parse(time.RFC3339, endDate); err == nil {
+		end, hasEnd = parsed, true
+	}
+	if !hasStart && !hasEnd {
+		return receipts
+	}
+
+	result := make([]models.Receipt, 0, len(receipts))
+	for _, receipt := range receipts {
+		if hasStart && receipt.Date.Before(start) {
+			continue
+		}
+		if hasEnd && !receipt.Date.Before(end) {
+			continue
+		}
+		result = append(result, receipt)
+	}
+	return result
 }
 
 // excludeIncomeReceipts drops any receipt that carries at least one income-flagged

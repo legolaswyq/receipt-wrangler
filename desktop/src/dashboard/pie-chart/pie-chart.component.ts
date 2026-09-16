@@ -22,6 +22,8 @@ Chart.register(ChartDataLabels);
 export class PieChartComponent implements OnInit, OnChanges {
   public readonly widget = input.required<Widget>();
   public readonly groupId = input<number>();
+  public readonly startDate = input<string>("");
+  public readonly endDate = input<string>("");
 
   public pieChartData: ChartData<"pie", number[], string> = {
     labels: [],
@@ -97,7 +99,11 @@ export class PieChartComponent implements OnInit, OnChanges {
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes["groupId"] && !changes["groupId"].firstChange) {
+    if (
+      (changes["groupId"] && !changes["groupId"].firstChange) ||
+      (changes["startDate"] && !changes["startDate"].firstChange) ||
+      (changes["endDate"] && !changes["endDate"].firstChange)
+    ) {
       this.loadData();
     }
   }
@@ -119,6 +125,8 @@ export class PieChartComponent implements OnInit, OnChanges {
     const command: PieChartDataCommand = {
       chartGrouping: config.chartGrouping,
       filter: config.filter,
+      startDate: this.startDate() || undefined,
+      endDate: this.endDate() || undefined,
     };
 
     this.isLoading.set(true);

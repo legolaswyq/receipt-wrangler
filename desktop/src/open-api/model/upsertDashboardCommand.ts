@@ -23,5 +23,17 @@ export interface UpsertDashboardCommand {
      * Widgets associated to dashboard
      */
     widgets?: Array<UpsertWidgetCommand>;
+    /**
+     * Dashboard-level date range preset (THIS_MONTH, LAST_MONTH, LAST_3_MONTHS, THIS_YEAR, ALL_TIME, CUSTOM)
+     */
+    period?: string;
+    /**
+     * ISO start date, used only when period is CUSTOM
+     */
+    periodStartDate?: string;
+    /**
+     * ISO end date, used only when period is CUSTOM
+     */
+    periodEndDate?: string;
 }
 

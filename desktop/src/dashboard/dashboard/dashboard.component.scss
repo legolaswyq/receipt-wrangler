@@ -1,3 +1,15 @@
+.dashboard-period {
+  flex-wrap: wrap;
+
+  &__select {
+    min-width: 200px;
+  }
+
+  &__date {
+    min-width: 160px;
+  }
+}
+
 .widget {
   min-width: 50%;
   display: flex;

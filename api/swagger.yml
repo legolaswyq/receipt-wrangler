@@ -4579,6 +4579,15 @@ components:
           description: Widgets associated to dashboard
           items:
             $ref: "#/components/schemas/Widget"
+        period:
+          type: string
+          description: Dashboard-level date range preset (THIS_MONTH, LAST_MONTH, LAST_3_MONTHS, THIS_YEAR, ALL_TIME, CUSTOM). Empty defaults to THIS_MONTH.
+        periodStartDate:
+          type: string
+          description: ISO start date, used only when period is CUSTOM
+        periodEndDate:
+          type: string
+          description: ISO end date, used only when period is CUSTOM
       description: Dashboard for a user
     Widget:
       required:
@@ -5478,6 +5487,15 @@ components:
           description: Widgets associated to dashboard
           items:
             $ref: "#/components/schemas/UpsertWidgetCommand"
+        period:
+          type: string
+          description: Dashboard-level date range preset (THIS_MONTH, LAST_MONTH, LAST_3_MONTHS, THIS_YEAR, ALL_TIME, CUSTOM)
+        periodStartDate:
+          type: string
+          description: ISO start date, used only when period is CUSTOM
+        periodEndDate:
+          type: string
+          description: ISO end date, used only when period is CUSTOM
     UpsertWidgetCommand:
       type: object
       required:
@@ -6504,6 +6522,12 @@ components:
         filter:
           $ref: "#/components/schemas/ReceiptPagedRequestFilter"
           description: Optional filter for receipts
+        startDate:
+          type: string
+          description: Inclusive RFC3339 lower bound on receipt date (empty for open)
+        endDate:
+          type: string
+          description: Exclusive RFC3339 upper bound on receipt date (empty for open)
     BudgetCategory:
       type: object
       properties:

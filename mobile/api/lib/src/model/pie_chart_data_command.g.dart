@@ -11,12 +11,17 @@ class _$PieChartDataCommand extends PieChartDataCommand {
   final ChartGrouping chartGrouping;
   @override
   final ReceiptPagedRequestFilter? filter;
+  @override
+  final String? startDate;
+  @override
+  final String? endDate;
 
   factory _$PieChartDataCommand(
           [void Function(PieChartDataCommandBuilder)? updates]) =>
       (PieChartDataCommandBuilder()..update(updates))._build();
 
-  _$PieChartDataCommand._({required this.chartGrouping, this.filter})
+  _$PieChartDataCommand._(
+      {required this.chartGrouping, this.filter, this.startDate, this.endDate})
       : super._();
   @override
   PieChartDataCommand rebuild(
@@ -32,7 +37,9 @@ class _$PieChartDataCommand extends PieChartDataCommand {
     if (identical(other, this)) return true;
     return other is PieChartDataCommand &&
         chartGrouping == other.chartGrouping &&
-        filter == other.filter;
+        filter == other.filter &&
+        startDate == other.startDate &&
+        endDate == other.endDate;
   }
 
   @override
@@ -40,6 +47,8 @@ class _$PieChartDataCommand extends PieChartDataCommand {
     var _$hash = 0;
     _$hash = $jc(_$hash, chartGrouping.hashCode);
     _$hash = $jc(_$hash, filter.hashCode);
+    _$hash = $jc(_$hash, startDate.hashCode);
+    _$hash = $jc(_$hash, endDate.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -48,7 +57,9 @@ class _$PieChartDataCommand extends PieChartDataCommand {
   String toString() {
     return (newBuiltValueToStringHelper(r'PieChartDataCommand')
           ..add('chartGrouping', chartGrouping)
-          ..add('filter', filter))
+          ..add('filter', filter)
+          ..add('startDate', startDate)
+          ..add('endDate', endDate))
         .toString();
   }
 }
@@ -68,6 +79,14 @@ class PieChartDataCommandBuilder
   set filter(ReceiptPagedRequestFilterBuilder? filter) =>
       _$this._filter = filter;
 
+  String? _startDate;
+  String? get startDate => _$this._startDate;
+  set startDate(String? startDate) => _$this._startDate = startDate;
+
+  String? _endDate;
+  String? get endDate => _$this._endDate;
+  set endDate(String? endDate) => _$this._endDate = endDate;
+
   PieChartDataCommandBuilder() {
     PieChartDataCommand._defaults(this);
   }
@@ -77,6 +96,8 @@ class PieChartDataCommandBuilder
     if ($v != null) {
       _chartGrouping = $v.chartGrouping;
       _filter = $v.filter?.toBuilder();
+      _startDate = $v.startDate;
+      _endDate = $v.endDate;
       _$v = null;
     }
     return this;
@@ -103,6 +124,8 @@ class PieChartDataCommandBuilder
             chartGrouping: BuiltValueNullFieldError.checkNotNull(
                 chartGrouping, r'PieChartDataCommand', 'chartGrouping'),
             filter: _filter?.build(),
+            startDate: startDate,
+            endDate: endDate,
           );
     } catch (_) {
       late String _$failedField;

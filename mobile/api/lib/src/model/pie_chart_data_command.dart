@@ -15,6 +15,8 @@ part 'pie_chart_data_command.g.dart';
 /// Properties:
 /// * [chartGrouping] - What to group the pie chart by
 /// * [filter] - Optional filter for receipts
+/// * [startDate] - Inclusive RFC3339 lower bound on receipt date (empty for open)
+/// * [endDate] - Exclusive RFC3339 upper bound on receipt date (empty for open)
 @BuiltValue()
 abstract class PieChartDataCommand implements Built<PieChartDataCommand, PieChartDataCommandBuilder> {
   /// What to group the pie chart by
@@ -25,6 +27,14 @@ abstract class PieChartDataCommand implements Built<PieChartDataCommand, PieChar
   /// Optional filter for receipts
   @BuiltValueField(wireName: r'filter')
   ReceiptPagedRequestFilter? get filter;
+
+  /// Inclusive RFC3339 lower bound on receipt date (empty for open)
+  @BuiltValueField(wireName: r'startDate')
+  String? get startDate;
+
+  /// Exclusive RFC3339 upper bound on receipt date (empty for open)
+  @BuiltValueField(wireName: r'endDate')
+  String? get endDate;
 
   PieChartDataCommand._();
 
@@ -59,6 +69,20 @@ class _$PieChartDataCommandSerializer implements PrimitiveSerializer<PieChartDat
       yield serializers.serialize(
         object.filter,
         specifiedType: const FullType(ReceiptPagedRequestFilter),
+      );
+    }
+    if (object.startDate != null) {
+      yield r'startDate';
+      yield serializers.serialize(
+        object.startDate,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.endDate != null) {
+      yield r'endDate';
+      yield serializers.serialize(
+        object.endDate,
+        specifiedType: const FullType(String),
       );
     }
   }
@@ -97,6 +121,20 @@ class _$PieChartDataCommandSerializer implements PrimitiveSerializer<PieChartDat
             specifiedType: const FullType(ReceiptPagedRequestFilter),
           ) as ReceiptPagedRequestFilter;
           result.filter.replace(valueDes);
+          break;
+        case r'startDate':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.startDate = valueDes;
+          break;
+        case r'endDate':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.endDate = valueDes;
           break;
         default:
           unhandled.add(key);

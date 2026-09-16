@@ -37,10 +37,13 @@ func (repository *DashboardRepository) CreateDashboard(command commands.UpsertDa
 	}
 
 	dashboard := models.Dashboard{
-		UserID:  userId,
-		Name:    command.Name,
-		GroupID: groupId,
-		Widgets: widgets,
+		UserID:          userId,
+		Name:            command.Name,
+		GroupID:         groupId,
+		Widgets:         widgets,
+		Period:          command.Period,
+		PeriodStartDate: command.PeriodStartDate,
+		PeriodEndDate:   command.PeriodEndDate,
 	}
 
 	err := db.Transaction(func(tx *gorm.DB) error {
@@ -133,11 +136,18 @@ func (repository *DashboardRepository) UpdateDashboardById(dashboardId uint, com
 			BaseModel: models.BaseModel{
 				ID: dashboardId,
 			},
-			Name:    command.Name,
-			GroupID: groupId,
+			Name:            command.Name,
+			GroupID:         groupId,
+			Period:          command.Period,
+			PeriodStartDate: command.PeriodStartDate,
+			PeriodEndDate:   command.PeriodEndDate,
 		}
 
-		if db.Model(&dashboard).Where("id = ?", dashboardId).Updates(&dashboard).Error != nil {
+		// Select the period columns so struct-form Updates writes them even when
+		// empty (e.g. clearing custom dates when switching back to a preset).
+		if db.Model(&dashboard).Where("id = ?", dashboardId).
+			Select("name", "group_id", "period", "period_start_date", "period_end_date").
+			Updates(&dashboard).Error != nil {
 			return err
 		}
 

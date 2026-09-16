@@ -23,6 +23,12 @@ class _$Dashboard extends Dashboard {
   final String? updatedAt;
   @override
   final BuiltList<Widget>? widgets;
+  @override
+  final String? period;
+  @override
+  final String? periodStartDate;
+  @override
+  final String? periodEndDate;
 
   factory _$Dashboard([void Function(DashboardBuilder)? updates]) =>
       (DashboardBuilder()..update(updates))._build();
@@ -35,7 +41,10 @@ class _$Dashboard extends Dashboard {
       this.groupId,
       required this.userId,
       this.updatedAt,
-      this.widgets})
+      this.widgets,
+      this.period,
+      this.periodStartDate,
+      this.periodEndDate})
       : super._();
   @override
   Dashboard rebuild(void Function(DashboardBuilder) updates) =>
@@ -55,7 +64,10 @@ class _$Dashboard extends Dashboard {
         groupId == other.groupId &&
         userId == other.userId &&
         updatedAt == other.updatedAt &&
-        widgets == other.widgets;
+        widgets == other.widgets &&
+        period == other.period &&
+        periodStartDate == other.periodStartDate &&
+        periodEndDate == other.periodEndDate;
   }
 
   @override
@@ -69,6 +81,9 @@ class _$Dashboard extends Dashboard {
     _$hash = $jc(_$hash, userId.hashCode);
     _$hash = $jc(_$hash, updatedAt.hashCode);
     _$hash = $jc(_$hash, widgets.hashCode);
+    _$hash = $jc(_$hash, period.hashCode);
+    _$hash = $jc(_$hash, periodStartDate.hashCode);
+    _$hash = $jc(_$hash, periodEndDate.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -83,7 +98,10 @@ class _$Dashboard extends Dashboard {
           ..add('groupId', groupId)
           ..add('userId', userId)
           ..add('updatedAt', updatedAt)
-          ..add('widgets', widgets))
+          ..add('widgets', widgets)
+          ..add('period', period)
+          ..add('periodStartDate', periodStartDate)
+          ..add('periodEndDate', periodEndDate))
         .toString();
   }
 }
@@ -123,6 +141,20 @@ class DashboardBuilder implements Builder<Dashboard, DashboardBuilder> {
   ListBuilder<Widget> get widgets => _$this._widgets ??= ListBuilder<Widget>();
   set widgets(ListBuilder<Widget>? widgets) => _$this._widgets = widgets;
 
+  String? _period;
+  String? get period => _$this._period;
+  set period(String? period) => _$this._period = period;
+
+  String? _periodStartDate;
+  String? get periodStartDate => _$this._periodStartDate;
+  set periodStartDate(String? periodStartDate) =>
+      _$this._periodStartDate = periodStartDate;
+
+  String? _periodEndDate;
+  String? get periodEndDate => _$this._periodEndDate;
+  set periodEndDate(String? periodEndDate) =>
+      _$this._periodEndDate = periodEndDate;
+
   DashboardBuilder() {
     Dashboard._defaults(this);
   }
@@ -138,6 +170,9 @@ class DashboardBuilder implements Builder<Dashboard, DashboardBuilder> {
       _userId = $v.userId;
       _updatedAt = $v.updatedAt;
       _widgets = $v.widgets?.toBuilder();
+      _period = $v.period;
+      _periodStartDate = $v.periodStartDate;
+      _periodEndDate = $v.periodEndDate;
       _$v = null;
     }
     return this;
@@ -171,6 +206,9 @@ class DashboardBuilder implements Builder<Dashboard, DashboardBuilder> {
                 userId, r'Dashboard', 'userId'),
             updatedAt: updatedAt,
             widgets: _widgets?.build(),
+            period: period,
+            periodStartDate: periodStartDate,
+            periodEndDate: periodEndDate,
           );
     } catch (_) {
       late String _$failedField;

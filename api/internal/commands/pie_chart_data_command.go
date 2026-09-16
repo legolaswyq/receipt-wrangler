@@ -11,6 +11,11 @@ import (
 type PieChartDataCommand struct {
 	ChartGrouping models.ChartGrouping      `json:"chartGrouping"`
 	Filter        ReceiptPagedRequestFilter `json:"filter"`
+	// StartDate (inclusive) and EndDate (exclusive) bound the receipts by date,
+	// as RFC3339 timestamps. Either may be empty for an open bound; both empty
+	// means all-time. The client computes these from the widget's chosen period.
+	StartDate string `json:"startDate"`
+	EndDate   string `json:"endDate"`
 }
 
 func (command *PieChartDataCommand) LoadDataFromRequest(w http.ResponseWriter, r *http.Request) error {

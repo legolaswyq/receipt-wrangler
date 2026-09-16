@@ -16,6 +16,9 @@ part 'upsert_dashboard_command.g.dart';
 /// * [name] - Dashboard name
 /// * [groupId] - Group foreign key
 /// * [widgets] - Widgets associated to dashboard
+/// * [period] - Dashboard-level date range preset (THIS_MONTH, LAST_MONTH, LAST_3_MONTHS, THIS_YEAR, ALL_TIME, CUSTOM)
+/// * [periodStartDate] - ISO start date, used only when period is CUSTOM
+/// * [periodEndDate] - ISO end date, used only when period is CUSTOM
 @BuiltValue()
 abstract class UpsertDashboardCommand implements Built<UpsertDashboardCommand, UpsertDashboardCommandBuilder> {
   /// Dashboard name
@@ -29,6 +32,18 @@ abstract class UpsertDashboardCommand implements Built<UpsertDashboardCommand, U
   /// Widgets associated to dashboard
   @BuiltValueField(wireName: r'widgets')
   BuiltList<UpsertWidgetCommand>? get widgets;
+
+  /// Dashboard-level date range preset (THIS_MONTH, LAST_MONTH, LAST_3_MONTHS, THIS_YEAR, ALL_TIME, CUSTOM)
+  @BuiltValueField(wireName: r'period')
+  String? get period;
+
+  /// ISO start date, used only when period is CUSTOM
+  @BuiltValueField(wireName: r'periodStartDate')
+  String? get periodStartDate;
+
+  /// ISO end date, used only when period is CUSTOM
+  @BuiltValueField(wireName: r'periodEndDate')
+  String? get periodEndDate;
 
   UpsertDashboardCommand._();
 
@@ -68,6 +83,27 @@ class _$UpsertDashboardCommandSerializer implements PrimitiveSerializer<UpsertDa
       yield serializers.serialize(
         object.widgets,
         specifiedType: const FullType(BuiltList, [FullType(UpsertWidgetCommand)]),
+      );
+    }
+    if (object.period != null) {
+      yield r'period';
+      yield serializers.serialize(
+        object.period,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.periodStartDate != null) {
+      yield r'periodStartDate';
+      yield serializers.serialize(
+        object.periodStartDate,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.periodEndDate != null) {
+      yield r'periodEndDate';
+      yield serializers.serialize(
+        object.periodEndDate,
+        specifiedType: const FullType(String),
       );
     }
   }
@@ -113,6 +149,27 @@ class _$UpsertDashboardCommandSerializer implements PrimitiveSerializer<UpsertDa
             specifiedType: const FullType(BuiltList, [FullType(UpsertWidgetCommand)]),
           ) as BuiltList<UpsertWidgetCommand>;
           result.widgets.replace(valueDes);
+          break;
+        case r'period':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.period = valueDes;
+          break;
+        case r'periodStartDate':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.periodStartDate = valueDes;
+          break;
+        case r'periodEndDate':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.periodEndDate = valueDes;
           break;
         default:
           unhandled.add(key);

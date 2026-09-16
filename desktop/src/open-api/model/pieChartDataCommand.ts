@@ -20,6 +20,14 @@ export interface PieChartDataCommand {
      * Optional filter for receipts
      */
     filter?: ReceiptPagedRequestFilter;
+    /**
+     * Inclusive RFC3339 lower bound on receipt date (empty for open)
+     */
+    startDate?: string;
+    /**
+     * Exclusive RFC3339 upper bound on receipt date (empty for open)
+     */
+    endDate?: string;
 }
 export namespace PieChartDataCommand {
 }

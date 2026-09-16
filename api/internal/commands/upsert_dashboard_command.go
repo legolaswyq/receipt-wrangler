@@ -8,9 +8,12 @@ import (
 )
 
 type UpsertDashboardCommand struct {
-	Name    string                `json:"name"`
-	GroupId string                `json:"groupId"`
-	Widgets []UpsertWidgetCommand `json:"widgets"`
+	Name            string                `json:"name"`
+	GroupId         string                `json:"groupId"`
+	Widgets         []UpsertWidgetCommand `json:"widgets"`
+	Period          string                `json:"period"`
+	PeriodStartDate string                `json:"periodStartDate"`
+	PeriodEndDate   string                `json:"periodEndDate"`
 }
 
 func (command *UpsertDashboardCommand) LoadDataFromRequest(w http.ResponseWriter, r *http.Request) error {

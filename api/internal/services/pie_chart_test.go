@@ -91,6 +91,49 @@ func TestPieChartService_GetPieChartData_GroupByCategories_Success(t *testing.T)
 	}
 }
 
+func TestPieChartService_GetPieChartData_FiltersByDateRange(t *testing.T) {
+	defer tearDownPieChartTest()
+	setupPieChartTest()
+
+	db := repositories.GetDB()
+	var category models.Category
+	db.First(&category, 1)
+
+	inRange := models.Receipt{
+		Name: "In range", Amount: decimal.NewFromFloat(100), PaidByUserID: 1, GroupId: 1,
+		Status: models.OPEN, Categories: []models.Category{category},
+		Date: time.Date(2026, 9, 10, 0, 0, 0, 0, time.UTC),
+	}
+	outOfRange := models.Receipt{
+		Name: "Out of range", Amount: decimal.NewFromFloat(999), PaidByUserID: 1, GroupId: 1,
+		Status: models.OPEN, Categories: []models.Category{category},
+		Date: time.Date(2026, 7, 10, 0, 0, 0, 0, time.UTC),
+	}
+	db.Create(&inRange)
+	db.Create(&outOfRange)
+
+	service := NewPieChartService(nil)
+	command := commands.PieChartDataCommand{
+		ChartGrouping: models.CHART_GROUPING_CATEGORIES,
+		StartDate:     "2026-09-01T00:00:00Z",
+		EndDate:       "2026-10-01T00:00:00Z",
+	}
+
+	result, err := service.GetPieChartData(1, "1", command)
+	if err != nil {
+		utils.PrintTestError(t, err, "no error")
+		return
+	}
+
+	total := 0.0
+	for _, dp := range result.Data {
+		total += dp.Value
+	}
+	if total != 100.0 {
+		utils.PrintTestError(t, total, 100.0)
+	}
+}
+
 func TestPieChartService_GetPieChartData_CarriesCategoryColor(t *testing.T) {
 	defer tearDownPieChartTest()
 	setupPieChartTest()

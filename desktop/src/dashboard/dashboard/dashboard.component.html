@@ -1,4 +1,28 @@
 <div class="container-fluid">
+  <div class="dashboard-period d-flex align-items-end gap-2 mb-3">
+    <app-select
+      class="dashboard-period__select"
+      label="Date range"
+      optionValueKey="value"
+      optionDisplayKey="displayValue"
+      [inputFormControl]="periodControl"
+      [options]="dashboardPeriodOptions"
+    ></app-select>
+    @if (periodControl.value === customPeriod) {
+      <app-input
+        class="dashboard-period__date"
+        label="From"
+        type="date"
+        [inputFormControl]="customStartControl"
+      ></app-input>
+      <app-input
+        class="dashboard-period__date"
+        label="To"
+        type="date"
+        [inputFormControl]="customEndControl"
+      ></app-input>
+    }
+  </div>
   <div class="row g-3">
     @for (widget of selectedDashboard()?.widgets; track widget.id) {
       <div class="d-block widget col-12 col-md-6 col-lg-4 col-xxl-3">
@@ -25,6 +49,8 @@
             <app-pie-chart
               [widget]="widget"
               [groupId]="selectedDashboard()?.groupId"
+              [startDate]="range().startDate"
+              [endDate]="range().endDate"
             ></app-pie-chart>
           </ng-container>
           <ng-container *ngSwitchCase="widgetType.Report">

@@ -13,13 +13,24 @@ class _$UpsertDashboardCommand extends UpsertDashboardCommand {
   final String groupId;
   @override
   final BuiltList<UpsertWidgetCommand>? widgets;
+  @override
+  final String? period;
+  @override
+  final String? periodStartDate;
+  @override
+  final String? periodEndDate;
 
   factory _$UpsertDashboardCommand(
           [void Function(UpsertDashboardCommandBuilder)? updates]) =>
       (UpsertDashboardCommandBuilder()..update(updates))._build();
 
   _$UpsertDashboardCommand._(
-      {required this.name, required this.groupId, this.widgets})
+      {required this.name,
+      required this.groupId,
+      this.widgets,
+      this.period,
+      this.periodStartDate,
+      this.periodEndDate})
       : super._();
   @override
   UpsertDashboardCommand rebuild(
@@ -36,7 +47,10 @@ class _$UpsertDashboardCommand extends UpsertDashboardCommand {
     return other is UpsertDashboardCommand &&
         name == other.name &&
         groupId == other.groupId &&
-        widgets == other.widgets;
+        widgets == other.widgets &&
+        period == other.period &&
+        periodStartDate == other.periodStartDate &&
+        periodEndDate == other.periodEndDate;
   }
 
   @override
@@ -45,6 +59,9 @@ class _$UpsertDashboardCommand extends UpsertDashboardCommand {
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, groupId.hashCode);
     _$hash = $jc(_$hash, widgets.hashCode);
+    _$hash = $jc(_$hash, period.hashCode);
+    _$hash = $jc(_$hash, periodStartDate.hashCode);
+    _$hash = $jc(_$hash, periodEndDate.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -54,7 +71,10 @@ class _$UpsertDashboardCommand extends UpsertDashboardCommand {
     return (newBuiltValueToStringHelper(r'UpsertDashboardCommand')
           ..add('name', name)
           ..add('groupId', groupId)
-          ..add('widgets', widgets))
+          ..add('widgets', widgets)
+          ..add('period', period)
+          ..add('periodStartDate', periodStartDate)
+          ..add('periodEndDate', periodEndDate))
         .toString();
   }
 }
@@ -77,6 +97,20 @@ class UpsertDashboardCommandBuilder
   set widgets(ListBuilder<UpsertWidgetCommand>? widgets) =>
       _$this._widgets = widgets;
 
+  String? _period;
+  String? get period => _$this._period;
+  set period(String? period) => _$this._period = period;
+
+  String? _periodStartDate;
+  String? get periodStartDate => _$this._periodStartDate;
+  set periodStartDate(String? periodStartDate) =>
+      _$this._periodStartDate = periodStartDate;
+
+  String? _periodEndDate;
+  String? get periodEndDate => _$this._periodEndDate;
+  set periodEndDate(String? periodEndDate) =>
+      _$this._periodEndDate = periodEndDate;
+
   UpsertDashboardCommandBuilder() {
     UpsertDashboardCommand._defaults(this);
   }
@@ -87,6 +121,9 @@ class UpsertDashboardCommandBuilder
       _name = $v.name;
       _groupId = $v.groupId;
       _widgets = $v.widgets?.toBuilder();
+      _period = $v.period;
+      _periodStartDate = $v.periodStartDate;
+      _periodEndDate = $v.periodEndDate;
       _$v = null;
     }
     return this;
@@ -115,6 +152,9 @@ class UpsertDashboardCommandBuilder
             groupId: BuiltValueNullFieldError.checkNotNull(
                 groupId, r'UpsertDashboardCommand', 'groupId'),
             widgets: _widgets?.build(),
+            period: period,
+            periodStartDate: periodStartDate,
+            periodEndDate: periodEndDate,
           );
     } catch (_) {
       late String _$failedField;
