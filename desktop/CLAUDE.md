@@ -1305,6 +1305,18 @@ number. Income is separated from spend by the category `isIncome` flag, set on t
 (needs `CheckboxModule` in `categories.module.ts`). Tests: `budget.component.spec.ts`,
 `category-form.component.spec.ts`.
 
+### Dashboard-level date range
+
+The dashboard page (`src/dashboard/dashboard/dashboard.component.ts`) has a **Date range** control
+(preset select + custom From/To when `CUSTOM`), sourced from `dashboard-period.util.ts`
+(`dashboardPeriodOptions`, `resolveDashboardRange`). The selection persists on the dashboard
+(`Dashboard.period`/`periodStartDate`/`periodEndDate`) via `dashboardService.updateDashboard` +
+`UpdateDashBoardForGroup`, defaulting to **This month**. `resolveDashboardRange` turns the preset into a
+concrete `[start,end)` (RFC3339, custom end made exclusive by +1 day); the `range()` computed signal is
+passed as `[startDate]`/`[endDate]` inputs to spend-over-time widgets. Only the **pie chart** consumes it
+today (it re-queries on range change via `ngOnChanges`); the Budget widget is monthly by design and
+Summary/Activity/Report ignore it. See `api/CLAUDE.md` → "Dashboard-level date range".
+
 ### Category colors
 
 Categories carry a hex `color` (see `api/CLAUDE.md` → "Category colors"). The **category form**

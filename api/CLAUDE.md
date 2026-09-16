@@ -1611,6 +1611,15 @@ plus income-vs-expense separation. Three-component feature (see root `CLAUDE.md`
   writes `color` via the map form. Tests: `repositories/category_colors_test.go`, the pie-chart
   `_CarriesCategoryColor` case. Palette has 10 colors, so installs with more categories get deterministic
   repeats (documented; users can hand-pick).
+- **Dashboard-level date range.** `Dashboard.Period` (+ `PeriodStartDate`/`PeriodEndDate` for CUSTOM)
+  persists a per-dashboard range preset (THIS_MONTH/LAST_MONTH/LAST_3_MONTHS/THIS_YEAR/ALL_TIME/CUSTOM;
+  on `Dashboard`/`UpsertDashboardCommand`/swagger). `UpdateDashboardById` writes them with a
+  `Select(...)` so switching back to a preset clears stale custom dates (struct-form `Updates` would
+  skip the empties). The client resolves the preset to a concrete `[start,end)` and sends it to the pie
+  chart via `PieChartDataCommand.StartDate`/`EndDate` (RFC3339, inclusive start / exclusive end;
+  `filterReceiptsByDateRange` in `pie_chart.go`, both empty = all-time). Only spend-over-time widgets
+  consume it — the budget widget stays monthly by design. Tests: `repositories/dashboards_test.go`
+  (period round-trip + preset clears custom), `services/pie_chart_test.go` (`_FiltersByDateRange`).
 - **The pie chart is a spending chart and also excludes income.** `PieChartService.GetPieChartData`
   drops any receipt carrying an income-flagged category (`excludeIncomeReceipts`, same rule as
   `BudgetService`) before grouping — for **all** groupings (categories/tags/paid-by), so income never
