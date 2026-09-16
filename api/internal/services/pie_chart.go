@@ -118,6 +118,7 @@ func excludeIncomeReceipts(receipts []models.Receipt) []models.Receipt {
 
 func (service PieChartService) groupByCategories(receipts []models.Receipt) []structs.PieChartDataPoint {
 	categoryAmounts := make(map[string]decimal.Decimal)
+	categoryColors := make(map[string]string)
 
 	for _, receipt := range receipts {
 		if len(receipt.Categories) == 0 {
@@ -131,11 +132,12 @@ func (service PieChartService) groupByCategories(receipts []models.Receipt) []st
 					categoryAmounts[category.Name] = decimal.NewFromInt(0)
 				}
 				categoryAmounts[category.Name] = categoryAmounts[category.Name].Add(receipt.Amount)
+				categoryColors[category.Name] = category.Color
 			}
 		}
 	}
 
-	return service.convertToDataPoints(categoryAmounts)
+	return service.convertToDataPointsWithColors(categoryAmounts, categoryColors)
 }
 
 func (service PieChartService) groupByTags(receipts []models.Receipt) []structs.PieChartDataPoint {
@@ -204,6 +206,23 @@ func (service PieChartService) convertToDataPoints(amounts map[string]decimal.De
 		dataPoints = append(dataPoints, structs.PieChartDataPoint{
 			Label: name,
 			Value: floatVal,
+		})
+	}
+	return dataPoints
+}
+
+// convertToDataPointsWithColors is convertToDataPoints plus a per-label color
+// (used by the category grouping so each slice keeps its category's stored
+// color). A label with no color (e.g. Uncategorized) carries an empty string,
+// which the client renders from its fallback palette.
+func (service PieChartService) convertToDataPointsWithColors(amounts map[string]decimal.Decimal, colors map[string]string) []structs.PieChartDataPoint {
+	dataPoints := make([]structs.PieChartDataPoint, 0, len(amounts))
+	for name, amount := range amounts {
+		floatVal, _ := amount.Float64()
+		dataPoints = append(dataPoints, structs.PieChartDataPoint{
+			Label: name,
+			Value: floatVal,
+			Color: colors[name],
 		})
 	}
 	return dataPoints

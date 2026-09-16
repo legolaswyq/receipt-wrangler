@@ -68,6 +68,19 @@ func (repository CategoryRepository) CountByIds(ids []uint) (int64, error) {
 func (repository CategoryRepository) CreateCategory(category models.Category) (models.Category, error) {
 	db := repository.GetDB()
 
+	// Assign a default palette color when the caller didn't pick one, choosing the
+	// first color not already used by another category.
+	if len(category.Color) == 0 {
+		var usedColors []string
+		if err := db.Model(&models.Category{}).
+			Where("color <> ''").
+			Distinct().
+			Pluck("color", &usedColors).Error; err != nil {
+			return models.Category{}, err
+		}
+		category.Color = nextCategoryColor(usedColors)
+	}
+
 	err := db.Model(&category).Create(&category).Error
 	if err != nil {
 		return models.Category{}, err
@@ -87,7 +100,7 @@ func (repository CategoryRepository) GetAllPagedCategories(pagedRequestCommand c
 
 	query := repository.Sort(db, pagedRequestCommand.OrderBy, pagedRequestCommand.SortDirection)
 	query = query.Scopes(repository.Paginate(pagedRequestCommand.Page, pagedRequestCommand.PageSize))
-	selectString := fmt.Sprintf("categories.id, categories.name, categories.description,  COUNT(DISTINCT receipt_categories.receipt_id) as %s", quotedAlias)
+	selectString := fmt.Sprintf("categories.id, categories.name, categories.description, categories.is_income, categories.color, COUNT(DISTINCT receipt_categories.receipt_id) as %s", quotedAlias)
 	query = query.Table("categories").
 		Select(selectString).
 		Joins("LEFT JOIN receipt_categories ON categories.id = receipt_categories.category_id").
@@ -111,6 +124,7 @@ func (repository CategoryRepository) UpdateCategory(categoryToUpdate models.Cate
 		"name":        categoryToUpdate.Name,
 		"description": categoryToUpdate.Description,
 		"is_income":   categoryToUpdate.IsIncome,
+		"color":       categoryToUpdate.Color,
 	}).Error
 	if err != nil {
 		return models.Category{}, err

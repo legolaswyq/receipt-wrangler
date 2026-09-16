@@ -18,5 +18,9 @@ export interface PieChartDataPoint {
      * Value for the pie chart slice
      */
     value: number;
+    /**
+     * Hex color for the slice, from the category\'s stored color (empty for buckets without one)
+     */
+    color?: string;
 }
 

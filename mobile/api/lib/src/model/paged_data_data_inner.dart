@@ -60,6 +60,7 @@ part 'paged_data_data_inner.g.dart';
 /// * [createdByString] - Created by entity's name
 /// * [description] - Custom Field description
 /// * [isIncome] - Whether receipts in this category count as income rather than spending.
+/// * [color] - Hex color used for this category in charts (e.g.
 /// * [prompt] 
 /// * [groupSettings] 
 /// * [groupReceiptSettings] 

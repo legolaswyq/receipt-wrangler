@@ -27,6 +27,16 @@
 
 <ng-template #nameCell let-element="element">{{ element.name }}</ng-template>
 
+<ng-template #colorCell let-element="element">
+  @if (element.color) {
+    <span
+      class="category-color-swatch"
+      [style.background-color]="element.color"
+      [attr.title]="element.color"
+    ></span>
+  }
+</ng-template>
+
 <ng-template #descriptionCell let-element="element"
 >{{ element.description }}
 </ng-template>

@@ -25,6 +25,7 @@ type dataMigration struct {
 var dataMigrations = []dataMigration{
 	{name: assignLegacyEquivalentRolesMigration, run: assignLegacyEquivalentRoles},
 	{name: addLineItemsToDefaultPromptMigration, run: addLineItemsToDefaultPrompt},
+	{name: backfillCategoryColorsMigration, run: backfillCategoryColors},
 }
 
 // RunDataMigrations applies any registered one-time data migrations that have

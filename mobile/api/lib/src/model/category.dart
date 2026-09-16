@@ -17,6 +17,7 @@ part 'category.g.dart';
 /// * [name] - Name of the category
 /// * [description] - Description of the category
 /// * [isIncome] - Whether receipts in this category count as income rather than spending.
+/// * [color] - Hex color used for this category in charts (e.g.
 /// * [updatedAt] 
 @BuiltValue()
 abstract class Category implements Built<Category, CategoryBuilder> {
@@ -40,6 +41,10 @@ abstract class Category implements Built<Category, CategoryBuilder> {
   /// Whether receipts in this category count as income rather than spending.
   @BuiltValueField(wireName: r'isIncome')
   bool? get isIncome;
+
+  /// Hex color used for this category in charts (e.g.
+  @BuiltValueField(wireName: r'color')
+  String? get color;
 
   @BuiltValueField(wireName: r'updatedAt')
   String? get updatedAt;
@@ -107,6 +112,13 @@ class _$CategorySerializer implements PrimitiveSerializer<Category> {
       yield serializers.serialize(
         object.isIncome,
         specifiedType: const FullType(bool),
+      );
+    }
+    if (object.color != null) {
+      yield r'color';
+      yield serializers.serialize(
+        object.color,
+        specifiedType: const FullType(String),
       );
     }
     if (object.updatedAt != null) {
@@ -180,6 +192,13 @@ class _$CategorySerializer implements PrimitiveSerializer<Category> {
             specifiedType: const FullType(bool),
           ) as bool;
           result.isIncome = valueDes;
+          break;
+        case r'color':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.color = valueDes;
           break;
         case r'updatedAt':
           final valueDes = serializers.deserialize(

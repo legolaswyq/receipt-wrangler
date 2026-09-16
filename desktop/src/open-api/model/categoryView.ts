@@ -28,6 +28,10 @@ export interface CategoryView {
      * Whether receipts in this category count as income rather than spending.
      */
     isIncome?: boolean;
+    /**
+     * Hex color used for this category in charts (e.g.
+     */
+    color?: string;
     updatedAt?: string;
     /**
      * Number of receipts associated with this category

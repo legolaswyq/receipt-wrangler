@@ -15,13 +15,19 @@ class _$UpsertCategoryCommand extends UpsertCategoryCommand {
   final String? description;
   @override
   final bool? isIncome;
+  @override
+  final String? color;
 
   factory _$UpsertCategoryCommand(
           [void Function(UpsertCategoryCommandBuilder)? updates]) =>
       (UpsertCategoryCommandBuilder()..update(updates))._build();
 
   _$UpsertCategoryCommand._(
-      {this.id, required this.name, this.description, this.isIncome})
+      {this.id,
+      required this.name,
+      this.description,
+      this.isIncome,
+      this.color})
       : super._();
   @override
   UpsertCategoryCommand rebuild(
@@ -39,7 +45,8 @@ class _$UpsertCategoryCommand extends UpsertCategoryCommand {
         id == other.id &&
         name == other.name &&
         description == other.description &&
-        isIncome == other.isIncome;
+        isIncome == other.isIncome &&
+        color == other.color;
   }
 
   @override
@@ -49,6 +56,7 @@ class _$UpsertCategoryCommand extends UpsertCategoryCommand {
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, description.hashCode);
     _$hash = $jc(_$hash, isIncome.hashCode);
+    _$hash = $jc(_$hash, color.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -59,7 +67,8 @@ class _$UpsertCategoryCommand extends UpsertCategoryCommand {
           ..add('id', id)
           ..add('name', name)
           ..add('description', description)
-          ..add('isIncome', isIncome))
+          ..add('isIncome', isIncome)
+          ..add('color', color))
         .toString();
   }
 }
@@ -84,6 +93,10 @@ class UpsertCategoryCommandBuilder
   bool? get isIncome => _$this._isIncome;
   set isIncome(bool? isIncome) => _$this._isIncome = isIncome;
 
+  String? _color;
+  String? get color => _$this._color;
+  set color(String? color) => _$this._color = color;
+
   UpsertCategoryCommandBuilder() {
     UpsertCategoryCommand._defaults(this);
   }
@@ -95,6 +108,7 @@ class UpsertCategoryCommandBuilder
       _name = $v.name;
       _description = $v.description;
       _isIncome = $v.isIncome;
+      _color = $v.color;
       _$v = null;
     }
     return this;
@@ -121,6 +135,7 @@ class UpsertCategoryCommandBuilder
               name, r'UpsertCategoryCommand', 'name'),
           description: description,
           isIncome: isIncome,
+          color: color,
         );
     replace(_$result);
     return _$result;

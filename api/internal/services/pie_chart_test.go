@@ -91,6 +91,33 @@ func TestPieChartService_GetPieChartData_GroupByCategories_Success(t *testing.T)
 	}
 }
 
+func TestPieChartService_GetPieChartData_CarriesCategoryColor(t *testing.T) {
+	defer tearDownPieChartTest()
+	setupPieChartTest()
+
+	db := repositories.GetDB()
+	coloredCategory := models.Category{Name: "Groceries", Color: "#4E79A7"}
+	db.Create(&coloredCategory)
+
+	createTestReceipt("Shop", 100.00, 1, 1, []models.Category{coloredCategory}, nil)
+
+	service := NewPieChartService(nil)
+	command := commands.PieChartDataCommand{ChartGrouping: models.CHART_GROUPING_CATEGORIES}
+
+	result, err := service.GetPieChartData(1, "1", command)
+	if err != nil {
+		utils.PrintTestError(t, err, "no error")
+		return
+	}
+	if len(result.Data) != 1 {
+		utils.PrintTestError(t, len(result.Data), 1)
+		return
+	}
+	if result.Data[0].Color != "#4E79A7" {
+		utils.PrintTestError(t, result.Data[0].Color, "#4E79A7")
+	}
+}
+
 func TestPieChartService_GetPieChartData_ExcludesIncomeCategories(t *testing.T) {
 	defer tearDownPieChartTest()
 	setupPieChartTest()

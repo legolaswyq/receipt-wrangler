@@ -28,6 +28,7 @@ Name | Type | Description | Notes
 **createdByString** | **String** | Created by entity's name | [optional] [default to '']
 **description** | **String** | Custom Field description | [optional] 
 **isIncome** | **bool** | Whether receipts in this category count as income rather than spending. | [optional] 
+**color** | **String** | Hex color used for this category in charts (e.g. | [optional] 
 **prompt** | [**Prompt**](Prompt.md) |  | 
 **groupSettings** | [**GroupSettings**](GroupSettings.md) |  | [optional] 
 **groupReceiptSettings** | [**GroupReceiptSettings**](GroupReceiptSettings.md) |  | 

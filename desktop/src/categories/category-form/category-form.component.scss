@@ -1,0 +1,41 @@
+.color-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &__label {
+    font-size: 0.85rem;
+    color: var(--bs-secondary, #6c757d);
+  }
+
+  &__swatches {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    padding: 0;
+    cursor: pointer;
+    outline: none;
+
+    &--selected {
+      border-color: var(--bs-body-color, #212529);
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  &__custom {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+}

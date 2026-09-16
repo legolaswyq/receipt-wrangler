@@ -20,6 +20,8 @@ class _$Category extends Category {
   @override
   final bool? isIncome;
   @override
+  final String? color;
+  @override
   final String? updatedAt;
 
   factory _$Category([void Function(CategoryBuilder)? updates]) =>
@@ -32,6 +34,7 @@ class _$Category extends Category {
       this.name,
       this.description,
       this.isIncome,
+      this.color,
       this.updatedAt})
       : super._();
   @override
@@ -51,6 +54,7 @@ class _$Category extends Category {
         name == other.name &&
         description == other.description &&
         isIncome == other.isIncome &&
+        color == other.color &&
         updatedAt == other.updatedAt;
   }
 
@@ -63,6 +67,7 @@ class _$Category extends Category {
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, description.hashCode);
     _$hash = $jc(_$hash, isIncome.hashCode);
+    _$hash = $jc(_$hash, color.hashCode);
     _$hash = $jc(_$hash, updatedAt.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -77,6 +82,7 @@ class _$Category extends Category {
           ..add('name', name)
           ..add('description', description)
           ..add('isIncome', isIncome)
+          ..add('color', color)
           ..add('updatedAt', updatedAt))
         .toString();
   }
@@ -109,6 +115,10 @@ class CategoryBuilder implements Builder<Category, CategoryBuilder> {
   bool? get isIncome => _$this._isIncome;
   set isIncome(bool? isIncome) => _$this._isIncome = isIncome;
 
+  String? _color;
+  String? get color => _$this._color;
+  set color(String? color) => _$this._color = color;
+
   String? _updatedAt;
   String? get updatedAt => _$this._updatedAt;
   set updatedAt(String? updatedAt) => _$this._updatedAt = updatedAt;
@@ -126,6 +136,7 @@ class CategoryBuilder implements Builder<Category, CategoryBuilder> {
       _name = $v.name;
       _description = $v.description;
       _isIncome = $v.isIncome;
+      _color = $v.color;
       _updatedAt = $v.updatedAt;
       _$v = null;
     }
@@ -154,6 +165,7 @@ class CategoryBuilder implements Builder<Category, CategoryBuilder> {
           name: name,
           description: description,
           isIncome: isIncome,
+          color: color,
           updatedAt: updatedAt,
         );
     replace(_$result);

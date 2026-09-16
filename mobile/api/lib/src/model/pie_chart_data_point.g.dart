@@ -11,12 +11,15 @@ class _$PieChartDataPoint extends PieChartDataPoint {
   final String label;
   @override
   final double value;
+  @override
+  final String? color;
 
   factory _$PieChartDataPoint(
           [void Function(PieChartDataPointBuilder)? updates]) =>
       (PieChartDataPointBuilder()..update(updates))._build();
 
-  _$PieChartDataPoint._({required this.label, required this.value}) : super._();
+  _$PieChartDataPoint._({required this.label, required this.value, this.color})
+      : super._();
   @override
   PieChartDataPoint rebuild(void Function(PieChartDataPointBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -30,7 +33,8 @@ class _$PieChartDataPoint extends PieChartDataPoint {
     if (identical(other, this)) return true;
     return other is PieChartDataPoint &&
         label == other.label &&
-        value == other.value;
+        value == other.value &&
+        color == other.color;
   }
 
   @override
@@ -38,6 +42,7 @@ class _$PieChartDataPoint extends PieChartDataPoint {
     var _$hash = 0;
     _$hash = $jc(_$hash, label.hashCode);
     _$hash = $jc(_$hash, value.hashCode);
+    _$hash = $jc(_$hash, color.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -46,7 +51,8 @@ class _$PieChartDataPoint extends PieChartDataPoint {
   String toString() {
     return (newBuiltValueToStringHelper(r'PieChartDataPoint')
           ..add('label', label)
-          ..add('value', value))
+          ..add('value', value)
+          ..add('color', color))
         .toString();
   }
 }
@@ -63,6 +69,10 @@ class PieChartDataPointBuilder
   double? get value => _$this._value;
   set value(double? value) => _$this._value = value;
 
+  String? _color;
+  String? get color => _$this._color;
+  set color(String? color) => _$this._color = color;
+
   PieChartDataPointBuilder() {
     PieChartDataPoint._defaults(this);
   }
@@ -72,6 +82,7 @@ class PieChartDataPointBuilder
     if ($v != null) {
       _label = $v.label;
       _value = $v.value;
+      _color = $v.color;
       _$v = null;
     }
     return this;
@@ -97,6 +108,7 @@ class PieChartDataPointBuilder
               label, r'PieChartDataPoint', 'label'),
           value: BuiltValueNullFieldError.checkNotNull(
               value, r'PieChartDataPoint', 'value'),
+          color: color,
         );
     replace(_$result);
     return _$result;

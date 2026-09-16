@@ -13,6 +13,7 @@ part 'pie_chart_data_point.g.dart';
 /// Properties:
 /// * [label] - Label for the pie chart slice
 /// * [value] - Value for the pie chart slice
+/// * [color] - Hex color for the slice, from the category's stored color (empty for buckets without one)
 @BuiltValue()
 abstract class PieChartDataPoint implements Built<PieChartDataPoint, PieChartDataPointBuilder> {
   /// Label for the pie chart slice
@@ -22,6 +23,10 @@ abstract class PieChartDataPoint implements Built<PieChartDataPoint, PieChartDat
   /// Value for the pie chart slice
   @BuiltValueField(wireName: r'value')
   double get value;
+
+  /// Hex color for the slice, from the category's stored color (empty for buckets without one)
+  @BuiltValueField(wireName: r'color')
+  String? get color;
 
   PieChartDataPoint._();
 
@@ -56,6 +61,13 @@ class _$PieChartDataPointSerializer implements PrimitiveSerializer<PieChartDataP
       object.value,
       specifiedType: const FullType(double),
     );
+    if (object.color != null) {
+      yield r'color';
+      yield serializers.serialize(
+        object.color,
+        specifiedType: const FullType(String),
+      );
+    }
   }
 
   @override
@@ -92,6 +104,13 @@ class _$PieChartDataPointSerializer implements PrimitiveSerializer<PieChartDataP
             specifiedType: const FullType(double),
           ) as double;
           result.value = valueDes;
+          break;
+        case r'color':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.color = valueDes;
           break;
         default:
           unhandled.add(key);

@@ -12,6 +12,7 @@ type UpsertCategoryCommand struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	IsIncome    bool   `json:"isIncome"`
+	Color       string `json:"color"`
 }
 
 func (category *UpsertCategoryCommand) LoadDataFromRequest(w http.ResponseWriter, r *http.Request) error {

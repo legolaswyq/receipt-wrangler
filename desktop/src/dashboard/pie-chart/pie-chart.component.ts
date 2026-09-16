@@ -143,13 +143,19 @@ export class PieChartComponent implements OnInit, OnChanges {
     this.hasData.set(true);
     const labels = data.data.map((point) => point.label || "Unknown");
     const values = data.data.map((point) => point.value || 0);
+    // Prefer each slice's stored category color; fall back to the palette (by
+    // index) for slices without one (Uncategorized, tags/paid-by groupings).
+    const fallback = this.pieChartData.datasets[0].backgroundColor as string[];
+    const backgroundColor = data.data.map(
+      (point, i) => point.color || fallback[i % fallback.length]
+    );
 
     this.pieChartData = {
       labels: labels,
       datasets: [
         {
           data: values,
-          backgroundColor: this.pieChartData.datasets[0].backgroundColor,
+          backgroundColor: backgroundColor,
         },
       ],
     };

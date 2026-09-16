@@ -15,6 +15,7 @@ part 'upsert_category_command.g.dart';
 /// * [name] - Category name
 /// * [description] - Category description
 /// * [isIncome] - Whether receipts in this category count as income rather than spending.
+/// * [color] - Hex color used for this category in charts (e.g.
 @BuiltValue()
 abstract class UpsertCategoryCommand implements Built<UpsertCategoryCommand, UpsertCategoryCommandBuilder> {
   /// Category id
@@ -32,6 +33,10 @@ abstract class UpsertCategoryCommand implements Built<UpsertCategoryCommand, Ups
   /// Whether receipts in this category count as income rather than spending.
   @BuiltValueField(wireName: r'isIncome')
   bool? get isIncome;
+
+  /// Hex color used for this category in charts (e.g.
+  @BuiltValueField(wireName: r'color')
+  String? get color;
 
   UpsertCategoryCommand._();
 
@@ -80,6 +85,13 @@ class _$UpsertCategoryCommandSerializer implements PrimitiveSerializer<UpsertCat
       yield serializers.serialize(
         object.isIncome,
         specifiedType: const FullType(bool),
+      );
+    }
+    if (object.color != null) {
+      yield r'color';
+      yield serializers.serialize(
+        object.color,
+        specifiedType: const FullType(String),
       );
     }
   }
@@ -132,6 +144,13 @@ class _$UpsertCategoryCommandSerializer implements PrimitiveSerializer<UpsertCat
             specifiedType: const FullType(bool),
           ) as bool;
           result.isIncome = valueDes;
+          break;
+        case r'color':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.color = valueDes;
           break;
         default:
           unhandled.add(key);

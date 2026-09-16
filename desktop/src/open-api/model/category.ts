@@ -28,6 +28,10 @@ export interface Category {
      * Whether receipts in this category count as income rather than spending.
      */
     isIncome?: boolean;
+    /**
+     * Hex color used for this category in charts (e.g.
+     */
+    color?: string;
     updatedAt?: string;
 }
 

@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **name** | **String** | Name of the category | 
 **description** | **String** | Description of the category | [optional] 
 **isIncome** | **bool** | Whether receipts in this category count as income rather than spending. | [optional] 
+**color** | **String** | Hex color used for this category in charts (e.g. | [optional] 
 **updatedAt** | **String** |  | [optional] 
 **numberOfReceipts** | **int** | Number of receipts associated with this category | 
 

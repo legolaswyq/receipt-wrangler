@@ -4013,6 +4013,9 @@ components:
         isIncome:
           type: boolean
           description: Whether receipts in this category count as income rather than spending.
+        color:
+          type: string
+          description: Hex color used for this category in charts (e.g. #4E79A7).
         updatedAt:
           type: string
           x-go-name: UpdatedAt
@@ -4034,6 +4037,9 @@ components:
         isIncome:
           type: boolean
           description: Whether receipts in this category count as income rather than spending.
+        color:
+          type: string
+          description: Hex color used for this category in charts (e.g. #4E79A7).
     CategoryView:
       required:
         - id
@@ -4058,6 +4064,9 @@ components:
         isIncome:
           type: boolean
           description: Whether receipts in this category count as income rather than spending.
+        color:
+          type: string
+          description: Hex color used for this category in charts (e.g. #4E79A7).
         updatedAt:
           type: string
         numberOfReceipts:
@@ -6471,6 +6480,9 @@ components:
           type: number
           format: double
           description: Value for the pie chart slice
+        color:
+          type: string
+          description: Hex color for the slice, from the category's stored color (empty for buckets without one)
     PieChartData:
       type: object
       required:

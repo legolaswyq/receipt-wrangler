@@ -13,6 +13,29 @@
         label="This is an income category"
         [inputFormControl]="form | formGet : 'isIncome'"
       ></app-checkbox>
+
+      <div class="color-picker mt-2">
+        <label class="color-picker__label">Color</label>
+        <div class="color-picker__swatches">
+          @for (swatch of colorPalette; track swatch) {
+            <button
+              type="button"
+              class="color-picker__swatch"
+              [class.color-picker__swatch--selected]="form.get('color')?.value === swatch"
+              [style.background-color]="swatch"
+              [attr.aria-label]="'Select color ' + swatch"
+              (click)="selectColor(swatch)"
+            ></button>
+          }
+          <input
+            type="color"
+            class="color-picker__custom"
+            aria-label="Custom color"
+            [value]="form.get('color')?.value || '#4E79A7'"
+            (input)="selectColor($any($event.target).value)"
+          />
+        </div>
+      </div>
     </div>
 
     <app-dialog-footer

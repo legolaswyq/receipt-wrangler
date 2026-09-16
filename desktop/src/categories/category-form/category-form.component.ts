@@ -19,6 +19,21 @@ export class CategoryForm implements OnInit {
 
   public form: FormGroup = new FormGroup({});
 
+  // Mirrors the backend palette (api/internal/repositories/category_colors.go) so
+  // hand-picked colors come from the same set the server auto-assigns from.
+  public readonly colorPalette: string[] = [
+    "#4E79A7",
+    "#F28E2B",
+    "#E15759",
+    "#76B7B2",
+    "#59A14F",
+    "#EDC948",
+    "#B07AA1",
+    "#FF9DA7",
+    "#9C755F",
+    "#BAB0AC",
+  ];
+
   constructor(
     private formBuilder: FormBuilder,
     private matDialogRef: MatDialogRef<CategoryForm>,
@@ -39,7 +54,12 @@ export class CategoryForm implements OnInit {
       name: [name, Validators.required, nameValidator],
       description: [this.category?.description ?? ""],
       isIncome: [this.category?.isIncome ?? false],
+      color: [this.category?.color ?? ""],
     });
+  }
+
+  public selectColor(color: string): void {
+    this.form.get("color")?.setValue(color);
   }
 
   public submit(): void {
@@ -49,6 +69,7 @@ export class CategoryForm implements OnInit {
         name: this.form.value.name,
         description: this.form.value.description,
         isIncome: this.form.value.isIncome,
+        color: this.form.value.color,
       };
       this.categoryService
         .updateCategory(category.id as number, category)

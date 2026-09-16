@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **name** | **String** | Name of the category | [optional] 
 **description** | **String** | Description of the category | [optional] 
 **isIncome** | **bool** | Whether receipts in this category count as income rather than spending. | [optional] 
+**color** | **String** | Hex color used for this category in charts (e.g. | [optional] 
 **updatedAt** | **String** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

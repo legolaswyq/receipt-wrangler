@@ -231,13 +231,36 @@ describe("PieChartComponent", () => {
   });
 
   describe("updateChartData", () => {
-    it("should preserve backgroundColor when updating data", () => {
-      const originalColors = component.pieChartData.datasets[0].backgroundColor;
+    it("uses the fallback palette (by index) for slices without a color", () => {
+      const fallback = component.pieChartData.datasets[0]
+        .backgroundColor as string[];
       fixture.detectChanges();
 
-      expect(component.pieChartData.datasets[0].backgroundColor).toEqual(
-        originalColors
+      // mockPieChartData has 3 points, none carrying a color -> first 3 palette entries
+      expect(component.pieChartData.datasets[0].backgroundColor).toEqual([
+        fallback[0],
+        fallback[1],
+        fallback[2],
+      ]);
+    });
+
+    it("uses a slice's own color when provided", () => {
+      widgetService.getPieChartData.mockReturnValue(
+        of({
+          data: [
+            { label: "Groceries", value: 100, color: "#4E79A7" },
+            { label: "Uncategorized", value: 50 },
+          ],
+        } as any)
       );
+      const fallback = component.pieChartData.datasets[0]
+        .backgroundColor as string[];
+      fixture.detectChanges();
+
+      expect(component.pieChartData.datasets[0].backgroundColor).toEqual([
+        "#4E79A7",
+        fallback[1],
+      ]);
     });
 
     it("should handle single data point", () => {

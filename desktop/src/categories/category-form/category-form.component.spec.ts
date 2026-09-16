@@ -62,6 +62,7 @@ describe("CategoryForm", () => {
       name: "test",
       description: "test",
       isIncome: false,
+      color: "",
     });
   });
 
@@ -109,6 +110,7 @@ describe("CategoryForm", () => {
         name: "test",
         description: "test",
         isIncome: false,
+        color: "",
       },
     );
   });
@@ -135,6 +137,13 @@ describe("CategoryForm", () => {
       name: "test",
       description: "test",
       isIncome: false,
+      color: "",
     });
+  });
+
+  it("selectColor sets the color control", () => {
+    component.ngOnInit();
+    component.selectColor("#E15759");
+    expect(component.form.get("color")?.value).toBe("#E15759");
   });
 });

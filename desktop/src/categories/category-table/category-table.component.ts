@@ -24,6 +24,8 @@ import { CategoryForm } from "../category-form/category-form.component";
 export class CategoryTableComponent implements OnInit, AfterViewInit {
   public readonly nameCell = viewChild.required<TemplateRef<any>>("nameCell");
 
+  public readonly colorCell = viewChild.required<TemplateRef<any>>("colorCell");
+
   public readonly descriptionCell = viewChild.required<TemplateRef<any>>("descriptionCell");
 
   public readonly numberOfReceiptsCell = viewChild.required<TemplateRef<any>>("numberOfReceiptsCell");
@@ -113,6 +115,12 @@ export class CategoryTableComponent implements OnInit, AfterViewInit {
         sortable: true,
       },
       {
+        columnHeader: "Color",
+        matColumnDef: "color",
+        template: this.colorCell(),
+        sortable: false,
+      },
+      {
         columnHeader: "Number of Receipts with Category",
         matColumnDef: "numberOfReceipts",
         template: this.numberOfReceiptsCell(),
@@ -143,6 +151,7 @@ export class CategoryTableComponent implements OnInit, AfterViewInit {
     this.columns = columns;
     this.displayedColumns = [
       "name",
+      "color",
       "description",
       "numberOfReceipts",
       "actions",
