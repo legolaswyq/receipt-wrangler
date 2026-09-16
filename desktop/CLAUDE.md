@@ -1305,6 +1305,17 @@ number. Income is separated from spend by the category `isIncome` flag, set on t
 (needs `CheckboxModule` in `categories.module.ts`). Tests: `budget.component.spec.ts`,
 `category-form.component.spec.ts`.
 
+### Category colors
+
+Categories carry a hex `color` (see `api/CLAUDE.md` → "Category colors"). The **category form**
+(`src/categories/category-form/`) has a color picker — palette swatches (`colorPalette`, mirroring the
+backend palette) plus a native `<input type="color">` for custom; `selectColor` sets the `color`
+control. New categories may leave it empty (the backend auto-assigns). The **Manage Categories** table
+shows a color swatch column. The **pie chart** (`src/dashboard/pie-chart/`) builds its slice
+`backgroundColor` from each `PieChartDataPoint.color`, falling back to its local palette by index for
+slices without one (Uncategorized, tags/paid-by) — this is what makes a category's slice color stable
+across loads instead of shifting with slice order.
+
 ## Reports (Report Builder)
 
 The **Report Builder** (`src/reports/`) is a two-pane screen for building and downloading receipt

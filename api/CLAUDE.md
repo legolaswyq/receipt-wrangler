@@ -1602,6 +1602,15 @@ plus income-vs-expense separation. Three-component feature (see root `CLAUDE.md`
 - **Permissions**: `group.budgets.read/update/delete` in the registry + swagger `Permission` enum
   (no separate `create` — upsert covers it). **Legacy Owner** picks them up automatically
   (`LegacyGroupOwnerKeys` = every group-scope key); no data migration.
+- **Category colors (stable pie-chart slices).** `Category.Color` (hex, on `Category`/`CategoryView`/
+  `UpsertCategoryCommand`/swagger; returned by the paged read). `CreateCategory` auto-assigns the next
+  unused color from `CategoryColorPalette` (`repositories/category_colors.go`, `nextCategoryColor`) when
+  none is given; the `backfill-category-colors` one-time migration colors pre-existing rows. The pie
+  chart carries each category's color on `PieChartDataPoint.Color` (empty for Uncategorized/tags/paid-by)
+  so the desktop renders a stable per-category color instead of a rotating index palette. `UpdateCategory`
+  writes `color` via the map form. Tests: `repositories/category_colors_test.go`, the pie-chart
+  `_CarriesCategoryColor` case. Palette has 10 colors, so installs with more categories get deterministic
+  repeats (documented; users can hand-pick).
 - **The pie chart is a spending chart and also excludes income.** `PieChartService.GetPieChartData`
   drops any receipt carrying an income-flagged category (`excludeIncomeReceipts`, same rule as
   `BudgetService`) before grouping — for **all** groupings (categories/tags/paid-by), so income never
