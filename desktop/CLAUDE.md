@@ -1315,6 +1315,17 @@ re-queries on change (`ngOnChanges`). Registered like the pie chart (widget-opti
 dashboard-form config reusing `buildPieChartConfigForm`). No new backend endpoint — only the
 `SPENDING_TABLE` widget-type enum value.
 
+### Single-dashboard model
+
+`GroupDashboardsComponent` (`src/dashboard/group-dashboards/`) is a **one-dashboard** page: the
+"All Dashboards" header/description, Add/Edit/Delete controls, and the dashboard chip selector were
+removed — the template is just `<router-outlet>` rendering the single dashboard (date range +
+widgets). Its effect auto-selects the group's dashboard, or **auto-creates a default one** when the
+group has none (only for callers with `group.dashboards.create`), seeded with Spending by Category
+(pie), Category Breakdown (spending table), and Monthly Budget — so a dashboard works with zero setup.
+The dashboard-form/CRUD and NGXS actions still exist and aren't removed (other flows/tests use them);
+they're simply no longer surfaced on this page.
+
 ### Dashboard-level date range
 
 The dashboard page (`src/dashboard/dashboard/dashboard.component.ts`) has a **Date range** control
