@@ -1305,6 +1305,16 @@ number. Income is separated from spend by the category `isIncome` flag, set on t
 (needs `CheckboxModule` in `categories.module.ts`). Tests: `budget.component.spec.ts`,
 `category-form.component.spec.ts`.
 
+### Spending Table widget
+
+`SPENDING_TABLE` (`src/dashboard/spending-table/`) is the tabular twin of the pie chart: a sortable
+table of the group-by buckets showing a color swatch, amount, and % of total, plus a Total row. It
+**reuses `WidgetService.getPieChartData`** (same `chartGrouping` config, income exclusion, grants,
+colors) and takes the same `startDate`/`endDate` inputs, so it honors the dashboard date range and
+re-queries on change (`ngOnChanges`). Registered like the pie chart (widget-options, renderer,
+dashboard-form config reusing `buildPieChartConfigForm`). No new backend endpoint — only the
+`SPENDING_TABLE` widget-type enum value.
+
 ### Dashboard-level date range
 
 The dashboard page (`src/dashboard/dashboard/dashboard.component.ts`) has a **Date range** control
