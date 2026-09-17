@@ -5,6 +5,7 @@ package repositories
 // mirrored on the desktop client's color picker so hand-picked and auto-assigned
 // colors come from the same set.
 var CategoryColorPalette = []string{
+	// Tableau 10 (the original set) — kept first so already-assigned colors don't churn.
 	"#4E79A7",
 	"#F28E2B",
 	"#E15759",
@@ -15,6 +16,18 @@ var CategoryColorPalette = []string{
 	"#FF9DA7",
 	"#9C755F",
 	"#BAB0AC",
+	// Tableau 20 extension — appended so installs with more categories still get
+	// distinct colors.
+	"#A0CBE8",
+	"#FFBE7D",
+	"#8CD17D",
+	"#B6992D",
+	"#499894",
+	"#86BCB6",
+	"#FF9D9A",
+	"#79706E",
+	"#D37295",
+	"#D4A6C8",
 }
 
 // nextCategoryColor returns the first palette color not already used by an

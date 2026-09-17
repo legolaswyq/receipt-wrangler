@@ -32,6 +32,16 @@ export class CategoryForm implements OnInit {
     "#FF9DA7",
     "#9C755F",
     "#BAB0AC",
+    "#A0CBE8",
+    "#FFBE7D",
+    "#8CD17D",
+    "#B6992D",
+    "#499894",
+    "#86BCB6",
+    "#FF9D9A",
+    "#79706E",
+    "#D37295",
+    "#D4A6C8",
   ];
 
   constructor(

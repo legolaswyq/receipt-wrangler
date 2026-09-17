@@ -1609,8 +1609,10 @@ plus income-vs-expense separation. Three-component feature (see root `CLAUDE.md`
   chart carries each category's color on `PieChartDataPoint.Color` (empty for Uncategorized/tags/paid-by)
   so the desktop renders a stable per-category color instead of a rotating index palette. `UpdateCategory`
   writes `color` via the map form. Tests: `repositories/category_colors_test.go`, the pie-chart
-  `_CarriesCategoryColor` case. Palette has 10 colors, so installs with more categories get deterministic
-  repeats (documented; users can hand-pick).
+  `_CarriesCategoryColor` case. Palette has **20** colors (Tableau 10 + the Tableau 20 extension,
+  appended so existing assignments don't churn); the `recolor-duplicate-categories` migration reassigns
+  categories that shared a color (from the original 10-color wrap) into the freed colors, preserving any
+  distinct/hand-picked color. Installs with >20 categories still wrap deterministically.
 - **Dashboard-level date range.** `Dashboard.Period` (+ `PeriodStartDate`/`PeriodEndDate` for CUSTOM)
   persists a per-dashboard range preset (THIS_MONTH/LAST_MONTH/LAST_3_MONTHS/THIS_YEAR/ALL_TIME/CUSTOM;
   on `Dashboard`/`UpsertDashboardCommand`/swagger). `UpdateDashboardById` writes them with a

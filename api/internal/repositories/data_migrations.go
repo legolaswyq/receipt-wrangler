@@ -26,6 +26,7 @@ var dataMigrations = []dataMigration{
 	{name: assignLegacyEquivalentRolesMigration, run: assignLegacyEquivalentRoles},
 	{name: addLineItemsToDefaultPromptMigration, run: addLineItemsToDefaultPrompt},
 	{name: backfillCategoryColorsMigration, run: backfillCategoryColors},
+	{name: recolorDuplicateCategoriesMigration, run: recolorDuplicateCategories},
 }
 
 // RunDataMigrations applies any registered one-time data migrations that have
