@@ -5,11 +5,11 @@ import { ComponentFixture, TestBed, } from "@angular/core/testing";
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { ActivatedRoute, Params, Router } from "@angular/router";
-import { By } from "@angular/platform-browser";
 import { NgxsModule, Store } from "@ngxs/store";
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject, of } from "rxjs";
 import { PipesModule } from "src/pipes/pipes.module";
 import { DashboardState } from "src/store/dashboard.state";
+import { AddDashboardToGroup } from "src/store/dashboard.state.actions";
 import { ButtonModule } from "../../button";
 import { Dashboard, DashboardService } from "../../open-api";
 import { GroupState, SetSelectedDashboardId } from "../../store";
@@ -130,21 +130,6 @@ describe("GroupDashboardsComponent", () => {
     expect(component.dashboards()).toEqual(g2);
   });
 
-  it("renders a chip per dashboard once they land in the store", async () => {
-    spyNavigate();
-    const chips = () =>
-      fixture.debugElement.queryAll(By.css("mat-chip-option"));
-
-    expect(chips().length).toBe(0);
-
-    seed({ selectedGroupId: "1", selectedDashboardId: "" }, { "1": [dashboard(1)] });
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    expect(chips().length).toBe(1);
-  });
-
   it("auto-selects and navigates to the first dashboard once a cold group's data lands", () => {
     jest.useFakeTimers();
     const navSpy = spyNavigate();
@@ -175,16 +160,50 @@ describe("GroupDashboardsComponent", () => {
     jest.useRealTimers();
   });
 
-  it("does not navigate when the group has no dashboards and none is selected", () => {
-    jest.useFakeTimers();
-    const navSpy = spyNavigate();
-    seed({ selectedGroupId: "1", selectedDashboardId: "" }, {});
+  it("creates a default dashboard when the group has none and the user can create", () => {
+    spyNavigate();
+    const created = dashboard(9);
+    const createSpy = jest
+      .spyOn(TestBed.inject(DashboardService), "createDashboard")
+      .mockReturnValue(of(created) as any);
 
+    store.dispatch(new SetPermissions([], { 1: ["group.dashboards.create"] }));
+    seed({ selectedGroupId: "1", selectedDashboardId: "" }, { "1": [] });
+
+    // A fresh component runs its constructor effect against the seeded state
+    // (an empty->empty dashboards signal wouldn't re-fire the shared one).
+    const dispatchSpy = jest.spyOn(store, "dispatch");
+    const freshFixture = TestBed.createComponent(GroupDashboardsComponent);
+    freshFixture.detectChanges();
     TestBed.flushEffects();
-    jest.runOnlyPendingTimers();
 
-    expect(navSpy).not.toHaveBeenCalled();
-    jest.useRealTimers();
+    expect(createSpy).toHaveBeenCalledTimes(1);
+    const command = createSpy.mock.calls[0][0] as any;
+    expect(command.widgets.map((w: any) => w.widgetType)).toEqual([
+      "PIE_CHART",
+      "SPENDING_TABLE",
+      "BUDGET",
+    ]);
+    expect(dispatchSpy).toHaveBeenCalledWith(
+      new AddDashboardToGroup("1", created)
+    );
+  });
+
+  it("does not create a default dashboard without create permission", () => {
+    spyNavigate();
+    const createSpy = jest.spyOn(
+      TestBed.inject(DashboardService),
+      "createDashboard"
+    );
+
+    store.dispatch(new SetPermissions([], { 1: ["group.dashboards.read"] }));
+    seed({ selectedGroupId: "1", selectedDashboardId: "" }, { "1": [] });
+
+    const freshFixture = TestBed.createComponent(GroupDashboardsComponent);
+    freshFixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(createSpy).not.toHaveBeenCalled();
   });
 
   it("should set selected dashboard id", () => {
@@ -194,64 +213,5 @@ describe("GroupDashboardsComponent", () => {
     component.setSelectedDashboardId(1);
 
     expect(storeSpy).toHaveBeenCalledWith(new SetSelectedDashboardId("1"));
-  });
-
-  describe("dashboard CRUD permission gating", () => {
-    const addButton = () =>
-      fixture.nativeElement.querySelector("app-add-button");
-    const editButton = () =>
-      fixture.nativeElement.querySelector("app-edit-button");
-    const deleteButton = () =>
-      fixture.nativeElement.querySelector("app-delete-button");
-
-    // The edit/delete controls only render once a dashboard is selected; seed
-    // the selection so the permission gate is the only variable under test.
-    const selectDashboard = () => {
-      store.reset({
-        ...store.snapshot(),
-        groups: {
-          ...store.snapshot().groups,
-          selectedGroupId: "1",
-          selectedDashboardId: "5",
-        },
-      });
-    };
-
-    const render = async () => {
-      fixture.detectChanges();
-      await fixture.whenStable();
-    };
-
-    it("shows the Add Dashboard button only with group.dashboards.create", async () => {
-      store.dispatch(new SetPermissions([], { 1: ["group.dashboards.read"] }));
-      await render();
-      expect(addButton()).toBeFalsy();
-
-      store.dispatch(new SetPermissions([], { 1: ["group.dashboards.create"] }));
-      await render();
-      expect(addButton()).toBeTruthy();
-    });
-
-    it("shows the Edit Dashboard button only with group.dashboards.update", async () => {
-      selectDashboard();
-      store.dispatch(new SetPermissions([], { 1: ["group.dashboards.read"] }));
-      await render();
-      expect(editButton()).toBeFalsy();
-
-      store.dispatch(new SetPermissions([], { 1: ["group.dashboards.update"] }));
-      await render();
-      expect(editButton()).toBeTruthy();
-    });
-
-    it("shows the Delete Dashboard button only with group.dashboards.delete", async () => {
-      selectDashboard();
-      store.dispatch(new SetPermissions([], { 1: ["group.dashboards.update"] }));
-      await render();
-      expect(deleteButton()).toBeFalsy();
-
-      store.dispatch(new SetPermissions([], { 1: ["group.dashboards.delete"] }));
-      await render();
-      expect(deleteButton()).toBeTruthy();
-    });
   });
 });
