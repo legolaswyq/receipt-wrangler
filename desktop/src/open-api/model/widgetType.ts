@@ -9,7 +9,7 @@
  */
 
 
-export type WidgetType = 'GROUP_SUMMARY' | 'FILTERED_RECEIPTS' | 'GROUP_ACTIVITY' | 'PIE_CHART' | 'REPORT' | 'BUDGET';
+export type WidgetType = 'GROUP_SUMMARY' | 'FILTERED_RECEIPTS' | 'GROUP_ACTIVITY' | 'PIE_CHART' | 'REPORT' | 'BUDGET' | 'SPENDING_TABLE';
 
 export const WidgetType = {
     GroupSummary: 'GROUP_SUMMARY' as WidgetType,
@@ -17,6 +17,7 @@ export const WidgetType = {
     GroupActivity: 'GROUP_ACTIVITY' as WidgetType,
     PieChart: 'PIE_CHART' as WidgetType,
     Report: 'REPORT' as WidgetType,
-    Budget: 'BUDGET' as WidgetType
+    Budget: 'BUDGET' as WidgetType,
+    SpendingTable: 'SPENDING_TABLE' as WidgetType
 };
 

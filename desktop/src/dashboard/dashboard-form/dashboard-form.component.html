@@ -104,6 +104,33 @@
             ></app-receipt-filter>
           </app-form-section>
         </ng-container>
+        <ng-container *ngSwitchCase="WidgetType.SpendingTable">
+          <app-select
+            label="Group By"
+            optionValueKey="value"
+            optionDisplayKey="displayValue"
+            [inputFormControl]="
+              form | formGet : 'widgets.' + i + '.configuration.chartGrouping'
+            "
+            [options]="chartGroupingOptions"
+          ></app-select>
+          <app-form-section
+            headerText="Filter (Optional)"
+            [collapsed]="true"
+            [indent]="false"
+          >
+            <app-receipt-filter
+              class="w-100"
+              [parentForm]="form"
+              [basePath]="'widgets.' + i + '.configuration.filter.'"
+              [categories]="categories()"
+              [tags]="tags()"
+              [footerTemplate]="filterFooter"
+              [inDialog]="false"
+              (formCommand)="handleFormCommand($event)"
+            ></app-receipt-filter>
+          </app-form-section>
+        </ng-container>
         <ng-container *ngSwitchCase="WidgetType.Report">
           <app-select
             label="Report"

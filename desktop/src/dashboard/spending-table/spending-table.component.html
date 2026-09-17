@@ -1,0 +1,46 @@
+<app-card cardStyle="dashboard-card">
+  <ng-container header>
+    <div class="d-flex justify-content-between align-items-center">
+      <h3>{{ widget().name || 'Spending Table' }}</h3>
+      <span class="badge bg-secondary">{{ getGroupingLabel() }}</span>
+    </div>
+  </ng-container>
+  <ng-container content>
+    @if (isLoading()) {
+      <div class="text-center p-3">Loading…</div>
+    } @else if (rows().length === 0) {
+      <div class="text-muted small">No spending in this range.</div>
+    } @else {
+      <table class="spending-table">
+        <thead>
+          <tr>
+            <th class="label-col">Category</th>
+            <th class="num-col">Amount</th>
+            <th class="num-col">%</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.label) {
+            <tr>
+              <td class="label-col">
+                @if (row.color) {
+                  <span class="swatch" [style.background-color]="row.color"></span>
+                }
+                {{ row.label }}
+              </td>
+              <td class="num-col">{{ row.value | customCurrency }}</td>
+              <td class="num-col">{{ row.percent | number : '1.0-1' }}%</td>
+            </tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr>
+            <td class="label-col">Total</td>
+            <td class="num-col">{{ total() | customCurrency }}</td>
+            <td class="num-col"></td>
+          </tr>
+        </tfoot>
+      </table>
+    }
+  </ng-container>
+</app-card>

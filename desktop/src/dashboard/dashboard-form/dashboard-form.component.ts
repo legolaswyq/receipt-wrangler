@@ -151,6 +151,7 @@ export class DashboardFormComponent extends BaseFormComponent implements OnInit 
         });
         break;
       case WidgetType.PieChart:
+      case WidgetType.SpendingTable:
         formGroup = this.formBuilder.group({
           name: [widget.name, Validators.required],
           widgetType: [widget.widgetType, Validators.required],
@@ -180,7 +181,7 @@ export class DashboardFormComponent extends BaseFormComponent implements OnInit 
           if (widgetType === WidgetType.FilteredReceipts) {
             formGroup.removeControl("configuration");
             formGroup.addControl("configuration", buildReceiptFilterForm({}, this));
-          } else if (widgetType === WidgetType.PieChart) {
+          } else if (widgetType === WidgetType.PieChart || widgetType === WidgetType.SpendingTable) {
             formGroup.removeControl("configuration");
             formGroup.addControl("configuration", this.buildPieChartConfigForm({}));
           } else if (widgetType === WidgetType.Report) {

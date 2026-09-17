@@ -25,6 +25,7 @@ import { FilteredReceiptsComponent } from "./filtered-receipts/filtered-receipts
 import { GroupDashboardsComponent } from "./group-dashboards/group-dashboards.component";
 import { PieChartComponent } from "./pie-chart/pie-chart.component";
 import { BudgetComponent } from "./budget/budget.component";
+import { SpendingTableComponent } from "./spending-table/spending-table.component";
 import { ReportWidgetComponent } from "./report-widget/report-widget.component";
 import { WidgetTypePipe } from "./widget-type.pipe";
 
@@ -49,6 +50,7 @@ import { WidgetTypePipe } from "./widget-type.pipe";
     MatListModule,
     PieChartComponent,
     BudgetComponent,
+    SpendingTableComponent,
     ReportWidgetComponent,
     PipesModule,
     PipesModule,

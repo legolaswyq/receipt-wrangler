@@ -3853,6 +3853,7 @@ components:
         - "PIE_CHART"
         - "REPORT"
         - "BUDGET"
+        - "SPENDING_TABLE"
     ChartGrouping:
       type: string
       enum:

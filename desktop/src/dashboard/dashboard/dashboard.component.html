@@ -62,6 +62,14 @@
               [groupId]="selectedDashboard()?.groupId"
             ></app-budget>
           </ng-container>
+          <ng-container *ngSwitchCase="widgetType.SpendingTable">
+            <app-spending-table
+              [widget]="widget"
+              [groupId]="selectedDashboard()?.groupId"
+              [startDate]="range().startDate"
+              [endDate]="range().endDate"
+            ></app-spending-table>
+          </ng-container>
         </ng-container>
       </div>
     }

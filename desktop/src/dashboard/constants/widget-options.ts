@@ -19,6 +19,10 @@ export const widgetTypeOptions: FormOption[] = [
     displayValue: "Pie Chart",
   },
   {
+    value: WidgetType.SpendingTable,
+    displayValue: "Spending Table",
+  },
+  {
     value: WidgetType.Budget,
     displayValue: "Budget",
   },
