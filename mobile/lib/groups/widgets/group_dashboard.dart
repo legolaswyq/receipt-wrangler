@@ -7,6 +7,7 @@ import 'package:receipt_wrangler_mobile/groups/widgets/dashboard_widgets/pie_cha
 import 'package:receipt_wrangler_mobile/groups/widgets/dashboard_widgets/report_widget.dart';
 
 import 'dashboard_widgets/filtered_receipts.dart';
+import 'dashboard_widgets/spending_table.dart';
 
 class GroupDashboard extends StatefulWidget {
   GroupDashboard({super.key, required this.dashboards});
@@ -101,6 +102,13 @@ class _GroupDashboard extends State<GroupDashboard> {
               ),
             ));
             break;
+          case api.WidgetType.SPENDING_TABLE:
+            // Sizes to its content (like GROUP_SUMMARY) so the table flows in
+            // the outer dashboard ListView rather than scrolling in a fixed box.
+            widgets.add(SpendingTable(
+              dashboardWidget: widget,
+            ));
+            break;
         }
       }
     }
@@ -122,17 +130,20 @@ class _GroupDashboard extends State<GroupDashboard> {
       return const Center(child: Text("No dashboards found"));
     }
 
-    var chipList = buildChoiceChipList(widget.dashboards);
     api.Dashboard? selectedDashboard = getSelectedDashboard(widget.dashboards);
     var widgetHeight = MediaQuery.of(context).size.height * 0.6;
     List<Widget> children =
         buildDashboardWidgets(selectedDashboard, widgetHeight);
 
+    // Only surface the dashboard switcher when there's more than one to pick
+    // from; with a single dashboard the lone chip is just noise (and the group
+    // concept is hidden, so a single unified view is the norm).
     return Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          chipList,
+          if (widget.dashboards.length > 1)
+            buildChoiceChipList(widget.dashboards),
           Expanded(child: ListView(children: children))
         ]);
   }

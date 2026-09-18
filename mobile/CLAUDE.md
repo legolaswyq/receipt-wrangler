@@ -36,8 +36,16 @@ The app uses Provider pattern with ChangeNotifier models:
 
 ### Navigation
 Uses `go_router` with nested shell routes:
-- **Group Selection Shell**: `/groups` with group selection UI
-- **Group Context Shell**: `/groups/:groupId/*` with group-specific navigation
+- **Group Selection Shell**: `/groups` — **the group concept is hidden from the UI** (mirrors the
+  desktop dropping its group switcher). `/groups` carries a `redirect` (`singleGroupRedirect` in
+  `guards/permission-guard.dart`) that sends straight to the default group's dashboards, so the
+  `GroupSelect` screen never renders in normal use — it's only a fallback when no group resolves
+  (user belongs to none / groups not yet loaded). The default group is `GroupModel.defaultGroup`
+  (prefers the aggregate "All" group). One group id still rides along on every request under the
+  hood — the backend scopes everything by group; nothing was removed server-side.
+- **Group Context Shell**: `/groups/:groupId/*` with the bottom nav (Dashboards/Add/Receipts/Search).
+  The app bar (`GroupAppBar`) titles by section ("Dashboard" / "Receipts") rather than group name,
+  and has no back arrow, since there's no group-select screen to return to.
 - **Search Shell**: `/search` with search interface
 - Individual routes for receipt forms, viewing, and editing
 
@@ -251,6 +259,15 @@ permission model exactly.
   generate). Authoring stays desktop-only. This required a **mobile client regen** to pick up
   `WidgetType.REPORT`, `renderReportTemplate`, and `allowedActions` on `ReportPreviewResponse` — **no
   swagger change** was needed (the spec already carried all three; the mobile client was simply stale).
+- **Dashboard Category Breakdown widget (`SPENDING_TABLE`):** `lib/groups/widgets/dashboard_widgets/spending_table.dart`,
+  ported from desktop's `desktop/src/dashboard/spending-table/`. Reuses the **same** `getPieChartData`
+  endpoint as the pie chart, then renders the buckets as a Category / Amount / % table sorted by
+  magnitude with a **Total** footer, each row prefixed by the bucket's stored category color swatch
+  (`utils/color.dart` `hexToColor`, shared with the pie widget). Wired into the `group_dashboard.dart`
+  widget-type `switch` and sized to its content (like `GROUP_SUMMARY`, not the fixed `widgetHeight` box)
+  so the table flows in the outer dashboard `ListView`. `SPENDING_TABLE` was already in the mobile
+  `WidgetType` enum (client had it; the renderer was just missing). `BUDGET` remains unrendered (see
+  "Budgets" below).
 - **Tests:** `test/widgets/report_list_item_test.dart` (the `allowedActions` row-gating contract),
   `test/widgets/report_widget_test.dart` (the dashboard widget's pure `reportTemplateIdFromConfig`
   extraction + `reportWidgetCanDownload` gate — the WebView render path is not widget-testable, matching
@@ -849,7 +866,9 @@ All three runners source `api/dev/switch-to-sqlite.sh` for the four `E2E_*` cred
     find.byWidgetPredicate((w) => w is FormBuilderTextField && w.name == 'username')
     ```
   - `CupertinoButton.filled` with a `Text` child is `find.widgetWithText(CupertinoButton, 'Log In')`.
-- **Assert navigation by widget presence**, not URL. After login, `pumpUntilFound(find.byType(GroupSelect))` is stronger than reading the go_router state — the widget is present iff the `/groups` shell has mounted.
+- **Assert navigation by widget presence**, not URL. After login the app lands directly in the group
+  context shell (the group concept is hidden), so `pumpUntilFound(find.byType(GroupBottomNav))` is the
+  stable "logged-in landing" signal — the nav is present iff the `/groups/:groupId/*` shell has mounted.
 - **Each test cold-boots.** There is no Flutter equivalent of Playwright's `storageState`. When the suite grows past a handful of specs, either accept the per-test login cost or introduce a non-UI setup step. Don't hand-write state sharing between tests.
 
 #### Caveats / things that will bite
@@ -903,7 +922,7 @@ All three runners source `api/dev/switch-to-sqlite.sh` for the four `E2E_*` cred
 - `integration_test/helpers/pump.dart` — `pumpUntilFound` polling helper.
 - `integration_test/helpers/platform_mocks.dart` — Linux-desktop platform-channel stubs for `permission_handler`, `gal`, `flutter_secure_storage`.
 - `integration_test/login_qr_deep_link_test.dart` — the login-QR **deep link** end to end: reads the real `loginQrUrl` off `GET /featureConfig` and injects it via the `buildApp` seam. See "App Links / Universal Links" above.
-- `integration_test/helpers/login.dart` / `api.dart` — UI + API login as admin, the shared e2e-user, or arbitrary credentials (`loginAs` / `apiLoginAs`). `login.dart` also exposes the two halves `loginAs` is built from — `resetPersistedAppState()` (wipe secure storage + `basePath` so the app boots to the Connect screen) and `loginFromLoginScreen()` (credentials + `GroupSelect` landing) — for specs that reach the login screen some other way. `api.dart` carries the shared `getSystemSettings` / `putSystemSettings` (the PUT is an **upsert**: patch a fetched object, never send a partial body).
+- `integration_test/helpers/login.dart` / `api.dart` — UI + API login as admin, the shared e2e-user, or arbitrary credentials (`loginAs` / `apiLoginAs`). `login.dart` also exposes the two halves `loginAs` is built from — `resetPersistedAppState()` (wipe secure storage + `basePath` so the app boots to the Connect screen) and `loginFromLoginScreen()` (credentials + group-shell landing, waited on via `GroupBottomNav` since the group concept is hidden and login lands straight on the default dashboard) — for specs that reach the login screen some other way. `api.dart` carries the shared `getSystemSettings` / `putSystemSettings` (the PUT is an **upsert**: patch a fetched object, never send a partial body).
 - `integration_test/helpers/permission_fixtures.dart` — admin-API provisioning for permission specs. `PermFixture`
   carries the provisioned user's **`displayName`**, which the paid-by / charged-to dropdowns render —
   `users.dart`'s lookup helpers only cover the two fixed `E2E_*` accounts, so a spec that submits a form

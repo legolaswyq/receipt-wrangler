@@ -127,6 +127,7 @@ GoRouter _buildAppRouter() {
           routes: [
             GoRoute(
                 path: "/groups",
+                redirect: singleGroupRedirect,
                 builder: (context, state) => const GroupSelect()),
           ]),
       ShellRoute(

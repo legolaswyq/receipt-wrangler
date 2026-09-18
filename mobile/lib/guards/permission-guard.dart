@@ -4,6 +4,7 @@ import 'package:openapi/openapi.dart' show Permission;
 import 'package:provider/provider.dart';
 
 import '../constants/search.dart';
+import '../models/group_model.dart';
 import '../models/permissions_model.dart';
 
 /// go_router route-level redirects that gate permission-scoped screens, mirroring
@@ -11,6 +12,21 @@ import '../models/permissions_model.dart';
 /// The server re-checks permissions on every request, so these are UI hints that
 /// keep users off pages they can't use (which would otherwise 403); they read
 /// [PermissionsModel] from the provider tree the router is built under.
+
+/// Sends the group-select landing (`/groups`) straight to the default group's
+/// dashboard so the group concept never surfaces in the UI — the mobile
+/// counterpart of the desktop dropping its group switcher. One group id still
+/// rides along under the hood (the backend scopes everything by group); see
+/// [GroupModel.defaultGroup]. Falls through to the (otherwise unreachable)
+/// GroupSelect screen only when no group resolves yet — e.g. the user belongs
+/// to none, or groups haven't finished loading.
+String? singleGroupRedirect(BuildContext context, GoRouterState state) {
+  final group = Provider.of<GroupModel>(context, listen: false).defaultGroup;
+  if (group == null) {
+    return null;
+  }
+  return "/groups/${group.id}/dashboards";
+}
 
 /// Allows the group dashboards route only when the caller holds
 /// `group.dashboards.read` for the route's group. On deny, redirects to that

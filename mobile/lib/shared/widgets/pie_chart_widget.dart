@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:receipt_wrangler_mobile/utils/color.dart';
 
 /// A reusable pie chart widget that can display data with customizable styling.
 class PieChartWidget extends StatelessWidget {
@@ -52,20 +53,8 @@ class PieChartWidget extends StatelessWidget {
   /// fallback palette by index. Matches the desktop precedence
   /// (`point.color || fallback[i % fallback.length]`).
   Color _colorFor(int index) {
-    final parsed = _parseHexColor(data[index].color);
-    return parsed ?? defaultColors[index % defaultColors.length];
-  }
-
-  /// Parses a `#RRGGBB` (or `RRGGBB`) hex string into an opaque [Color].
-  /// Returns null for null/empty/malformed input so the caller can fall back.
-  static Color? _parseHexColor(String? hex) {
-    if (hex == null) return null;
-    var value = hex.trim();
-    if (value.startsWith('#')) value = value.substring(1);
-    if (value.length != 6) return null;
-    final rgb = int.tryParse(value, radix: 16);
-    if (rgb == null) return null;
-    return Color(0xFF000000 | rgb);
+    return hexToColor(data[index].color) ??
+        defaultColors[index % defaultColors.length];
   }
 
   @override

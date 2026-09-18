@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:openapi/openapi.dart' as api;
-import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:receipt_wrangler_mobile/shared/widgets/top_app_bar.dart';
-import 'package:receipt_wrangler_mobile/utils/group.dart';
-
-import '../../../models/group_model.dart';
 
 class GroupAppBar extends StatefulWidget implements PreferredSizeWidget {
   const GroupAppBar({super.key});
@@ -17,23 +13,20 @@ class GroupAppBar extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _GroupAppBar extends State<GroupAppBar> {
-  String getGroupTitleText(api.Group group) {
-    if (group.name.toLowerCase().contains("receipt")) {
-      return group.name;
+  /// The group concept is hidden, so the app bar reads by section rather than
+  /// by group name — mirroring the desktop's Dashboard / Receipts tabs. No back
+  /// arrow, because there is no group-select screen to return to.
+  String _titleForRoute(BuildContext context) {
+    final uri =
+        GoRouter.of(context).routeInformationProvider.value.uri.toString();
+    if (uri.contains("dashboards")) {
+      return "Dashboard";
     }
-
-    return "${group.name} Receipts";
+    return "Receipts";
   }
 
   @override
   Widget build(BuildContext context) {
-    final groupId = getGroupId(context);
-    final group =
-        Provider.of<GroupModel>(context, listen: false).getGroupById(groupId);
-
-    return TopAppBar(
-      titleText: group == null ? 'Receipts' : getGroupTitleText(group),
-      leadingArrowRedirect: "/groups",
-    );
+    return TopAppBar(titleText: _titleForRoute(context));
   }
 }

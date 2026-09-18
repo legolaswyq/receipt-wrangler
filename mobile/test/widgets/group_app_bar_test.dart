@@ -15,24 +15,16 @@ import '../helpers/auth_test_helpers.dart';
 api.Claims _claims(String displayName) =>
     api.Claims((b) => b..displayName = displayName);
 
-api.Group _group({required int id, required String name}) {
-  // NOTE: api.Group requires several non-nullable fields. We mock instead of
-  // building a real one so the test isn't coupled to the full builder graph.
-  final mock = MockGroup();
-  when(() => mock.id).thenReturn(id);
-  when(() => mock.name).thenReturn(name);
-  return mock;
-}
-
+// The group concept is hidden, so the app bar titles by section (Dashboard /
+// Receipts) rather than by group name, and shows no back arrow (there is no
+// group-select screen to return to). GroupAppBar no longer reads GroupModel;
+// the provider is still supplied because TopAppBar's avatar/menu reads other
+// models from the same tree.
 Future<void> _pumpAt(
   WidgetTester tester, {
   required String initialLocation,
-  required api.Group? Function(String groupId) lookup,
 }) async {
   final groupModel = MockGroupModel();
-  when(() => groupModel.getGroupById(any())).thenAnswer(
-    (invocation) => lookup(invocation.positionalArguments.first as String),
-  );
 
   final authModel = MockAuthModel();
   when(() => authModel.claims).thenReturn(_claims('Admin'));
@@ -41,11 +33,11 @@ Future<void> _pumpAt(
     initialLocation: initialLocation,
     routes: [
       GoRoute(
-        path: '/groups/:groupId/x',
+        path: '/groups/:groupId/dashboards',
         builder: (_, __) => const Scaffold(appBar: GroupAppBar()),
       ),
       GoRoute(
-        path: '/no-group',
+        path: '/groups/:groupId/receipts',
         builder: (_, __) => const Scaffold(appBar: GroupAppBar()),
       ),
     ],
@@ -53,11 +45,6 @@ Future<void> _pumpAt(
 
   await tester.pumpWidget(MultiProvider(
     providers: [
-      // Plain Provider.value avoids ChangeNotifierProvider trying to
-      // addListener on mocktail Mocks (which don't stub addListener).
-      // GroupAppBar reads with listen: false; UserAvatar's listen: true
-      // on AuthModel still works because Provider.of(listen: true) only
-      // sets up inherited-widget dependency, it doesn't subscribe.
       Provider<AuthModel>.value(value: authModel),
       ChangeNotifierProvider<LoadingModel>(create: (_) => LoadingModel()),
       Provider<GroupModel>.value(value: groupModel),
@@ -68,7 +55,7 @@ Future<void> _pumpAt(
   await tester.pump();
 }
 
-Finder _titleInside(GroupAppBar _, String text) => find.descendant(
+Finder _titleInside(String text) => find.descendant(
       of: find.byType(GroupAppBar),
       matching: find.text(text),
     );
@@ -76,53 +63,23 @@ Finder _titleInside(GroupAppBar _, String text) => find.descendant(
 void main() {
   setUpAll(() {
     registerFallbackValue('');
-    // Allow Provider<T>.value with mocktail Mocks of ChangeNotifier subclasses.
-    // We use plain Provider (not ChangeNotifierProvider) on purpose because
-    // the test never relies on listener-based rebuilds.
     Provider.debugCheckInvalidValueType = null;
   });
 
-  testWidgets('group resolved with name containing "receipt" → name verbatim',
-      (tester) async {
-    final group = _group(id: 1, name: 'My Receipts');
-    await _pumpAt(
-      tester,
-      initialLocation: '/groups/1/x',
-      lookup: (id) => id == '1' ? group : null,
-    );
-    expect(_titleInside(const GroupAppBar(), 'My Receipts'), findsOneWidget);
-  });
-
-  testWidgets('group resolved with arbitrary name → "Receipts" suffix appended',
-      (tester) async {
-    final group = _group(id: 3, name: 'Trips');
-    await _pumpAt(
-      tester,
-      initialLocation: '/groups/3/x',
-      lookup: (id) => id == '3' ? group : null,
-    );
-    expect(_titleInside(const GroupAppBar(), 'Trips Receipts'), findsOneWidget);
-  });
-
-  testWidgets('groupId in route but unknown to model → fallback "Receipts"',
-      (tester) async {
-    await _pumpAt(
-      tester,
-      initialLocation: '/groups/2/x',
-      lookup: (_) => null,
-    );
-    expect(_titleInside(const GroupAppBar(), 'Receipts'), findsOneWidget);
+  testWidgets('dashboards route → title "Dashboard"', (tester) async {
+    await _pumpAt(tester, initialLocation: '/groups/1/dashboards');
+    expect(_titleInside('Dashboard'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('no groupId param → getGroupId falls back to "0", null group, '
-      'fallback "Receipts" rendered without crash', (tester) async {
-    await _pumpAt(
-      tester,
-      initialLocation: '/no-group',
-      lookup: (_) => null,
-    );
-    expect(_titleInside(const GroupAppBar(), 'Receipts'), findsOneWidget);
+  testWidgets('receipts route → title "Receipts"', (tester) async {
+    await _pumpAt(tester, initialLocation: '/groups/1/receipts');
+    expect(_titleInside('Receipts'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('no back arrow is shown (group-select is gone)', (tester) async {
+    await _pumpAt(tester, initialLocation: '/groups/1/dashboards');
+    expect(find.byIcon(Icons.arrow_back), findsNothing);
   });
 }

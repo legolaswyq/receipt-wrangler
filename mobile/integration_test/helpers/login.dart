@@ -2,7 +2,7 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:receipt_wrangler_mobile/groups/screens/group_select.dart';
+import 'package:receipt_wrangler_mobile/groups/nav/group/group_bottom_nav.dart';
 import 'package:receipt_wrangler_mobile/main.dart' show buildApp;
 import 'package:receipt_wrangler_mobile/persistence/global_shared_preferences.dart';
 
@@ -116,9 +116,13 @@ Future<void> loginFromLoginScreen(
   await tester.enterText(formField('password'), password);
   await tester.tap(filledButton('Log In'));
 
+  // The group concept is hidden, so login lands directly inside the default
+  // group's shell (see `singleGroupRedirect`) rather than on a group-select
+  // screen. The group bottom nav mounts only in that shell, so it's the stable
+  // "logged-in landing" signal.
   await pumpUntilFound(
     tester,
-    find.byType(GroupSelect),
+    find.byType(GroupBottomNav),
     timeout: const Duration(seconds: 15),
   );
 }
