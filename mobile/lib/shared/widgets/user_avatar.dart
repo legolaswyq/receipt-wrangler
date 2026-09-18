@@ -17,12 +17,19 @@ class _UserAvatar extends State<UserAvatar> {
     var authModel = Provider.of<AuthModel>(context, listen: true);
     var userModel = Provider.of<UserModel>(context, listen: true);
 
+    // Degrade to a placeholder rather than crashing when the name isn't
+    // available yet — e.g. a screen with the top app bar renders during a
+    // cold start before claims/users have loaded, or a partial-failure
+    // startup leaves claims null. Previously this force-unwrapped and threw
+    // "Null check operator used on a null value".
+    String? name;
     if (widget.userId?.isNotEmpty == true) {
-      var user = userModel.getUserById(widget.userId!);
-      return user!.displayName[0].toUpperCase();
+      name = userModel.getUserById(widget.userId!)?.displayName;
     } else {
-      return authModel.claims!.displayName[0]!.toUpperCase();
+      name = authModel.claims?.displayName;
     }
+
+    return (name != null && name.isNotEmpty) ? name[0].toUpperCase() : "?";
   }
 
   @override
