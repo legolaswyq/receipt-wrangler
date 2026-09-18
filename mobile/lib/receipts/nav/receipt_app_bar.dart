@@ -6,6 +6,7 @@ import 'package:receipt_wrangler_mobile/models/receipt_model.dart';
 import 'package:receipt_wrangler_mobile/shared/widgets/top_app_bar.dart';
 
 import '../../utils/forms.dart';
+import '../../utils/group.dart';
 import '../../utils/receipts.dart';
 
 class ReceiptAppBar extends StatefulWidget implements PreferredSizeWidget {
@@ -21,11 +22,16 @@ class ReceiptAppBar extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _ReceiptAppBar extends State<ReceiptAppBar> {
-  String buildBackUrl(WranglerFormState formState, ReceiptModel receiptModel) {
+  // Pinned to the app's single persistent group context rather than
+  // receiptModel.receipt.groupId — a receipt found via search can belong to a
+  // different real group, and following that group's id here would silently
+  // land the user on that group's (possibly widget-lighter) routes on the next
+  // bottom-nav tap. See utils/group.dart `defaultGroupId`.
+  String buildBackUrl(BuildContext context, WranglerFormState formState) {
     if (formState == WranglerFormState.add) {
       return "/groups";
     } else {
-      return "/groups/${receiptModel.receipt.groupId}/receipts";
+      return "/groups/${defaultGroupId(context)}/receipts";
     }
   }
 
@@ -39,7 +45,7 @@ class _ReceiptAppBar extends State<ReceiptAppBar> {
     return Consumer<ReceiptModel>(
         builder: (context, receiptModel, child) => TopAppBar(
               titleText: getTitleText(formState, receiptModel.receipt.name),
-              leadingArrowRedirect: buildBackUrl(formState, receiptModel),
+              leadingArrowRedirect: buildBackUrl(context, formState),
               leadingArrowPop: false,
               onLeadingArrowPressed: () {
                 receiptModel.resetModel();

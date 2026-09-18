@@ -30,7 +30,11 @@ class _GroupBottomNav extends State<GroupBottomNav> {
         .hasAppPermission(Permission.appPeriodReceiptsPeriodSearch);
 
     onDestinationSelected(int indexSelected) {
-      var groupId = getGroupId(context);
+      // Pinned to the app's single persistent group, not getGroupId(context)'s
+      // current route — otherwise these destinations would follow you into
+      // whatever real group a receipt-view back-navigation happened to land on.
+      // See utils/group.dart `defaultGroupId`.
+      var groupId = defaultGroupId(context);
 
       switch (indexSelected) {
         case 0:

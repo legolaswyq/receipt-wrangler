@@ -49,6 +49,22 @@ Uses `go_router` with nested shell routes:
 - **Search Shell**: `/search` with search interface
 - Individual routes for receipt forms, viewing, and editing
 
+**Persistent nav must stay pinned to the default group, not the current route's group.**
+`:groupId` still varies by route — a receipt can belong to a different *real* group than the
+default, and viewing it then tapping back correctly lands you on that receipt's own group
+(`ReceiptAppBar.buildBackUrl`, since the receipt data itself is scoped there). But the group bottom
+nav's persistent destinations (Dashboards/Receipts) must **not** follow that drift: naively reading
+`getGroupId(context)` (the current route's `:groupId`) means tapping "Dashboards" from a real
+group's receipt list silently shows *that* group's dashboard — which can be missing widgets the
+default group's dashboard has (found in manual testing: a real group's dashboard lacked the Category
+Breakdown widget the aggregate "All" group's has, so "the table disappears after search → view a
+result → back → Dashboards"). Fixed via `utils/group.dart`'s `defaultGroupId(context)` (reads
+`GroupModel.defaultGroup`, falling back to `getGroupId` only if no group has loaded yet), used by
+`GroupBottomNav.onDestinationSelected` and `ReceiptAppBar.buildBackUrl`'s view/edit branch — both
+now return you to the same persistent context regardless of which real group you're currently
+looking at. Regression test: `test/widgets/group_bottom_nav_test.dart` ("Dashboards destination
+navigates to the default group, not the current route's group").
+
 The receipt form routes (`/receipts/:receiptId/{view,edit}` and the comments variants) use
 `pageBuilder` with `NoTransitionPage(key: state.pageKey, ...)` instead of `builder`. During a
 default transition the outgoing and incoming `ReceiptFormScreen`s coexist for the animation, and
