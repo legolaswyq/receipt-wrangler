@@ -85,8 +85,8 @@
 
     &--selected {
       background: rgba(39, 177, 255, 0.1);
-      border-color: #27b1ff;
-      color: #0086d4;
+      border-color: #7462ec;
+      color: #5b48d6;
     }
   }
 
@@ -202,9 +202,9 @@
     cursor: pointer;
 
     &:hover {
-      background: #ccecff;
-      border-color: #a4deff;
-      color: #0086d4;
+      background: #ebe9fd;
+      border-color: #c7c0f8;
+      color: #5b48d6;
     }
   }
 
@@ -251,7 +251,7 @@
   background: rgba(100, 116, 139, 0.12);
 }
 .kind-aggregate {
-  color: #009efa;
+  color: #6a57e8;
   background: rgba(39, 177, 255, 0.12);
 }
 .kind-formula {

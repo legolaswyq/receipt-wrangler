@@ -1,11 +1,14 @@
-import { Component, computed, effect, signal, untracked } from "@angular/core";
+import { Component, computed } from "@angular/core";
+import { MatDialog } from "@angular/material/dialog";
 import { Router } from "@angular/router";
 import { Store } from "@ngxs/store";
-import { take, tap } from "rxjs";
+import { switchMap, take } from "rxjs";
 import { LayoutState } from "src/store/layout.state";
-import { ToggleIsSidebarOpen } from "src/store/layout.state.actions";
-import { AuthService, NotificationsService, Permission } from "../../open-api";
-import { AuthState, GroupState } from "../../store";
+import { AboutComponent } from "../../about/about/about.component";
+import { DEFAULT_DIALOG_CONFIG } from "../../constants";
+import { ImportFormComponent } from "../../import/import-form/import-form.component";
+import { AuthService, Permission } from "../../open-api";
+import { AuthState, GroupState, Logout } from "../../store";
 
 @Component({
     selector: "app-header",
@@ -18,9 +21,10 @@ export class HeaderComponent {
 
   public selectedGroupId = this.store.selectSignal(GroupState.selectedGroupId);
 
-  public selectedGroupIdNumber = computed(() => Number(this.selectedGroupId()));
-
-  public loggedInUser = this.store.selectSignal(AuthState.loggedInUser);
+  public selectedGroupIdNumber = computed(() => {
+    const id = Number.parseInt(this.selectedGroupId() ?? "");
+    return Number.isNaN(id) ? 0 : id;
+  });
 
   public showProgressBar = this.store.selectSignal(LayoutState.showProgressBar);
 
@@ -36,58 +40,58 @@ export class HeaderComponent {
     return [this.store.selectSnapshot(GroupState.dashboardLink)];
   });
 
-  public settingsBaseHeaderLink = computed(() => {
-    this.selectedGroupId();
-    return [this.store.selectSnapshot(GroupState.settingsLinkBase) + "/view"];
-  });
-
-  public groupName = computed(() => {
-    const groupId = this.selectedGroupId();
-    const group = this.store.selectSnapshot(GroupState.getGroupById(groupId));
-    return group?.name as string ?? "";
-  });
-
-  public notificationCount = signal<number | undefined>(undefined);
-
   protected readonly Permission = Permission;
 
-  private readonly canReadNotifications = this.store.selectSignal(
-    AuthState.hasAppPermission(Permission.AppNotificationsRead)
+  // Reports are reachable with read OR the readAll bypass (the *hasAppPermission
+  // directive is single-key AND-only, so the OR is resolved through the selector).
+  protected readonly canViewReports = this.store.selectSignal(
+    AuthState.hasAnyAppPermission([
+      Permission.AppReportsRead,
+      Permission.AppReportsReadAll,
+    ])
+  );
+
+  protected readonly canViewSystemSettings = this.store.selectSignal(
+    AuthState.hasAnyAppPermission([
+      Permission.AppSystemSettingsRead,
+      Permission.AppPromptsRead,
+      Permission.AppReceiptProcessingSettingsRead,
+      Permission.AppSystemEmailsRead,
+      Permission.AppSystemTasksRead,
+    ])
+  );
+
+  protected readonly canViewUserSettings = this.store.selectSignal(
+    AuthState.hasAnyAppPermission([
+      Permission.AppAccountRead,
+      Permission.AppUserPreferencesRead,
+      Permission.AppApiKeysRead,
+    ])
   );
 
   constructor(
     private authService: AuthService,
-    private notificationsService: NotificationsService,
+    private matDialog: MatDialog,
     private router: Router,
     private store: Store
-  ) {
-    this.listenForLoggedInUser();
+  ) {}
+
+  public logout(): void {
+    this.authService
+      .logout()
+      .pipe(
+        take(1),
+        switchMap(() => this.store.dispatch(new Logout())),
+        switchMap(() => this.router.navigate(["/"])),
+      )
+      .subscribe();
   }
 
-  private listenForLoggedInUser(): void {
-    let fetched = false;
-    effect(() => {
-      const loggedIn = this.isLoggedIn();
-      const canRead = this.canReadNotifications();
-      if (!loggedIn) {
-        fetched = false;
-        return;
-      }
-      if (canRead && !fetched) {
-        fetched = true;
-        untracked(() => {
-          this.notificationsService.getNotificationCount().pipe(
-            take(1),
-            tap((n) => {
-              this.notificationCount.set(n > 0 ? n : undefined);
-            })
-          ).subscribe();
-        });
-      }
-    });
+  public openImportDialog(): void {
+    this.matDialog.open(ImportFormComponent, DEFAULT_DIALOG_CONFIG);
   }
 
-  public toggleSidebar(): void {
-    this.store.dispatch(new ToggleIsSidebarOpen());
+  public openAboutDialog(): void {
+    this.matDialog.open(AboutComponent, DEFAULT_DIALOG_CONFIG);
   }
 }

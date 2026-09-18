@@ -7,8 +7,10 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { Router } from "@angular/router";
+import { NgxsModule, Store } from "@ngxs/store";
 import { of } from "rxjs";
 import { ApiModule, SearchResult, SearchService } from "../../open-api";
+import { GroupState, SetSelectedGroupId } from "../../store";
 
 import { SearchbarComponent } from "./searchbar.component";
 import { provideHttpClient, withInterceptorsFromDi } from "@angular/common/http";
@@ -26,9 +28,16 @@ describe("SearchbarComponent", () => {
         ReactiveFormsModule,
         MatFormFieldModule,
         MatInputModule,
+        NgxsModule.forRoot([GroupState]),
         NoopAnimationsModule],
     providers: [
-        { provide: Router, useValue: { navigateByUrl: jest.fn().mockResolvedValue(true) } },
+        {
+            provide: Router,
+            useValue: {
+                navigateByUrl: jest.fn().mockResolvedValue(true),
+                navigate: jest.fn().mockResolvedValue(true),
+            },
+        },
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting()
     ]
@@ -71,6 +80,28 @@ describe("SearchbarComponent", () => {
 
     component.navigateToResult(result);
     expect(spy).toHaveBeenCalledTimes(0);
+  });
+
+  it("navigates to the group's receipt list filtered by the typed term on submit", () => {
+    const store = TestBed.inject(Store);
+    store.dispatch(new SetSelectedGroupId("3"));
+    const navigate = jest.spyOn(TestBed.inject(Router), "navigate");
+
+    component.searchFormControl.setValue("jadan");
+    component.submitSearch();
+
+    expect(navigate).toHaveBeenCalledWith(["/receipts/group/3"], {
+      queryParams: { search: "jadan" },
+    });
+  });
+
+  it("does not navigate on submit when the search term is blank", () => {
+    const navigate = jest.spyOn(TestBed.inject(Router), "navigate");
+
+    component.searchFormControl.setValue("   ");
+    component.submitSearch();
+
+    expect(navigate).not.toHaveBeenCalled();
   });
 
   it("should attempt to call the search service", () => {

@@ -41,7 +41,7 @@ const GROUP_COLOR = "#6d28d9";
 
 // Primary tint/color literals (sky blue) sourced from variables.scss.
 const PRIMARY_TINT = "#ccecff";
-const PRIMARY_COLOR = "#0086d4";
+const PRIMARY_COLOR = "#5b48d6";
 
 export const ROLE_TYPES: RoleTypeMeta[] = [
   {

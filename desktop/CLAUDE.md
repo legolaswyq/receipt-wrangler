@@ -195,6 +195,45 @@ the user explicitly confirms the divergence**. Examples of standards to follow:
   list-page add action, and do NOT use a bespoke page-title header.
 If a design appears to require a new pattern, confirm with the user before diverging.
 
+### App shell & top-bar navigation
+
+The app is a **single top bar over the routed content — there is no left drawer/rail.**
+`SidebarComponent` (`src/layout/sidebar/`, still the routed shell component at the app root, name
+kept for route stability) is now just that content frame: it renders the sticky `<app-header>` over
+the `<router-outlet>` and owns the `fullHeight` route-data logic (the Report Builder's bounded,
+no-padding frame — see "Full-height two-pane frame"). All navigation lives in **`HeaderComponent`**
+(`src/layout/header/`), a `justify-content-between` bar:
+
+- **Left:** brand logo → the two **primary tabs** *Dashboard* (`header-dashboard-tab`,
+  `*hasGroupPermission` on `group.dashboards.read`) and *Receipts* (`header-receipts-tab`, always
+  shown), each an **icon + label** `routerLinkActive="active-tab"` link. User shortcuts render as extra
+  labeled tabs. **There is no group switcher** — the app is intentionally single-group in the header;
+  the selected group persists in `GroupState` (defaults to the virtual "All", id 2) and the tab links
+  resolve against it.
+- **Right:** the search bar (`*hasAppPermission` `app.receipts.search`) → the primary **Add Receipt**
+  button and a secondary manual-add icon, whose actions are **deliberately swapped** from what their
+  labels suggest:
+  - **Add Receipt** (`header-add-receipt`) is `app-quick-scan-button [buttonText]="'Add Receipt'"` —
+    the prominent button opens the **Quick Scan** dialog (the fast path). Gated on
+    `group.receipts.quick-scan` (and the component self-gates on the `aiPoweredReceipts` feature flag).
+  - the **article icon** (`header-add-manual`, `*hasGroupPermission` `group.receipts.create`) opens
+    the **manual receipt form** at `/receipts/add`.
+  - then the **⚙ settings gear** (`header-settings-menu`) opening a `mat-menu` with everything that
+    used to live in the sidebar avatar menu: Add Group (`header-add-group`, `app.groups.create`),
+    Manage Users/Roles/Categories/Tags/Groups/Custom Fields, Reports, User Settings, System Settings,
+    Imports, About, Logout — each gated exactly as before.
+- **Search → filtered list.** The header search bar (`src/searchbar/`) keeps its autocomplete of
+  suggestions (clicking one still opens that receipt), but **Enter navigates to the receipts list
+  filtered to the typed term** — `submitSearch()` routes to `GroupState.receiptListLink` with
+  `?search=<term>`. `ReceiptsTableComponent.ngOnInit` reads that query param and applies it as a
+  `name`-`CONTAINS` filter via `SetReceiptFilter` (resetting to page 1), so the list shows only
+  matching receipts; it also subscribes to `queryParamMap` (`skip(1)`) so a repeat search while
+  already on the page re-filters and reloads.
+- **Removed:** the sidebar toggle (hamburger), the notification **bell**, the group-avatar rail/group
+  switcher, and the "+" speed-dial FAB. `HeaderComponent` no longer fetches the notification count.
+  The old `sidebar-*` `data-testid`s are gone; use the `header-*` ones above. `LayoutState.isSidebarOpen`
+  / `ToggleIsSidebarOpen` are now unused by the shell but left in the store.
+
 ### Roles & Permissions (Manage Roles)
 
 The admin-only **Manage Roles** feature (`src/roles/` — `role-list`, `role-form`, `role-presets`,
@@ -414,11 +453,11 @@ gated by `appPermissionGuard` requiring `app.roles.read` (see **Permission-based
   - **Behavior note:** create actions for categories/tags/custom-fields now gate on the granular
     `.create` permission, so a normal user (Legacy User holds `.create`) sees the **Add** button;
     **Edit/Delete** stay admin-only (`.update`/`.delete`). **Group creation** follows the same shape:
-    the Create-Group FAB on the groups list (`group-table`), the sidebar speed-dial "Add Group"
-    button, and the `/groups/create` route guard all gate on `app.groups.create`. Note the
+    the Create-Group FAB on the groups list (`group-table`), the header settings-menu "Add Group"
+    item, and the `/groups/create` route guard all gate on `app.groups.create`. Note the
     read/create asymmetry — Legacy User holds `app.groups.create` but **not** `app.groups.read`, so
-    they create via the sidebar FAB (the groups-list page itself is `app.groups.read`-gated and off
-    limits to them), exactly like categories/tags.
+    they create via the header settings menu (the groups-list page itself is `app.groups.read`-gated
+    and off limits to them), exactly like categories/tags.
   - **Dashboard CRUD** (`group-dashboards.component.html`): the Add / Edit / Delete dashboard buttons
     gate on `group.dashboards.create` / `.update` / `.delete` via `*hasGroupPermission` (the group id
     comes from a `selectedGroupIdNum` computed). Previously ungated — the buttons rendered for every
@@ -601,8 +640,8 @@ whole list, so the format check must be re-supplied on every toggle rather than 
 **E2E:** `e2e/login-qr.spec.ts` (serial, admin `storageState` + a fresh unauthenticated context for the
 login page) drives the whole flow — admin enables the toggle + URL in System Settings and it persists,
 the QR `<img>` then renders on `/auth/login` with the `featureConfig.loginQrUrl` decoding back to the
-configured server URL, the **About dialog** shows the same QR in an admin session (sidebar avatar →
-About; the avatar carries `data-testid="sidebar-avatar-menu"` for this), and disabling hides it. It
+configured server URL, the **About dialog** shows the same QR in an admin session (header gear menu →
+About; the gear trigger carries `data-testid="header-settings-menu"` for this), and disabling hides it. It
 reverts `showLoginQr` via the admin API in `afterAll` (the setting is global). Component-level specs
 live alongside the code: `login-qr.component.spec.ts` (the generation unit cases — empty, generated,
 divider-only-with-`headerText`, turned back off, and the stale-generation guard),
@@ -1048,7 +1087,7 @@ helpers `withAdminApi` + `apiDeleteUserByName` / `apiDeleteGroupById` / `apiDele
   button beside it. Without quick-scan permission (or with `aiPoweredReceipts` off, which hides the
   quick-scan button via its own `*appFeature` gate), manual add falls back to being the primary labeled
   button so there is always a way to add a receipt. `QuickScanButtonComponent` gained an optional
-  `buttonText` input for this (defaults to icon-only, unchanged for its other call site in the sidebar).
+  `buttonText` input for this (defaults to icon-only, unchanged for its other call site in the header).
 - **Item fields: `nameZh` / `quantity` / `unitPrice`.** `buildItemForm` (`src/receipts/utils/form.utils.ts`)
   and the item add form / item list (`src/receipts/item-add-form/`, `src/receipts/item-list/`) carry three
   new optional fields alongside name/amount: a Chinese name, quantity, and unit price. None are validated

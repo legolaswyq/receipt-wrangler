@@ -1,75 +1,127 @@
 @use "sass:map";
 @use "../../variables.scss" as variables;
 
-.nav-button {
-  width: 56px;
-  height: 56px;
-  border-radius: variables.$border-radius-lg !important;
-  transition: all 0.2s ease-in-out;
-  margin: 0 variables.$spacing-xs;
-
-  img {
-    width: 28px;
-    height: 28px;
-    transition: all 0.2s ease-in-out;
-  }
-
-  svg {
-    width: 28px;
-    height: 28px;
-    transition: all 0.2s ease-in-out;
-  }
-
-  mat-icon {
-    width: 28px;
-    height: 28px;
-    font-size: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease-in-out;
-  }
-
-  &:hover {
-    background-color: map.get(variables.$primary-palette, 50);
-    transform: translateY(-1px);
-    box-shadow: variables.$shadow-md;
-  }
-}
-
-.notifications-bell {
-  width: 56px;
-  height: 56px;
-  border-radius: variables.$border-radius-lg !important;
-  transition: all 0.2s ease-in-out;
-  
-  &:hover {
-    background-color: map.get(variables.$primary-palette, 50);
-    transform: translateY(-1px);
-  }
-}
-
 .header-container {
   background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(8px);
   box-shadow: variables.$shadow-sm;
-  padding: variables.$spacing-md variables.$spacing-lg;
+  padding: variables.$spacing-sm variables.$spacing-lg;
   position: sticky;
   top: 0;
   z-index: 1000;
+  gap: variables.$spacing-md;
 }
 
-.active-link {
-  background-color: map.get(variables.$primary-palette, 100) !important;
-  
-  > * {
-    fill: map.get(variables.$primary-palette, 600) !important;
-    color: map.get(variables.$primary-palette, 600) !important;
+.header-left {
+  gap: variables.$spacing-md;
+  min-width: 0;
+}
+
+.header-right {
+  gap: variables.$spacing-xs;
+  flex-shrink: 0;
+}
+
+.brand-logo {
+  height: 44px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+// Primary Dashboard / Receipts tabs — icon + label so they are self-explanatory.
+.primary-tabs {
+  gap: variables.$spacing-xs;
+
+  .tab-button {
+    display: inline-flex;
+    align-items: center;
+    gap: variables.$spacing-xs;
+    height: 44px;
+    padding: 0 variables.$spacing-md;
+    border-radius: variables.$border-radius-lg;
+    font-weight: 600;
+    color: #667085;
+    transition: all 0.2s ease-in-out;
+
+    mat-icon {
+      width: 22px;
+      height: 22px;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    &:hover {
+      background-color: map.get(variables.$primary-palette, 50);
+      color: map.get(variables.$primary-palette, 700);
+    }
+  }
+
+  .active-tab {
+    background-color: map.get(variables.$primary-palette, 100);
+    color: map.get(variables.$primary-palette, 700);
+
+    mat-icon {
+      color: map.get(variables.$primary-palette, 700);
+    }
+  }
+}
+
+.add-receipt-button {
+  display: inline-flex;
+  align-items: center;
+  gap: variables.$spacing-xs;
+  height: 44px;
+  border-radius: variables.$border-radius-lg;
+  font-weight: 600;
+  white-space: nowrap;
+
+  mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+  }
+}
+
+.add-manual-button {
+  width: 48px;
+  height: 48px;
+  border-radius: variables.$border-radius-lg !important;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: map.get(variables.$primary-palette, 50);
+    color: map.get(variables.$primary-palette, 700);
+  }
+}
+
+.settings-button {
+  width: 48px;
+  height: 48px;
+  border-radius: variables.$border-radius-lg !important;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: map.get(variables.$primary-palette, 50);
   }
 }
 
 .receipt-searchbar {
-  width: 28rem !important;
+  width: 24rem !important;
   max-width: 100%;
+}
+
+// Compact the layout on narrower viewports: drop tab labels to icons only.
+@media (max-width: 1200px) {
+  .primary-tabs .tab-button span,
+  .add-receipt-button span,
+  .group-switcher-name {
+    display: none;
+  }
+
+  .receipt-searchbar {
+    width: 14rem !important;
+  }
 }

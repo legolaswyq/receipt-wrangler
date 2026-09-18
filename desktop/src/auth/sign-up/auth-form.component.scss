@@ -44,7 +44,7 @@ app-auth-form {
       left: 0;
       right: 0;
       height: 4px;
-      background: linear-gradient(90deg, #27b1ff 0%, #009efa 100%);
+      background: linear-gradient(90deg, #7462ec 0%, #6a57e8 100%);
     }
   }
 
@@ -106,7 +106,7 @@ app-auth-form {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
             &:hover {
-              border-color: #27b1ff;
+              border-color: #7462ec;
               background-color: white;
               transform: translateY(-1px);
               box-shadow: 0 4px 12px rgba(39, 177, 255, 0.1);
@@ -114,7 +114,7 @@ app-auth-form {
           }
 
           &.mat-focused .mat-mdc-text-field-wrapper {
-            border-color: #27b1ff;
+            border-color: #7462ec;
             background-color: white;
             box-shadow: 0 0 0 4px rgba(39, 177, 255, 0.12);
             transform: translateY(-1px);
@@ -147,13 +147,13 @@ app-auth-form {
           border-radius: variables.$border-radius-xl !important;
           font-weight: 600;
           font-size: 1rem;
-          background: linear-gradient(135deg, #27b1ff 0%, #009efa 100%);
+          background: linear-gradient(135deg, #7462ec 0%, #6a57e8 100%);
           color: white;
           box-shadow: 0 4px 14px rgba(39, 177, 255, 0.3);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
           &:hover {
-            background: linear-gradient(135deg, #009efa 0%, #0086d4 100%);
+            background: linear-gradient(135deg, #6a57e8 0%, #5b48d6 100%);
             box-shadow: 0 6px 20px rgba(39, 177, 255, 0.4);
             transform: translateY(-2px);
           }

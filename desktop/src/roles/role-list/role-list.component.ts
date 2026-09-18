@@ -36,7 +36,7 @@ import {
 // are inline style values, so the violet "group" accent is a literal (matching
 // the documented out-of-palette accent used elsewhere on this page).
 const SCOPE_ICON: Record<RoleScope, { icon: string; color: string; tint: string }> = {
-  app: { icon: "apps", color: "#27b1ff", tint: "#ccecff" },
+  app: { icon: "apps", color: "#7462ec", tint: "#ebe9fd" },
   group: { icon: "workspaces", color: "#6d28d9", tint: "#ede9fe" },
 };
 

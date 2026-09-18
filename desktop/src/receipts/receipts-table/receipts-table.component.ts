@@ -6,12 +6,12 @@ import { MatTableDataSource } from "@angular/material/table";
 import { ActivatedRoute, Router } from "@angular/router";
 import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
 import { Store } from "@ngxs/store";
-import { map, take, tap } from "rxjs";
+import { map, skip, take, tap } from "rxjs";
 import { fadeInOut } from "src/animations";
 import { ReceiptFilterService } from "src/services/receipt-filter.service";
 import { ConfirmationDialogComponent } from "src/shared-ui/confirmation-dialog/confirmation-dialog.component";
-import { ResetReceiptFilter, SetColumnConfig, SetPage, SetPageSize, SetReceiptFilterData, } from "src/store/receipt-table.actions";
-import { ReceiptTableState } from "src/store/receipt-table.state";
+import { ResetReceiptFilter, SetColumnConfig, SetPage, SetPageSize, SetReceiptFilter, SetReceiptFilterData, } from "src/store/receipt-table.actions";
+import { defaultReceiptFilter, ReceiptTableState } from "src/store/receipt-table.state";
 import { TableColumn } from "src/table/table-column.interface";
 import { TableComponent } from "src/table/table/table.component";
 import { DEFAULT_DIALOG_CONFIG, DEFAULT_HOST_CLASS } from "../../constants";
@@ -19,11 +19,13 @@ import { ReceiptTableColumnConfig } from "../../interfaces";
 import {
   BulkStatusUpdateCommand,
   Category,
+  FilterOperation,
   Group,
   GroupsService,
   PagedDataDataInner,
   Permission,
   Receipt,
+  ReceiptPagedRequestFilter,
   ReceiptService,
   ReceiptStatus,
   Tag,
@@ -175,7 +177,39 @@ export class ReceiptsTableComponent implements OnInit, AfterViewInit {
     this.tags = Number.isNaN(numericGroupId)
       ? []
       : this.store.selectSnapshot(AuthState.groupTags(numericGroupId));
+
+    // The header search bar navigates here with ?search=<term>; apply it as a
+    // name filter so the list shows only matching receipts. Done before the
+    // initial load so the first page is already filtered.
+    const initialSearch = this.activatedRoute.snapshot.queryParamMap.get("search");
+    if (initialSearch) {
+      this.applySearchFilter(initialSearch);
+    }
     this.getInitialData();
+
+    // A repeat search while already on this page only changes the query param,
+    // so react to later changes and reload (skip the current value, handled above).
+    this.activatedRoute.queryParamMap
+      .pipe(untilDestroyed(this), skip(1))
+      .subscribe((params) => {
+        const search = params.get("search");
+        if (search) {
+          this.applySearchFilter(search);
+          this.getFilteredReceipts();
+        }
+      });
+  }
+
+  // Replaces the stored filter with a single name-contains filter for the term,
+  // resetting to the first page so the results start from the top.
+  private applySearchFilter(term: string): void {
+    this.store.dispatch(
+      new SetReceiptFilter({
+        ...defaultReceiptFilter,
+        name: { operation: FilterOperation.Contains, value: term },
+      } as ReceiptPagedRequestFilter)
+    );
+    this.store.dispatch(new SetPage(1));
   }
 
   private setGroup(): void {

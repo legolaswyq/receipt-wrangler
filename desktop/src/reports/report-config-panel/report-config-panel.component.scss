@@ -22,7 +22,7 @@
     align-items: center;
     gap: 7px;
     background: rgba(39, 177, 255, 0.1);
-    border: 1px solid #a4deff;
+    border: 1px solid #c7c0f8;
     border-radius: 9999px;
     padding: 5px 10px 5px 6px;
     font-size: 12.5px;
@@ -68,8 +68,8 @@
     font-family: inherit;
 
     &:hover {
-      border-color: #27b1ff;
-      color: #009efa;
+      border-color: #7462ec;
+      color: #6a57e8;
     }
 
     mat-icon {
@@ -116,7 +116,7 @@
       font-size: 15px;
       width: 15px;
       height: 15px;
-      color: #009efa;
+      color: #6a57e8;
     }
 
     strong {
@@ -201,7 +201,7 @@
     background: #fff;
 
     &--selected {
-      border-color: #27b1ff;
+      border-color: #7462ec;
       background: #f8fbff;
     }
   }
@@ -223,7 +223,7 @@
   }
 
   &__mode-card--selected &__mode-title mat-icon {
-    color: #009efa;
+    color: #6a57e8;
   }
 
   &__mode-desc {
@@ -329,8 +329,8 @@
     margin-top: 3px;
 
     &:hover {
-      border-color: #27b1ff;
-      color: #009efa;
+      border-color: #7462ec;
+      color: #6a57e8;
       background: #f8fbff;
     }
   }
@@ -345,15 +345,15 @@
   &__var-chip {
     font-size: 11px;
     font-family: ui-monospace, Menlo, monospace;
-    color: #0086d4;
+    color: #5b48d6;
     background: rgba(39, 177, 255, 0.1);
-    border: 1px solid #a4deff;
+    border: 1px solid #c7c0f8;
     border-radius: 6px;
     padding: 2px 7px;
     cursor: pointer;
 
     &:hover {
-      background: #ccecff;
+      background: #ebe9fd;
     }
   }
 }
@@ -364,7 +364,7 @@
   background: rgba(100, 116, 139, 0.12);
 }
 .kind-aggregate {
-  color: #009efa;
+  color: #6a57e8;
   background: rgba(39, 177, 255, 0.12);
 }
 .kind-formula {

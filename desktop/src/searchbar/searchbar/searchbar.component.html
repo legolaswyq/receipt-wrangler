@@ -1,4 +1,4 @@
-<form class="w-100" class="form">
+<form class="w-100 form" (ngSubmit)="submitSearch()">
   <mat-form-field class="w-100" appearance="outline">
     <span matPrefix><mat-icon class="px-2">search</mat-icon></span>
     <input
@@ -7,6 +7,7 @@
       placeholder="Search receipts"
       [formControl]="searchFormControl"
       [matAutocomplete]="auto"
+      (keydown.enter)="submitSearch($event)"
     />
     <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayWith">
       <mat-option

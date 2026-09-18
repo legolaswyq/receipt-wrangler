@@ -5,7 +5,7 @@ import { withAdminApi } from './helpers/provisioning';
 // A clean URL (no spaces / reserved chars) so Go's url.QueryEscape and JS's
 // encode/decodeURIComponent agree byte-for-byte on the fragment.
 const SERVER_URL = 'https://e2e-mobile.example.com/api';
-const QR_IMG_NAME = 'Scan to set up the Receipt Wrangler mobile app';
+const QR_IMG_NAME = 'Scan to set up the Hippo Finance mobile app';
 
 // `showLoginQr` / `mobileServerUrl` are GLOBAL system settings, so these tests
 // mutate shared server state and must run serially. afterAll puts both fields
@@ -143,7 +143,7 @@ test.describe.serial('Login QR (System Settings → login page)', () => {
     });
 
     await page.goto('/');
-    await page.getByTestId('sidebar-avatar-menu').click();
+    await page.getByTestId('header-settings-menu').click();
     await page.getByRole('menuitem', { name: 'About' }).click();
 
     const dialog = page.getByRole('dialog');

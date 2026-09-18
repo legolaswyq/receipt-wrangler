@@ -255,7 +255,7 @@ export class RoleFormComponent {
   });
 
   public readonly scopeColor = computed<string>(() =>
-    this.type() === "app" ? "#27b1ff" : "#8b5cf6",
+    this.type() === "app" ? "#7462ec" : "#8b5cf6",
   );
 
   constructor(

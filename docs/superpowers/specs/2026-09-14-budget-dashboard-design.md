@@ -142,13 +142,71 @@ Add `BUDGET` to the `WidgetType` enum (`swagger.yml`), rendered by the desktop d
 
 ## 7. Frontend (desktop)
 
+The budget widget is the first surface built **natively on the "Modern Fintech" design system**
+(`2026-09-18-ui-redesign-design.md`): it consumes the semantic `--rw-*` token layer (never
+hardcoded hex), reads correctly in **both light and dark themes** from day one, and uses the
+money-first typographic treatment. It must not need a follow-up sweep to become theme-correct.
+
+### 7.1 Registration
+
 - New `BUDGET` entry in `widgetTypeOptions` (`dashboard/constants/widget-options.ts`) and the
   dashboard-form `ngSwitch` + dashboard renderer `ngSwitch`.
 - New `budget/budget.component` (+ spec): renders the summary row and per-category bars from the
   widget-data endpoint; inline-edits a target (calls the CRUD endpoint, then refreshes).
-- Progress bar: Material `mat-progress-bar` (or equivalent), red when `over`.
 - Income-flag checkbox added to the category create/edit form.
 - No new nav/route — everything is on the dashboard and the existing category management screen.
+
+### 7.2 Layout — scannable, top-down
+
+The widget reads in three stacked bands so the eye lands on the answer first, then the detail:
+
+1. **Header row** — the month label (`"September 2026"`) on the left as a muted caption; a compact
+   "+ Add target" text button on the right. No heavy card chrome inside the widget — it lives in
+   the standard dashboard card (`--rw-radius-lg`, 1px `--rw-border`, `--rw-elevation-1`).
+2. **Summary band** — three equal **stat tiles** (Income · Spent · Net) in a responsive
+   flex/grid row that collapses to a single column on narrow widths. Each tile: a small
+   uppercase muted label (`--rw-text-muted`), then the figure in the **display numeric treatment**
+   (larger, tighter letter-spacing, `font-variant-numeric: tabular-nums`). **Income** uses
+   `--rw-positive`, **Net** uses `--rw-positive` when ≥ 0 and `--rw-negative` when negative,
+   **Spent** stays `--rw-text`. A thin `--rw-border` divider separates this band from the bars.
+3. **Category bars band** — one row per budgeted category, plus the trailing **Untracked** row.
+   Each row is a three-part grid: category name (left, truncates with ellipsis), a slim progress
+   bar (center, flexes to fill), and the `spent / target` figures (right, tabular-nums,
+   right-aligned). Rows have generous vertical rhythm and a subtle hover surface
+   (`--rw-surface-2`) to signal they are editable.
+
+### 7.3 Progress bar — semantic, token-driven
+
+- Prefer a lightweight **custom `<div>`-based meter** over `mat-progress-bar` so the fill color,
+  track color, height, and radius are token-driven and identical in both themes (Material's
+  progress-bar theming fights the token layer). Track is `--rw-surface-2`; the bar is
+  `--rw-radius-sm`, ~8px tall.
+- Fill color is **semantic**: `--rw-positive` under budget, `--rw-warning` from ~80–100%, and
+  `--rw-negative` when `over`. When over budget the fill caps visually at 100% and an **over-by
+  chip** (e.g. `+$30`) appears in `--rw-negative` next to the figures, rather than letting the bar
+  overflow — clearer than a full red bar with no number.
+- Include an accessible label (`role="progressbar"`, `aria-valuenow/min/max`) so the meter is not
+  color-only; the over state is also conveyed by the chip text.
+
+### 7.4 Inline editing — low-friction
+
+- Clicking a target figure swaps it in place for a compact numeric input (currency-masked,
+  auto-focused, select-all) — no dialog. Enter / blur commits via the CRUD endpoint then refreshes
+  the widget; Escape cancels. Clearing the value (or entering 0) removes the target, moving that
+  category's spend back into **Untracked**.
+- "+ Add target" opens a single inline row: a category picker (categories not already budgeted,
+  income categories excluded) + an amount input, committed the same way.
+- Editing affordances are gated on `group.budgets.update` / `create`; without them the widget is
+  read-only (figures render, no hover/edit affordances) — matching the backend permission split.
+
+### 7.5 States
+
+- **Empty** (no targets yet): summary band still renders (Income/Spent/Net are meaningful without
+  targets); the bars band shows a friendly one-line empty state with the "+ Add target" call to
+  action. Never a blank card.
+- **Loading**: token-colored skeleton rows (`--rw-surface-2`), not a spinner, so layout doesn't
+  jump.
+- **All spend untracked**: only the Untracked row shows, which is a valid, informative state.
 
 ## 8. Mobile (client regen — CRITICAL SAFETY ITEM)
 
@@ -187,7 +245,11 @@ correct; only the current dummy data is inconsistent with the new model. A follo
   current-month boundary, grant/paid-by scoping, over-budget flag); permission registry/enum sync;
   handler auth (read vs CRUD gates). Follow existing `main_test.go` patterns; remove stray `app.db`.
 - **Desktop:** budget component unit tests (rendering bars, over state, inline edit calls the
-  endpoint); widget-picker/renderer registration.
+  endpoint, read-only when the edit permission is absent, empty/loading/all-untracked states);
+  widget-picker/renderer registration. **Theme correctness:** a Playwright screenshot of the
+  widget in **both light and dark** (part of the redesign's two-theme sweep) confirming no
+  hardcoded colors leak — semantic positive/negative/warning colors and the over-budget chip must
+  read correctly on both grounds.
 - **Mobile:** the enum-safety guard test (a dashboard payload carrying `BUDGET` must not crash the
   client), alongside the regen `dart analyze` gate.
 - **Client-drift check:** the swagger/mobile timestamp check from the root `CLAUDE.md` must pass.

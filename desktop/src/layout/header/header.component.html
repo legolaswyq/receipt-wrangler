@@ -3,74 +3,85 @@
     id="header-container"
     class="header-container d-flex justify-content-between align-items-center"
   >
-    <div class="col d-flex align-items-center">
-      <button
-        mat-icon-button
-        color="accent"
-        class="nav-button"
-        matTooltip="Toggle sidebar"
-        (click)="toggleSidebar()"
+    <div class="col d-flex align-items-center header-left">
+      <img
+        class="brand-logo"
+        src="assets/branding/hippo-finance.png"
+        alt="Hippo Finance"
       >
-        <mat-icon>menu</mat-icon>
-      </button>
-      <button
-        *hasGroupPermission="{ groupId: selectedGroupIdNumber(), permission: Permission.GroupDashboardsRead }"
-        mat-icon-button
-        color="accent"
-        class="nav-button"
-        matTooltip="Dashboard"
-        routerLinkActive="active-link"
-        [routerLink]="dashboardHeaderLink()"
-      >
-        <mat-icon>dashboard</mat-icon>
-      </button>
-      <button
-        mat-icon-button
-        color="accent"
-        class="nav-button"
-        matTooltip="Receipt List"
-        routerLinkActive="active-link"
-        [routerLink]="receiptHeaderLink()"
-      >
-        <mat-icon>receipt_long</mat-icon>
-      </button>
-      @for (shortcut of userPreferences()?.userShortcuts ?? []; track shortcut["id"]) {
-        <a [href]="shortcut.url">
-          <button
-            mat-icon-button
-            color="accent"
-            class="nav-button"
-            routerLinkActive="active-link"
+
+      <nav class="primary-tabs d-flex align-items-center">
+        <a
+          *hasGroupPermission="{ groupId: selectedGroupIdNumber(), permission: Permission.GroupDashboardsRead }"
+          class="tab-button"
+          data-testid="header-dashboard-tab"
+          mat-button
+          matTooltip="Dashboard"
+          routerLinkActive="active-tab"
+          [routerLink]="dashboardHeaderLink()"
+        >
+          <mat-icon>dashboard</mat-icon>
+          <span>Dashboard</span>
+        </a>
+        <a
+          class="tab-button"
+          data-testid="header-receipts-tab"
+          mat-button
+          matTooltip="Receipts"
+          routerLinkActive="active-tab"
+          [routerLink]="receiptHeaderLink()"
+        >
+          <mat-icon>receipt_long</mat-icon>
+          <span>Receipts</span>
+        </a>
+        @for (shortcut of userPreferences()?.userShortcuts ?? []; track shortcut["id"]) {
+          <a
+            class="tab-button"
+            [href]="shortcut.url"
             [matTooltip]="shortcut.name"
           >
             <mat-icon>{{ shortcut.icon }}</mat-icon>
-          </button>
-        </a>
-      }
+            <span>{{ shortcut.name }}</span>
+          </a>
+        }
+      </nav>
     </div>
-    <div class="col-auto d-flex align-items-center justify-content-end">
+
+    <div class="col-auto d-flex align-items-center justify-content-end header-right">
       <app-searchbar
         *hasAppPermission="Permission.AppReceiptsSearch"
-        class="receipt-searchbar w-100 me-2"
+        class="receipt-searchbar me-2"
       ></app-searchbar>
-      <app-button
-        *hasAppPermission="Permission.AppNotificationsRead"
-        class="ms-4"
-        #notificationsPopover="ngbPopover"
-        matButtonType="iconButton"
-        icon="notifications"
-        triggers="click:clickouside"
-        autoClose="outside"
-        placement="bottom-end"
-        [matBadgeContent]="notificationCount()"
-        [ngbPopover]="notifications"
-        (clicked)="notificationsPopover.open()"
-      ></app-button>
 
-      <img
-        class="mx-4"
-        src="assets/branding/logo-large.svg"
+<!-- Primary "Add Receipt" button opens Quick Scan (the fast path). -->
+      <app-quick-scan-button
+        *hasGroupPermission="{ groupId: selectedGroupIdNumber(), permission: Permission.GroupReceiptsQuickScan }"
+        class="add-receipt-button me-2"
+        data-testid="header-add-receipt"
+        [buttonText]="'Add Receipt'"
+      ></app-quick-scan-button>
+
+      <!-- Secondary icon opens the manual receipt form. -->
+      <a
+        *hasGroupPermission="{ groupId: selectedGroupIdNumber(), permission: Permission.GroupReceiptsCreate }"
+        class="add-manual-button me-2"
+        data-testid="header-add-manual"
+        mat-icon-button
+        matTooltip="Enter a receipt manually"
+        [routerLink]="['/receipts/add']"
       >
+        <mat-icon>article</mat-icon>
+      </a>
+
+      <button
+        class="settings-button"
+        data-testid="header-settings-menu"
+        mat-icon-button
+        matTooltip="Settings"
+        [matMenuTriggerFor]="settingsMenu"
+      >
+        <mat-icon>settings</mat-icon>
+      </button>
     </div>
   </div>
 }
@@ -78,23 +89,68 @@
   <mat-progress-bar mode="indeterminate"></mat-progress-bar>
 }
 
-<ng-template
-  #navButton
-  let-srcPath="srcPath"
-  let-routerLink="routerLink"
-  let-tooltip="tooltip"
->
+<mat-menu #settingsMenu="matMenu">
   <button
-    mat-icon-button
-    color="accent"
-    class="nav-button"
-    [routerLink]="routerLink"
-    [matTooltip]="tooltip"
+    *hasAppPermission="Permission.AppGroupsCreate"
+    data-testid="header-add-group"
+    mat-menu-item
+    [routerLink]="['/groups/create']"
   >
-    <img [src]="srcPath"/>
+    <mat-icon>group_add</mat-icon>
+    <span>Add Group</span>
   </button>
-</ng-template>
-
-<ng-template #notifications>
-  <app-notifications-list (notificationCountChanged)="notificationCount.set($event)"></app-notifications-list>
-</ng-template>
+  <button *hasAppPermission="Permission.AppUsersRead" [routerLink]="['/users']" mat-menu-item>
+    <mat-icon>people</mat-icon>
+    <span>Manage Users</span>
+  </button>
+  <button *hasAppPermission="Permission.AppRolesRead" [routerLink]="['/roles']" mat-menu-item>
+    <mat-icon>admin_panel_settings</mat-icon>
+    <span>Manage Roles</span>
+  </button>
+  <button *hasAppPermission="Permission.AppCategoriesRead" [routerLink]="['/categories']" mat-menu-item>
+    <mat-icon>category</mat-icon>
+    <span>Manage Categories</span>
+  </button>
+  <button *hasAppPermission="Permission.AppTagsRead" [routerLink]="['/tags']" mat-menu-item>
+    <mat-icon>label</mat-icon>
+    <span>Manage Tags</span>
+  </button>
+  <button *hasAppPermission="Permission.AppGroupsRead" [routerLink]="['/groups']" mat-menu-item>
+    <mat-icon>groups</mat-icon>
+    <span>Manage Groups</span>
+  </button>
+  <button *hasAppPermission="Permission.AppCustomFieldsRead" [routerLink]="['/custom-fields']" mat-menu-item>
+    <mat-icon>tune</mat-icon>
+    <span>Manage Custom Fields</span>
+  </button>
+  @if (canViewReports()) {
+    <button [routerLink]="['/reports']" mat-menu-item>
+      <mat-icon>assessment</mat-icon>
+      <span>Reports</span>
+    </button>
+  }
+  @if (canViewUserSettings()) {
+    <button mat-menu-item [routerLink]="['/settings']">
+      <mat-icon>account_circle</mat-icon>
+      <span>User Settings</span>
+    </button>
+  }
+  @if (canViewSystemSettings()) {
+    <button [routerLink]="['/system-settings']" mat-menu-item>
+      <mat-icon>settings_applications</mat-icon>
+      <span>System Settings</span>
+    </button>
+  }
+  <button *hasAppPermission="Permission.AppImportsRun" mat-menu-item (click)="openImportDialog()">
+    <mat-icon>upload_file</mat-icon>
+    <span>Imports</span>
+  </button>
+  <button mat-menu-item (click)="openAboutDialog()">
+    <mat-icon>info</mat-icon>
+    <span>About</span>
+  </button>
+  <button mat-menu-item (click)="logout()">
+    <mat-icon>logout</mat-icon>
+    <span>Logout</span>
+  </button>
+</mat-menu>

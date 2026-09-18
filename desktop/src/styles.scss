@@ -1,4 +1,4 @@
-/* Modern, clean Receipt Wrangler styles */
+/* Modern, clean Hippo Finance styles */
 @use "sass:map";
 @use "@angular/material" as mat;
 @use "./variables.scss" as variables;
@@ -250,7 +250,7 @@ h3 {
   }
   
   .mdc-linear-progress__primary-bar {
-    background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%) !important;
+    background: linear-gradient(90deg, #7462ec 0%, #5b48d6 100%) !important;
   }
 }
 

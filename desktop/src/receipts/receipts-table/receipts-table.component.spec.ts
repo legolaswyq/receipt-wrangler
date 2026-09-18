@@ -5,7 +5,7 @@ import { ReactiveFormsModule } from "@angular/forms";
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatTooltipModule } from "@angular/material/tooltip";
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute, convertToParamMap } from "@angular/router";
 import { NgxsModule, Store } from "@ngxs/store";
 import { of } from "rxjs";
 import { PipesModule } from "src/pipes/pipes.module";
@@ -45,7 +45,9 @@ describe("ReceiptsTableComponent", () => {
                         categories: [],
                         tags: [],
                     },
+                    queryParamMap: convertToParamMap({}),
                 },
+                queryParamMap: of(convertToParamMap({})),
             },
         },
         { provide: QuickScanProgressService, useValue: { jobs: quickScanJobs, dismissJob: jest.fn() } },

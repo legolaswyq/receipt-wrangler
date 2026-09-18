@@ -56,7 +56,7 @@ import { ChangeDetectionStrategy, Component, input } from "@angular/core";
         font-size: 18px;
         width: 18px;
         height: 18px;
-        color: #009efa;
+        color: #6a57e8;
       }
       .report-section__heading {
         flex: 1;
