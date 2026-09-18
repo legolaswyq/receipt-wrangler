@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
 import 'package:openapi/openapi.dart' as api;
@@ -174,10 +173,10 @@ class _Login extends State<AuthForm> {
           if (isLoading) ...[
             const CircularProgressIndicator(),
           ] else ...[
-            SvgPicture.asset(
-              "assets/branding/logo-large.svg",
-              width: screenSize.width * 0.25,
-              height: screenSize.width * 0.25,
+            Image.asset(
+              "assets/branding/hippo-finance.png",
+              width: screenSize.width * 0.35,
+              height: screenSize.width * 0.35,
             ),
             const SizedBox(
               height: 10,

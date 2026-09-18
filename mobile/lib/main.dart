@@ -410,7 +410,7 @@ class _ReceiptWrangler extends State<ReceiptWrangler>
     return MaterialApp.router(
       color: Colors.white,
       debugShowCheckedModeBanner: false,
-      title: 'Receipt Wrangler',
+      title: 'Hippo Finance',
       theme: ThemeData(
         fontFamily: "Raleway",
         inputDecorationTheme: const InputDecorationTheme(
@@ -427,7 +427,7 @@ class _ReceiptWrangler extends State<ReceiptWrangler>
           surfaceTintColor: Colors.white,
         ),
         colorScheme: const ColorScheme(
-          primary: Color(0xFF27B1FF),
+          primary: Color(0xFF7462EC),
           secondary: Color(0xFF8EA1AC),
           surface: Color(0xFFFFFFFF),
           background: Color(0xFFFFFFFF),

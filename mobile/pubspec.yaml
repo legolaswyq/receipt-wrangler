@@ -106,6 +106,7 @@ flutter:
   assets:
     - assets/branding/loading.gif
     - assets/branding/logo-large.svg
+    - assets/branding/hippo-finance.png
     - assets/icons/split.svg
     - assets/test/sample.png
   fonts:
