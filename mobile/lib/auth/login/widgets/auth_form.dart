@@ -147,6 +147,28 @@ class _Login extends State<AuthForm> {
     }
   }
 
+  /// Welcome heading + subtitle, mirroring the desktop auth screen copy so the
+  /// two apps read the same. Toggles between the login and sign-up wording.
+  Widget _getWelcomeSection() {
+    return Column(
+      children: [
+        Text(
+          isSignUp ? "Join us! 👋" : "Hey there! 👋",
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          isSignUp
+              ? "Create your account to get started"
+              : "Welcome back, ready to track your spending?",
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 15, color: Colors.grey[600]),
+        ),
+      ],
+    );
+  }
+
   Widget _getServerInfoText(AuthModel server) {
     if (isSignUp) {
       return Text('Signing up on: ${server.basePath}');
@@ -180,6 +202,10 @@ class _Login extends State<AuthForm> {
             ),
             const SizedBox(
               height: 10,
+            ),
+            _getWelcomeSection(),
+            const SizedBox(
+              height: 12,
             ),
             Consumer<AuthModel>(
               builder: (context, auth, child) {

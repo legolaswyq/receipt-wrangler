@@ -27,21 +27,46 @@ class PieChartWidget extends StatelessWidget {
   /// Message to display while loading
   final String loadingMessage;
 
-  /// Default colors for the pie chart slices
+  /// Fallback colors for slices without a stored category color (Uncategorized,
+  /// tag / paid-by groupings). Mirrors the desktop pie chart's fallback palette
+  /// so both clients render the same colors when the backend supplies none.
+  /// A slice's own `color` (the category's stored hex) takes precedence — see
+  /// [_colorFor].
   static const List<Color> defaultColors = [
-    Color(0xFF2196F3), // Blue
-    Color(0xFF4CAF50), // Green
-    Color(0xFFF44336), // Red
-    Color(0xFFFF9800), // Orange
-    Color(0xFF9C27B0), // Purple
-    Color(0xFF00BCD4), // Cyan
-    Color(0xFFFFEB3B), // Yellow
-    Color(0xFF795548), // Brown
-    Color(0xFF607D8B), // Blue Grey
-    Color(0xFFE91E63), // Pink
-    Color(0xFF3F51B5), // Indigo
-    Color(0xFF009688), // Teal
+    Color(0xFFFF6384),
+    Color(0xFF36A2EB),
+    Color(0xFFFFCE56),
+    Color(0xFF4BC0C0),
+    Color(0xFF9966FF),
+    Color(0xFFFF9F40),
+    Color(0xFFE7E9ED),
+    Color(0xFF7C4DFF),
+    Color(0xFFFF5252),
+    Color(0xFF64FFDA),
+    Color(0xFFFFD740),
+    Color(0xFF448AFF),
   ];
+
+  /// Resolves the color for slice [index]: the data point's own hex [color]
+  /// (the category's stored color from the API) when present, otherwise the
+  /// fallback palette by index. Matches the desktop precedence
+  /// (`point.color || fallback[i % fallback.length]`).
+  Color _colorFor(int index) {
+    final parsed = _parseHexColor(data[index].color);
+    return parsed ?? defaultColors[index % defaultColors.length];
+  }
+
+  /// Parses a `#RRGGBB` (or `RRGGBB`) hex string into an opaque [Color].
+  /// Returns null for null/empty/malformed input so the caller can fall back.
+  static Color? _parseHexColor(String? hex) {
+    if (hex == null) return null;
+    var value = hex.trim();
+    if (value.startsWith('#')) value = value.substring(1);
+    if (value.length != 6) return null;
+    final rgb = int.tryParse(value, radix: 16);
+    if (rgb == null) return null;
+    return Color(0xFF000000 | rgb);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +110,7 @@ class PieChartWidget extends StatelessWidget {
               PieChartData(
                 sections: _buildSections(),
                 sectionsSpace: 2,
-                centerSpaceRadius: 40,
+                centerSpaceRadius: 0,
                 pieTouchData: PieTouchData(enabled: false),
               ),
             ),
@@ -108,11 +133,13 @@ class PieChartWidget extends StatelessWidget {
       final item = entry.value;
       final magnitude = item.value.abs();
       final percentage = total > 0 ? (magnitude / total * 100) : 0;
-      final color = defaultColors[index % defaultColors.length];
+      final color = _colorFor(index);
 
       return PieChartSectionData(
         value: magnitude,
-        title: '${percentage.toStringAsFixed(1)}%',
+        // Only label slices over 5% so small slices don't clutter/overlap,
+        // matching the desktop chart's datalabels threshold.
+        title: percentage > 5 ? '${percentage.toStringAsFixed(1)}%' : '',
         color: color,
         radius: 80,
         titleStyle: const TextStyle(
@@ -132,7 +159,7 @@ class PieChartWidget extends StatelessWidget {
         children: data.asMap().entries.map((entry) {
           final index = entry.key;
           final item = entry.value;
-          final color = defaultColors[index % defaultColors.length];
+          final color = _colorFor(index);
 
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
@@ -168,8 +195,14 @@ class PieChartDataPoint {
   const PieChartDataPoint({
     required this.label,
     required this.value,
+    this.color,
   });
 
   final String label;
   final double value;
+
+  /// Stored category color as a hex string (e.g. `#4E79A7`) from the API, or
+  /// null for buckets without one. Used to color the slice/legend; see
+  /// [PieChartWidget._colorFor].
+  final String? color;
 }

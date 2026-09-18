@@ -95,6 +95,7 @@ class _DashboardPieChartState extends State<DashboardPieChart> {
             return PieChartDataPoint(
               label: point.label,
               value: point.value,
+              color: point.color,
             );
           }).toList();
         }
