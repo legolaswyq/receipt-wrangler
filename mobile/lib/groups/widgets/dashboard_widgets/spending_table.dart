@@ -13,9 +13,21 @@ import '../constants/text_styles.dart';
 /// magnitude, with a Total footer. Kept in sync with
 /// desktop/src/dashboard/spending-table/spending-table.component.*.
 class SpendingTable extends StatefulWidget {
-  const SpendingTable({super.key, required this.dashboardWidget});
+  const SpendingTable({
+    super.key,
+    required this.dashboardWidget,
+    this.startDate,
+    this.endDate,
+  });
 
   final api.Widget dashboardWidget;
+
+  /// Dashboard-level date range window (see utils/dashboard_period.dart),
+  /// threaded down from GroupDashboard's period selector. Empty/null means no
+  /// filter (matches desktop's SpendingTableComponent `startDate`/`endDate`
+  /// inputs).
+  final String? startDate;
+  final String? endDate;
 
   @override
   State<SpendingTable> createState() => _SpendingTableState();
@@ -31,6 +43,15 @@ class _SpendingTableState extends State<SpendingTable> {
     if (!_isInitialized) {
       _loadData();
       _isInitialized = true;
+    }
+  }
+
+  @override
+  void didUpdateWidget(SpendingTable oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.startDate != widget.startDate ||
+        oldWidget.endDate != widget.endDate) {
+      setState(_loadData);
     }
   }
 
@@ -63,7 +84,9 @@ class _SpendingTableState extends State<SpendingTable> {
   void _loadData() {
     var groupId = int.tryParse(getGroupId(context)) ?? 0;
     var command = api.PieChartDataCommand((b) => b
-      ..chartGrouping = _getChartGrouping());
+      ..chartGrouping = _getChartGrouping()
+      ..startDate = widget.startDate
+      ..endDate = widget.endDate);
 
     _future = OpenApiClient.client.getWidgetApi().getPieChartData(
           groupId: groupId,

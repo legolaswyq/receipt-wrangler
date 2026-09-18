@@ -281,11 +281,17 @@ income-vs-expense separation. The pieces must agree:
 - **Desktop** renders and edits it — the `BUDGET` dashboard widget (summary + per-category progress bars
   + inline target editing) and the income-flag checkbox on the category form. See `desktop/CLAUDE.md` →
   "Budget dashboard widget".
-- **Mobile is regen-only in v1** — the generated client carries `WidgetType.BUDGET`, `Category.isIncome`,
-  and the budget models, but there is **no mobile budget-widget renderer**; a `BUDGET` widget falls to
-  the dashboard `switch` default. `WidgetType` is a **closed enum**, so this was a client-regen-in-the-
-  same-change item and already-released Android builds must be rebuilt before loading a dashboard with a
-  budget widget. See `mobile/CLAUDE.md` → "Budgets".
+- **Mobile renders it too** — `lib/groups/widgets/dashboard_widgets/budget_widget.dart` ports the
+  desktop widget (summary + per-category progress bars + tap-to-edit target). `WidgetType` is a
+  **closed enum**, so the client regen that introduced `WidgetType.BUDGET` was a
+  client-regen-in-the-same-change item, and already-released Android builds predating that regen must
+  be rebuilt before loading a dashboard with a budget widget. See `mobile/CLAUDE.md` → "Budgets".
+- **The dashboard-level date range selector is also on mobile**, ported to
+  `lib/utils/dashboard_period.dart` + `lib/groups/widgets/dashboard_period_selector.dart` — same
+  presets, same `resolveDashboardRange` math, and the selection persists to the same
+  `Dashboard.period`/`periodStartDate`/`periodEndDate` fields via `updateDashboard`, so switching
+  clients preserves the selection. Threaded into the pie chart and Category Breakdown table (not the
+  budget widget, which is always current-month on both clients).
 - **`amount` serializes as a decimal STRING** on the wire (matching `Item.quantity`); an empty budget
   set is fine (the widget shows an empty state / "Untracked" only).
 - **Income data caveat:** because income is now identified by the `isIncome` category flag with positive

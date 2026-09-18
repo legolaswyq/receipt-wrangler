@@ -7,9 +7,20 @@ import '../../../client/client.dart';
 import '../constants/text_styles.dart';
 
 class DashboardPieChart extends StatefulWidget {
-  const DashboardPieChart({super.key, required this.dashboardWidget});
+  const DashboardPieChart({
+    super.key,
+    required this.dashboardWidget,
+    this.startDate,
+    this.endDate,
+  });
 
   final api.Widget dashboardWidget;
+
+  /// Dashboard-level date range window (see utils/dashboard_period.dart),
+  /// threaded down from GroupDashboard's period selector. Empty/null means no
+  /// filter (matches desktop's PieChartComponent `startDate`/`endDate` inputs).
+  final String? startDate;
+  final String? endDate;
 
   @override
   State<DashboardPieChart> createState() => _DashboardPieChartState();
@@ -25,6 +36,15 @@ class _DashboardPieChartState extends State<DashboardPieChart> {
     if (!_isInitialized) {
       _loadData();
       _isInitialized = true;
+    }
+  }
+
+  @override
+  void didUpdateWidget(DashboardPieChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.startDate != widget.startDate ||
+        oldWidget.endDate != widget.endDate) {
+      setState(_loadData);
     }
   }
 
@@ -50,6 +70,8 @@ class _DashboardPieChartState extends State<DashboardPieChart> {
     // Build the command
     var command = api.PieChartDataCommand((b) => b
       ..chartGrouping = chartGrouping
+      ..startDate = widget.startDate
+      ..endDate = widget.endDate
     );
 
     _pieChartFuture = OpenApiClient.client.getWidgetApi().getPieChartData(

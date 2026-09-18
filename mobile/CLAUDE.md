@@ -378,16 +378,41 @@ the swagger, so `Claims` carries only identity claims and the field is gone from
 Run `flutter analyze` after a regen; these surface as compile errors. (Hand-editing generated files
 is otherwise forbidden — these are the documented exception.)
 
-**Budgets (`WidgetType.BUDGET`, `Category.isIncome`) — regen-only on mobile.** The desktop budget
-dashboard widget (see `api/CLAUDE.md` → "Budgets" and root `CLAUDE.md` → "Budgets") added a `BUDGET`
-value to the closed `WidgetType` enum, `isIncome` to `Category`/`CategoryView`, and the
-budget models/API to the generated client. **There is no mobile budget-widget renderer in v1** — the
-mobile app is a regen-only consumer here, so a dashboard containing a `BUDGET` widget renders via the
-widget-type `switch`'s default (no crash) rather than a budget UI. The **enum-safety caveat applies**:
-`WidgetType` is a closed built_value enum, so an already-released Android build predating this change
-would fail to deserialize a dashboard payload that includes a `BUDGET` widget — rebuild the app before
-loading such a dashboard (same class as the two documented login outages; here it hits the dashboard
-fetch, not login). The regen re-triggers the two dart-dio default-value patches above.
+**Budgets (`WidgetType.BUDGET`, `Category.isIncome`).** The desktop budget dashboard widget (see
+`api/CLAUDE.md` → "Budgets" and root `CLAUDE.md` → "Budgets") added a `BUDGET` value to the closed
+`WidgetType` enum, `isIncome` to `Category`/`CategoryView`, and the budget models/API to the
+generated client — the mobile port lives in
+`lib/groups/widgets/dashboard_widgets/budget_widget.dart`, wired into `group_dashboard.dart`'s
+widget-type `switch`. It mirrors `desktop/src/dashboard/budget/budget.component.*`: fetches
+`getBudgetData(groupId)` (always current-month — no date-range dependency on either client), shows an
+Income/Spent/Net summary row, then a per-category row with a `LinearProgressIndicator` and a
+tap-to-edit target (a `TextField` that submits on Enter or on losing focus via `onTapOutside`,
+`PUT`ting `UpsertCategoryBudgetCommand` with `amount` as a **decimal string**, same convention as
+`Item.quantity`), then an "Untracked" row when nonzero. No client-side permission gating beyond what
+the other dashboard widgets do — desktop doesn't gate this either, relying on the server 403ing;
+matched for parity. The **enum-safety caveat applies to the underlying regen**: `WidgetType` is a
+closed built_value enum, so an already-released Android build predating that regen would fail to
+deserialize a dashboard payload that includes a `BUDGET` widget — rebuild the app before loading such
+a dashboard (same class as the two documented login outages; here it hits the dashboard fetch, not
+login).
+
+**Dashboard-level date range.** Ported from
+`desktop/src/dashboard/utils/dashboard-period.util.ts` to `lib/utils/dashboard_period.dart`
+(`resolveDashboardRange` — same six presets: This month/Last month/Last 3 months/This year/All
+time/Custom, same inclusive-start/exclusive-end RFC3339 math) and rendered by
+`lib/groups/widgets/dashboard_period_selector.dart` (a `DropdownButtonFormField` + From/To
+`showDatePicker` fields when Custom is selected). `GroupDashboard` owns the selection: it seeds from
+the selected `Dashboard.period`/`periodStartDate`/`periodEndDate` on load and on every dashboard-chip
+switch (mirroring desktop's `syncPeriodFromDashboard`), and persists changes via
+`DashboardApi.updateDashboard` (mirroring `persistPeriod`) so the selection round-trips with the web
+app against the same dashboard. The resolved `startDate`/`endDate` thread into the pie chart and
+Category Breakdown table (both `didUpdateWidget`-reload when the range prop changes) — **not** the
+budget widget, which stays current-month-only on both clients.
+- **`DropdownButtonFormField` gotcha:** uses `initialValue`, not the deprecated `value` — and because
+  a `FormField` only reads that param once per `State` instance, `DashboardPeriodSelector` is given a
+  `key` derived from the selected dashboard index so switching between multiple dashboards (each with
+  its own persisted period) re-seeds a fresh `FormField` state instead of showing the previous
+  dashboard's stale selection.
 
 ### Quick Scan field configuration
 
