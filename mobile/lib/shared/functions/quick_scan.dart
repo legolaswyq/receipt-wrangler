@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:infinite_carousel/infinite_carousel.dart';
 import 'package:openapi/openapi.dart' as api;
 import 'package:provider/provider.dart';
+import 'package:receipt_wrangler_mobile/models/auth_model.dart';
 import 'package:receipt_wrangler_mobile/models/group_model.dart';
 import 'package:receipt_wrangler_mobile/models/loading_model.dart';
 import 'package:receipt_wrangler_mobile/models/permissions_model.dart';
@@ -95,13 +96,24 @@ Widget _getGalleryUploadImage(
 
 ({int? groupId, int? paidByUserId, api.ReceiptStatus? status})
     _getInitialQuickScanValues(BuildContext context) {
-  late final userPreferenceModel =
+  final userPreferenceModel =
       Provider.of<UserPreferencesModel>(context, listen: false);
   final userPreferences = userPreferenceModel.userPreferences;
+
+  // Mirrors desktop's quick-scan-dialog.component.ts fileLoaded(): fall back
+  // to the current group / logged-in user / Open status so quick scan never
+  // forces a manual pick when no quickScanDefault* preference is configured.
+  final fallbackGroupId = Provider.of<GroupModel>(context, listen: false)
+      .groupsWithoutAllGroup
+      .firstOrNull
+      ?.id;
+  final fallbackUserId =
+      Provider.of<AuthModel>(context, listen: false).claims?.userId;
+
   return (
-    groupId: userPreferences.quickScanDefaultGroupId,
-    paidByUserId: userPreferences.quickScanDefaultPaidById,
-    status: userPreferences.quickScanDefaultStatus,
+    groupId: userPreferences.quickScanDefaultGroupId ?? fallbackGroupId,
+    paidByUserId: userPreferences.quickScanDefaultPaidById ?? fallbackUserId,
+    status: userPreferences.quickScanDefaultStatus ?? api.ReceiptStatus.OPEN,
   );
 }
 

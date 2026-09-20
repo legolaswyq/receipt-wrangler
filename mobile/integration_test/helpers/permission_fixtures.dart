@@ -680,6 +680,20 @@ Future<void> setUserQuickScanPrefs({
   addTearDown(() async => _putUserPreferences(await apiLogin(), original));
 }
 
+/// Clears the caller's quick-scan default preferences (group/paid-by/status),
+/// restoring the original preferences on teardown. Used to exercise the
+/// current-group/logged-in-user/Open fallback that applies when no
+/// `quickScanDefault*` preference is configured.
+Future<void> clearUserQuickScanPrefs({required String jwt}) async {
+  final original = await _getUserPreferences(jwt);
+  final updated = Map<String, dynamic>.from(original)
+    ..['quickScanDefaultGroupId'] = null
+    ..['quickScanDefaultPaidById'] = null
+    ..['quickScanDefaultStatus'] = null;
+  await _putUserPreferences(jwt, updated);
+  addTearDown(() async => _putUserPreferences(await apiLogin(), original));
+}
+
 /// Provisions a fresh user and (optionally) a fixture group it belongs to,
 /// registering `addTearDown` to delete the group and user afterwards.
 ///

@@ -91,4 +91,63 @@ void main() {
     // the group's UPLOADER default.
     await expectQuickScanQueued(tester);
   });
+
+  testWidgets(
+      'falls back to the current group / logged-in user / Open status when no preference is set',
+      (tester) async {
+    await enableAiPoweredReceiptsForTest();
+    await installDocumentScannerMock();
+    await binding.setSurfaceSize(const Size(1280, 900));
+    addTearDown(() => binding.setSurfaceSize(null));
+
+    final jwt = await apiLogin();
+    final g = await firstNonAllGroup(jwt);
+    final adminId = await userIdByUsername(E2eEnv.adminUsername, jwt: jwt);
+
+    // Default group config: paid-by + status shown+required, categories/tags
+    // hidden -- nothing here should force a manual pick.
+    await setGroupQuickScanConfig(groupId: g.id, jwt: jwt, overrides: const {
+      'quickScanPaidByEnabled': true,
+      'quickScanPaidByRequired': true,
+      'quickScanStatusEnabled': true,
+      'quickScanStatusRequired': true,
+      'quickScanCategoriesEnabled': false,
+      'quickScanCategoriesRequired': false,
+      'quickScanTagsEnabled': false,
+      'quickScanTagsRequired': false,
+    });
+
+    // No quickScanDefault* preference configured.
+    await clearUserQuickScanPrefs(jwt: jwt);
+
+    await loginAsAdmin(tester);
+
+    // Trim to a single non-"All" group so the group fallback
+    // (groupsWithoutAllGroup.firstOrNull) deterministically resolves to G,
+    // regardless of how many groups the admin has accumulated.
+    await keepOnlyGroup(tester, g.id);
+
+    await openQuickScanImageForm(tester);
+
+    // Group falls back to the current (only) group -- no manual pick needed.
+    final groupField =
+        tester.widget(quickScanDropdown('groupId')) as FormBuilderDropdown;
+    expect(groupField.initialValue, g.id,
+        reason: 'group falls back to the current group');
+
+    // Paid-by falls back to the logged-in user.
+    final paidByField =
+        tester.widget(quickScanDropdown('paidByUserId')) as FormBuilderDropdown;
+    expect(paidByField.initialValue, adminId,
+        reason: 'paid-by falls back to the logged-in user');
+
+    // Status falls back to Open.
+    final statusField =
+        tester.widget(quickScanDropdown('status')) as FormBuilderDropdown;
+    expect(statusField.initialValue, api.ReceiptStatus.OPEN,
+        reason: 'status falls back to Open');
+
+    // Submit succeeds without picking anything by hand.
+    await expectQuickScanQueued(tester);
+  });
 }
