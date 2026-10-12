@@ -120,3 +120,12 @@ $border-radius-xl: 0.75rem;
 $border-radius-2xl: 1rem;
 
 $success-green: #10b981;
+
+// Responsive breakpoints (max-width, mobile-first overrides live under these)
+$breakpoint-sm: 600px; // phones
+$breakpoint-md: 768px; // small tablets / large phones landscape
+$breakpoint-lg: 1200px; // existing header compact breakpoint
+
+// Height of the phone-width bottom tab bar (HeaderComponent), excluding the
+// device safe-area inset. The shell reserves this much space under the content.
+$bottom-nav-height: 60px;

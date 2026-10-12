@@ -9,6 +9,16 @@
   box-shadow: variables.$shadow-md;
 }
 
+// A wide table (many columns) has nowhere to go on a phone-width viewport:
+// :host's overflow: hidden (needed to clip content to the rounded corners
+// above) would otherwise just cut columns off with no way to reach them.
+// This wrapper scrolls horizontally instead, independent of the paginator
+// below it.
+.table-scroll-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 // Consistent table row borders
 .mat-mdc-table {
   .mat-mdc-row {

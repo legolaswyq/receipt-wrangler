@@ -2,7 +2,9 @@
 
 .modern-form-bar {
   position: fixed;
-  bottom: 0;
+  // Sits above the phone-width bottom tab bar when the app shell has one
+  // (--bottom-nav-offset is set in sidebar.component.scss).
+  bottom: var(--bottom-nav-offset, 0px);
   left: 0;
   right: 0;
   z-index: 1000;

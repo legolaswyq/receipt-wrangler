@@ -17,6 +17,7 @@ import { of } from "rxjs";
 import { DirectivesModule } from "../../directives/directives.module";
 import { ApiModule, AuthService, Permission } from "../../open-api";
 import { SetAuthState, SetPermissions } from "../../store/auth.state.actions";
+import { SetFeatureConfig } from "../../store/feature-config.state.actions";
 import { SetSelectedGroupId } from "../../store/group.state.actions";
 import { Logout } from "../../store";
 import { StoreModule } from "../../store/store.module";
@@ -129,6 +130,40 @@ describe("HeaderComponent", () => {
     expect(searchbarRendered()).toBe(true);
   });
 
+  it("hides the mobile search toggle without app.receipts.search", async () => {
+    logIn();
+    await fixture.whenStable();
+
+    expect(queryTestId("header-mobile-search-toggle")).toBeFalsy();
+  });
+
+  it("shows the mobile search toggle with app.receipts.search", async () => {
+    logIn();
+    grantReceiptsSearch();
+    await fixture.whenStable();
+
+    expect(queryTestId("header-mobile-search-toggle")).toBeTruthy();
+  });
+
+  it("toggles mobileSearchOpen when the mobile search button is clicked", async () => {
+    logIn();
+    grantReceiptsSearch();
+    await fixture.whenStable();
+
+    expect(component.mobileSearchOpen()).toBe(false);
+
+    queryTestId("header-mobile-search-toggle").click();
+    await fixture.whenStable();
+    expect(component.mobileSearchOpen()).toBe(true);
+    expect(
+      fixture.nativeElement.querySelector("#header-container").classList
+    ).toContain("mobile-search-active");
+
+    queryTestId("header-mobile-search-toggle").click();
+    await fixture.whenStable();
+    expect(component.mobileSearchOpen()).toBe(false);
+  });
+
   it("should hide the Dashboard tab without group.dashboards.read for the selected group", async () => {
     logIn();
     selectGroupOne();
@@ -234,6 +269,62 @@ describe("HeaderComponent", () => {
     await openSettingsMenu();
 
     expect(overlayText()).toContain("User Settings");
+  });
+
+  it("renders the Dashboard/Receipts links in the bottom tab bar", async () => {
+    logIn();
+    selectGroupOne();
+    grantGroupPerms(1, ["group.dashboards.read"]);
+    await fixture.whenStable();
+
+    expect(queryTestId("header-dashboard-tab-mobile")).toBeTruthy();
+    expect(queryTestId("header-receipts-tab-mobile")).toBeTruthy();
+  });
+
+  it("hides the Dashboard link in the bottom tab bar without group.dashboards.read", async () => {
+    logIn();
+    selectGroupOne();
+    await fixture.whenStable();
+
+    expect(queryTestId("header-dashboard-tab-mobile")).toBeFalsy();
+    expect(queryTestId("header-receipts-tab-mobile")).toBeTruthy();
+  });
+
+  it("does not render the bottom tab bar when logged out", async () => {
+    await fixture.whenStable();
+
+    expect(queryTestId("header-bottom-nav")).toBeFalsy();
+  });
+
+  it("uses Quick Scan as the bottom tab bar add action when it is available", async () => {
+    logIn();
+    selectGroupOne();
+    grantGroupPerms(1, ["group.receipts.quick-scan", "group.receipts.create"]);
+    store.dispatch(new SetFeatureConfig({ aiPoweredReceipts: true } as any));
+    await fixture.whenStable();
+
+    expect(queryTestId("header-add-receipt-mobile")).toBeTruthy();
+    expect(queryTestId("header-add-manual-mobile")).toBeFalsy();
+  });
+
+  it("falls back to manual add in the bottom tab bar when the AI feature is off", async () => {
+    logIn();
+    selectGroupOne();
+    grantGroupPerms(1, ["group.receipts.quick-scan", "group.receipts.create"]);
+    store.dispatch(new SetFeatureConfig({ aiPoweredReceipts: false } as any));
+    await fixture.whenStable();
+
+    expect(queryTestId("header-add-receipt-mobile")).toBeFalsy();
+    expect(queryTestId("header-add-manual-mobile")).toBeTruthy();
+  });
+
+  it("shows no bottom tab bar add action without quick-scan or create permission", async () => {
+    logIn();
+    selectGroupOne();
+    await fixture.whenStable();
+
+    expect(queryTestId("header-add-receipt-mobile")).toBeFalsy();
+    expect(queryTestId("header-add-manual-mobile")).toBeFalsy();
   });
 
   it("dispatches Logout on logout", async () => {

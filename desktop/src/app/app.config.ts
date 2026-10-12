@@ -1,6 +1,6 @@
 import { ApplicationConfig, provideAppInitializer, provideZonelessChangeDetection, inject } from "@angular/core";
 import { provideHttpClient, withInterceptors } from "@angular/common/http";
-import { importProvidersFrom } from "@angular/core";
+import { importProvidersFrom, isDevMode } from "@angular/core";
 import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
 import { provideCharts, withDefaultRegisterables } from "ng2-charts";
 import { provideNgxMask } from "ngx-mask";
@@ -40,6 +40,7 @@ import { TagTableState } from "../store/tag-table.state";
 import { UserTableState } from "../store/user-table.state";
 import { UserState } from "../store/user.state";
 import { environment } from "src/environments/environment.development";
+import { provideServiceWorker } from '@angular/service-worker';
 
 const ngxsStates = [
   AboutState,
@@ -117,6 +118,9 @@ export const appConfig: ApplicationConfig = {
       NgxMaskDirective,
       NgxMaskPipe,
       PipesModule,
-    ),
+    ), provideServiceWorker('ngsw-worker.js', {
+            enabled: !isDevMode(),
+            registrationStrategy: 'registerWhenStable:30000'
+          }),
   ],
 };

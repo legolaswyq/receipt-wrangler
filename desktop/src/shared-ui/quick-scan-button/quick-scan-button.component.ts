@@ -13,6 +13,8 @@ import { QuickScanDialogComponent } from "../../receipts/quick-scan-dialog/quick
 export class QuickScanButtonComponent {
   public readonly buttonText = input<string>();
 
+  public readonly icon = input("receipt_long");
+
   public readonly afterClosed = output<void>();
 
   constructor(private matDialog: MatDialog) {}

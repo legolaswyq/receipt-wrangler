@@ -7,13 +7,21 @@
   backdrop-filter: blur(8px);
   box-shadow: variables.$shadow-sm;
   padding: variables.$spacing-sm variables.$spacing-lg;
+  // Installed-PWA status bar is translucent (index.html), so the bar itself
+  // has to clear the notch.
+  padding-top: calc(#{variables.$spacing-sm} + env(safe-area-inset-top, 0px));
   position: sticky;
   top: 0;
   z-index: 1000;
   gap: variables.$spacing-md;
 }
 
+// display set here rather than via Bootstrap's .d-flex on the template
+// element — same reason as .primary-tabs below: .mobile-search-active needs
+// to override this with display: none, and Bootstrap's utility classes
+// compile with !important, which no same-specificity override can beat.
 .header-left {
+  display: flex;
   gap: variables.$spacing-md;
   min-width: 0;
 }
@@ -30,7 +38,13 @@
 }
 
 // Primary Dashboard / Receipts tabs — icon + label so they are self-explanatory.
+// display is set here (not via Bootstrap's .d-flex on the <nav> in the
+// template) specifically so the phone-width media query below can override
+// it with a plain `display: none` — Bootstrap's utility classes compile with
+// `!important`, which a same-specificity override can never beat regardless
+// of source order.
 .primary-tabs {
+  display: flex;
   gap: variables.$spacing-xs;
 
   .tab-button {
@@ -69,16 +83,23 @@
   }
 }
 
+// app-quick-scan-button renders its actual <button mat-raised-button> two
+// component boundaries down (app-quick-scan-button -> app-button -> the
+// button itself), so a plain descendant selector here never reaches it under
+// Angular's view encapsulation — reaching the icon/label needs ::ng-deep.
+// This was silently dead code before (the 1200px "hide label" rule next to
+// this never actually hid anything).
+//
+// Deliberately NOT restyling .mat-mdc-raised-button itself (display/height/
+// gap/etc): that element is Angular Material's own MDC button, which has its
+// own internal flex layout for the ripple/label/focus-indicator child spans.
+// Overriding its display/align-items/gap collided with that internal layout
+// and made the button's content (icon + text) invisible even though the
+// button itself still rendered — only touch the two leaf elements this
+// component actually owns (the icon and the text span) and let Material size
+// its own button chrome.
 .add-receipt-button {
-  display: inline-flex;
-  align-items: center;
-  gap: variables.$spacing-xs;
-  height: 44px;
-  border-radius: variables.$border-radius-lg;
-  font-weight: 600;
-  white-space: nowrap;
-
-  mat-icon {
+  ::ng-deep mat-icon {
     width: 20px;
     height: 20px;
     font-size: 20px;
@@ -113,15 +134,147 @@
   max-width: 100%;
 }
 
+// Both are phone-width only — see the $breakpoint-sm media query at the
+// bottom of this file.
+.mobile-search-toggle,
+.bottom-nav {
+  display: none;
+}
+
 // Compact the layout on narrower viewports: drop tab labels to icons only.
 @media (max-width: 1200px) {
   .primary-tabs .tab-button span,
-  .add-receipt-button span,
   .group-switcher-name {
     display: none;
   }
 
   .receipt-searchbar {
     width: 14rem !important;
+  }
+}
+
+// The Add Receipt label only has to go once the row genuinely runs out of
+// room, just above the phone layout.
+@media (max-width: variables.$breakpoint-md) {
+  // Only app-button's own text span: Material wraps the whole button content
+  // (icon included) in a .mdc-button__label span, so a bare `span` selector
+  // here blanks the button entirely.
+  .add-receipt-button ::ng-deep .mdc-button__label > div {
+    > span {
+      display: none;
+    }
+
+    > mat-icon {
+      margin-right: 0 !important;
+    }
+  }
+}
+
+// Phone-width viewports: the logo, nav tabs, searchbar, add-receipt and
+// settings no longer fit one row. Navigation and the add action move to a
+// fixed bottom tab bar (thumb reach, and what the mobile app does), leaving
+// the top bar with just logo / search toggle / settings on a single row.
+@media (max-width: variables.$breakpoint-sm) {
+  .header-container {
+    padding-left: variables.$spacing-md;
+    padding-right: variables.$spacing-md;
+  }
+
+  .brand-logo {
+    height: 36px;
+  }
+
+  .primary-tabs,
+  .receipt-searchbar,
+  .add-receipt-button,
+  .add-manual-button {
+    display: none;
+  }
+
+  .mobile-search-toggle {
+    display: inline-flex;
+  }
+
+  // Search open: the searchbar takes the logo's place on the same row.
+  .header-container.mobile-search-active {
+    .header-left {
+      display: none;
+    }
+
+    .header-right {
+      flex: 1 1 100%;
+      min-width: 0;
+    }
+
+    .receipt-searchbar {
+      display: block;
+      flex: 1 1 auto;
+      width: auto !important;
+      min-width: 0;
+    }
+  }
+
+  .bottom-nav {
+    display: flex;
+    align-items: center;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    height: calc(
+      #{variables.$bottom-nav-height} + env(safe-area-inset-bottom, 0px)
+    );
+    padding: 0 variables.$spacing-sm env(safe-area-inset-bottom, 0px);
+    background: #ffffff;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .bottom-nav-tab {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 0;
+    height: 100%;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #667085;
+    text-decoration: none;
+
+    mat-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 28px;
+      border-radius: 14px;
+      transition: background-color 0.2s ease-in-out;
+    }
+
+    span {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    &.active-tab {
+      color: map.get(variables.$primary-palette, 700);
+
+      mat-icon {
+        background-color: map.get(variables.$primary-palette, 100);
+      }
+    }
+  }
+
+  // The labeled add button (quick scan, or manual add as the fallback) keeps
+  // its natural width; the tabs share what is left.
+  .bottom-nav-add {
+    flex: 0 0 auto;
+    margin: 0 variables.$spacing-xs;
   }
 }

@@ -12,6 +12,33 @@ app-sidebar {
     background-color: #f8fafc;
   }
 
+  @media (max-width: variables.$breakpoint-sm) {
+    // Space taken by the header's fixed bottom tab bar, which only renders
+    // when logged in. A custom property so it inherits into routed content
+    // (app-form-button-bar lifts itself by it) but not into overlay dialogs.
+    .app-shell--bottom-nav {
+      --bottom-nav-offset: calc(
+        #{variables.$bottom-nav-height} + env(safe-area-inset-bottom, 0px)
+      );
+    }
+
+    // The route content wrapper uses Bootstrap's flat p-4 (1.5rem) on every
+    // viewport; that's 48px of horizontal padding alone on a ~390px phone.
+    // Shrink it where the class is actually applied (p-4 is added
+    // conditionally in sidebar.component.html, so it must be targeted here
+    // rather than overridden globally for every .p-4 use in the app).
+    .drawer-outlet.p-4 {
+      padding: variables.$spacing-sm !important;
+      padding-bottom: calc(
+        #{variables.$spacing-sm} + var(--bottom-nav-offset, 0px)
+      ) !important;
+    }
+
+    .drawer-content.drawer-content--full-height {
+      padding-bottom: var(--bottom-nav-offset, 0px);
+    }
+  }
+
   // Opt-in full-height frame: turns the content area into a bounded flex column so
   // a full-bleed route (fullHeight route data) fills the viewport below the sticky
   // header and owns its own internal scrolling, rather than scrolling as one block.

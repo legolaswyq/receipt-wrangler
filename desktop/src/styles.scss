@@ -315,3 +315,16 @@ h3 {
   }
 }
 
+// Mobile dialog override. DEFAULT_DIALOG_CONFIG (src/constants/dialog.constant.ts)
+// sets a fixed width: 50% — fine on desktop, but on a ~390px phone that's a
+// ~195px dialog. Angular Material applies MatDialogConfig's width/min-width/
+// max-width as inline styles on the overlay pane (the element carrying
+// panelClass), so overriding them here requires !important.
+@media (max-width: 600px) {
+  .app-dialog-responsive {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    min-width: 0 !important;
+  }
+}
+

@@ -1,5 +1,6 @@
 <div
   class="app-shell drawer-content"
+  [class.app-shell--bottom-nav]="isLoggedIn()"
   [class.drawer-content--full-height]="isContentFullHeight()"
 >
   <app-header class="d-block sticky-top"></app-header>

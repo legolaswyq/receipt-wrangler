@@ -1,4 +1,4 @@
-import { Component, computed } from "@angular/core";
+import { Component, computed, signal } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { Router } from "@angular/router";
 import { Store } from "@ngxs/store";
@@ -9,6 +9,8 @@ import { DEFAULT_DIALOG_CONFIG } from "../../constants";
 import { ImportFormComponent } from "../../import/import-form/import-form.component";
 import { AuthService, Permission } from "../../open-api";
 import { AuthState, GroupState, Logout } from "../../store";
+import { FeatureConfigState } from "../../store/feature-config.state";
+import { hasAll } from "../../utils/permission.utils";
 
 @Component({
     selector: "app-header",
@@ -30,6 +32,10 @@ export class HeaderComponent {
 
   public userPreferences = this.store.selectSignal(AuthState.userPreferences);
 
+  // Phone-width viewports have no room for a permanent search input, so below
+  // $breakpoint-sm it is toggled open in place of the logo (header.component.scss).
+  public mobileSearchOpen = signal(false);
+
   public receiptHeaderLink = computed(() => {
     this.selectedGroupId();
     return [this.store.selectSnapshot(GroupState.receiptListLink)];
@@ -41,6 +47,24 @@ export class HeaderComponent {
   });
 
   protected readonly Permission = Permission;
+
+  private aiPoweredReceipts = this.store.selectSignal(
+    FeatureConfigState.aiPoweredReceipts
+  );
+
+  private groupPermissions = this.store.selectSignal(AuthState.groupPermissions);
+
+  // Whether app-quick-scan-button will actually render (it self-gates on the
+  // feature flag), so the bottom tab bar can fall back to manual add instead
+  // of showing no add action at all.
+  protected readonly canQuickScan = computed(
+    () =>
+      !!this.aiPoweredReceipts() &&
+      hasAll(
+        this.groupPermissions()?.[this.selectedGroupIdNumber()] ?? [],
+        Permission.GroupReceiptsQuickScan
+      )
+  );
 
   // Reports are reachable with read OR the readAll bypass (the *hasAppPermission
   // directive is single-key AND-only, so the OR is resolved through the selector).

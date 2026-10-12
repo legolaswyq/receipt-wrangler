@@ -7,6 +7,11 @@
   border-radius: 9px;
   padding: 4px;
   gap: 4px;
+  // Several tabs can be wider than a phone viewport; scroll the bar itself
+  // rather than letting it push the whole page into horizontal overflow.
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .filter-tab {
@@ -23,6 +28,8 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: all 0.15s ease;
 
   mat-icon {

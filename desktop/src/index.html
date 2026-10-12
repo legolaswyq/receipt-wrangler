@@ -1,13 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8"/>
     <title>Hippo Finance</title>
-    <base href="/" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/png" href="assets/branding/hippo-finance.png" />
-  </head>
+    <base href="/"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <link rel="icon" type="image/png" href="assets/branding/hippo-finance.png"/>
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#7462ec"/>
+    <!-- iOS ignores the web manifest for Add to Home Screen; these are required separately -->
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+    <meta name="apple-mobile-web-app-title" content="Hippo Finance"/>
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png"/>
+</head>
   <body class="mat-typography">
     <app-root></app-root>
-  </body>
+    <noscript>Please enable JavaScript to continue using this application.</noscript>
+</body>
 </html>

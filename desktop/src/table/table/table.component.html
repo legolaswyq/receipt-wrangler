@@ -1,3 +1,4 @@
+<div class="table-scroll-wrapper">
 <table
   mat-table
   matSort
@@ -83,6 +84,7 @@
   <tr mat-row *matRowDef="let row; columns: displayedColumns()"></tr>
   <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
 </table>
+</div>
 
 <mat-paginator
   *ngIf="pagination()"
