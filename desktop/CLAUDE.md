@@ -1621,6 +1621,38 @@ renders the **full dataset** (not the capped builder preview) and re-resolves ac
   (`app-select`) whose options come from `ReportService.getReportTemplates` — server-filtered to the
   caller's viewable templates (`reportTemplateOptions`, loaded in `ngOnInit`, `catchError`→empty).
 
+## Bank statement import
+
+**Settings menu → Import Bank Statement** (`data-testid="header-import-bank-statement"`, gated by
+`group.receipts.create` on the selected group) opens `BankStatementImportComponent`
+(`src/import/bank-statement-import/`). The server side is in `api/CLAUDE.md` → "Bank Statement Import".
+
+- **Flow:** pick a PDF → `ImportService.previewBankStatement(file, groupId)` → a review list (one row
+  per transaction: checkbox, name/date/type/reference, signed amount, category `app-select`) →
+  `importBankStatement` with only the ticked rows. Nothing is created until the user confirms.
+- **The server decides the defaults; the dialog only renders them.** `selected`, `duplicate` and
+  `suggestedCategoryId` come from the preview. Transfers and "Already imported" rows arrive unticked.
+- **A ticked deposit must have an income category.** Income is the category's `isIncome` flag, so a
+  deposit saved without one would count as spending. The row shows an inline message
+  (`bank-statement-income-required`) and `submit()` refuses with a snackbar; the server enforces the
+  same rule. Deposits only offer income categories and withdrawals only expense categories.
+- **Group and payer:** the group defaults to the selected group, or the first real group when "All" is
+  selected. Changing the group **re-runs the preview** — duplicates, suggestions and the category list
+  are all per group. `loadPreview` reads the control's value, not `form.value`: it runs from that
+  control's own `valueChanges`, which fires before the parent form value updates.
+- **Dates are `YYYY-MM-DD` strings and are formatted with the plain `date` pipe (no timezone
+  argument).** Angular parses a date-only string as *local* midnight, so forcing `"UTC"` shows the
+  previous day in any zone ahead of UTC.
+- **`app-upload-image` gained `convertToPreview`** (default `true`). The statement dialog sets it to
+  `false` so a PDF is handed over as-is instead of being rendered to a JPG preview first.
+- **After a successful import the header rebuilds the current route** (`reloadCurrentRoute`: route reuse
+  off for one same-URL navigation, then restored) so the dashboard or receipt list shows the new
+  receipts without a manual refresh.
+- Rows are a wrapping flex layout rather than a table, so the same markup works at phone width (name
+  on the first line, amount + category on the second).
+- Tests: `bank-statement-import.component.spec.ts`, plus the menu-gating and reload cases in
+  `header.component.spec.ts` and the `convertToPreview` cases in `upload-image.component.spec.ts`.
+
 ## PWA support (installable on iOS/Android)
 
 The app is installable as a Progressive Web App via `@angular/pwa` (`ng add @angular/pwa@21` — the

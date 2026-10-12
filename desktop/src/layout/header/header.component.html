@@ -208,6 +208,15 @@
       <span>System Settings</span>
     </button>
   }
+  <button
+    *hasGroupPermission="{ groupId: selectedGroupIdNumber(), permission: Permission.GroupReceiptsCreate }"
+    data-testid="header-import-bank-statement"
+    mat-menu-item
+    (click)="openBankStatementImportDialog()"
+  >
+    <mat-icon>account_balance</mat-icon>
+    <span>Import Bank Statement</span>
+  </button>
   <button *hasAppPermission="Permission.AppImportsRun" mat-menu-item (click)="openImportDialog()">
     <mat-icon>upload_file</mat-icon>
     <span>Imports</span>

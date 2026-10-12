@@ -1,0 +1,138 @@
+@use "sass:map";
+@use "../../variables.scss" as variables;
+
+.statement-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: variables.$spacing-md;
+
+  &__field {
+    flex: 1 1 14rem;
+    min-width: 0;
+  }
+}
+
+.statement-muted {
+  font-size: 0.8125rem;
+  color: variables.$basic-gray;
+}
+
+.statement-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: variables.$spacing-sm;
+  margin: variables.$spacing-md 0 variables.$spacing-sm;
+
+  &__actions {
+    display: flex;
+    gap: variables.$spacing-xs;
+  }
+}
+
+// The dialog itself scrolls; capping the list keeps the summary and the footer
+// buttons reachable on a long statement.
+.statement-rows {
+  max-height: 50vh;
+  overflow-y: auto;
+  border: 1px solid map.get(variables.$accent-palette, 200);
+  border-radius: variables.$border-radius-lg;
+}
+
+.statement-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: variables.$spacing-sm variables.$spacing-md;
+  padding: variables.$spacing-sm variables.$spacing-md;
+
+  & + & {
+    border-top: 1px solid map.get(variables.$accent-palette, 200);
+  }
+
+  &--unselected {
+    background-color: map.get(variables.$accent-palette, 50);
+
+    .statement-row__main,
+    .statement-row__amount {
+      opacity: 0.55;
+    }
+  }
+
+  &__select {
+    flex: 0 0 auto;
+  }
+
+  &__main {
+    flex: 1 1 12rem;
+    min-width: 0;
+  }
+
+  &__name {
+    font-weight: 600;
+    color: map.get(variables.$accent-palette, 900);
+    overflow-wrap: anywhere;
+  }
+
+  &__flag {
+    display: inline-block;
+    margin-top: variables.$spacing-xs;
+    padding: 0 variables.$spacing-sm;
+    border-radius: variables.$border-radius-xl;
+    background-color: map.get(variables.$accent-palette, 200);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  &__amount {
+    flex: 0 0 auto;
+    font-weight: 600;
+    color: map.get(variables.$accent-palette, 900);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+
+    &--income {
+      color: map.get(variables.$success-palette, 800);
+    }
+  }
+
+  &__category {
+    flex: 0 1 15rem;
+    min-width: 0;
+  }
+
+  &__error {
+    font-size: 0.75rem;
+    color: map.get(variables.$warn-palette, 900);
+  }
+}
+
+.statement-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: variables.$spacing-xs variables.$spacing-lg;
+  margin: variables.$spacing-md 0;
+  font-weight: 600;
+}
+
+.statement-empty {
+  margin: variables.$spacing-lg 0;
+  text-align: center;
+}
+
+// Phone widths: the checkbox and name fill the first line; the amount and the
+// category picker share the second.
+@media (max-width: variables.$breakpoint-sm) {
+  .statement-row {
+    padding: variables.$spacing-sm;
+
+    &__main {
+      flex-basis: calc(100% - 5rem);
+    }
+
+    &__category {
+      flex: 1 1 8rem;
+    }
+  }
+}

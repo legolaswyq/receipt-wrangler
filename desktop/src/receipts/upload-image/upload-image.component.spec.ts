@@ -3,7 +3,8 @@ import { CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { ActivatedRoute } from "@angular/router";
-import { ApiModule } from "../../open-api";
+import { of } from "rxjs";
+import { ApiModule, ReceiptImageService } from "../../open-api";
 import { UploadImageComponent } from "./upload-image.component";
 import { provideHttpClient, withInterceptorsFromDi } from "@angular/common/http";
 
@@ -30,5 +31,37 @@ describe("UploadImageComponent", () => {
 
   it("should create", () => {
     expect(component).toBeTruthy();
+  });
+
+  describe("PDF uploads", () => {
+    const upload = async (convertToPreview: boolean) => {
+      const receiptImageService = TestBed.inject(ReceiptImageService);
+      const convertToJpg = jest
+        .spyOn(receiptImageService, "convertToJpg")
+        .mockReturnValue(of({ encodedImage: "encoded" }) as any);
+      const emitted: any[] = [];
+      component.fileLoaded.subscribe((command) => emitted.push(command));
+      fixture.componentRef.setInput("convertToPreview", convertToPreview);
+
+      const file = new File(["%PDF"], "statement.pdf", { type: "application/pdf" });
+      await component.onFileChange({ target: { files: [file] } });
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      return { convertToJpg, emitted, file };
+    };
+
+    it("renders a JPG preview by default", async () => {
+      const { convertToJpg, emitted } = await upload(true);
+
+      expect(convertToJpg).toHaveBeenCalled();
+      expect(emitted[0].encodedImage).toBe("encoded");
+    });
+
+    it("emits the raw file without a preview when convertToPreview is off", async () => {
+      const { convertToJpg, emitted, file } = await upload(false);
+
+      expect(convertToJpg).not.toHaveBeenCalled();
+      expect(emitted).toEqual([{ file, receiptId: 0 }]);
+    });
   });
 });

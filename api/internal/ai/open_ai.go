@@ -104,7 +104,7 @@ func (openAi OpenAiClient) GetChatCompletion() (structs.ChatCompletionResult, er
 			Type: openai.ChatCompletionResponseFormatTypeJSONSchema,
 			JSONSchema: &openai.ChatCompletionResponseFormatJSONSchema{
 				Name:   "receipt_extraction",
-				Schema: ReceiptExtractionSchema(),
+				Schema: openAi.responseSchema(),
 			},
 		}
 	}

@@ -23,6 +23,10 @@ export class UploadImageComponent {
     "image/heic",
 ]);
 
+  // PDF/HEIC uploads are rendered to a JPG preview before fileLoaded fires.
+  // Callers that only need the raw file (no preview) turn this off.
+  public readonly convertToPreview = input<boolean>(true);
+
   public readonly fileLoaded = output<ReceiptFileUploadCommand>();
 
   public formMode = FormMode;
@@ -49,7 +53,7 @@ export class UploadImageComponent {
           receiptId: Number(this.receiptId()),
         };
 
-        if (f.type === "application/pdf" || f.type === "image/heic") {
+        if (this.convertToPreview() && (f.type === "application/pdf" || f.type === "image/heic")) {
           this.receiptImageService
             .convertToJpg(f)
             .pipe(

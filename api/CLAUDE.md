@@ -11,7 +11,7 @@ Receipt Wrangler API is a Go-based backend service for a receipt management and 
 ### Building and Running
 - `go build` - Build the application
 - `go run main.go` - Run the application directly
-- `./set-up-dependencies.sh` - Install system dependencies (tesseract, ImageMagick, Chromium, Python deps)
+- `./set-up-dependencies.sh` - Install system dependencies (tesseract, ImageMagick, Chromium, poppler, Python deps)
 
 ### Running in the Claude Code Web/Cloud Sandbox
 
@@ -1630,6 +1630,66 @@ plus income-vs-expense separation. Three-component feature (see root `CLAUDE.md`
   category-delete cascade), `services/budget_test.go` (the income/spend/untracked/month split),
   `services/pie_chart_test.go` (`_ExcludesIncomeCategories`), `handlers/budgets_test.go` (200 data,
   400 on `amount<=0`), `repositories/categories_test.go` (`IsIncome` round-trip incl. toggle-off).
+
+## Bank Statement Import (ANZ PDF → receipts)
+
+Turns a bank statement PDF into one receipt per transaction, with a review step in between. Two
+endpoints on the existing import router, both gated by **`group.receipts.create`** on the target group
+(not `app.imports.run`, which is the admin config import — this creates the caller's own receipts):
+
+- `POST /import/bankStatement/preview` (multipart `file` + `groupId`) → `BankStatementPreview`. Parses
+  only; **creates nothing**.
+- `POST /import/bankStatement` (JSON `BankStatementImportCommand`) → `{createdCount}`. Creates the
+  reviewed rows.
+
+Both handlers load + validate the command **before** building the `structs.Handler`, because the
+`groupId` in the body is what the permission gate resolves against (same shape as `CreateReceipt`).
+
+- **Text extraction is poppler's `pdftotext -layout`** (`services.ExtractPdfText`), installed by
+  `set-up-dependencies.sh` (`poppler-utils`). Layout mode is load-bearing: the parser tells deposits
+  from withdrawals by which column header an amount is right-aligned under. A non-zero exit maps to
+  `ErrUnsupportedBankStatement` (400); a missing binary is a 500.
+- **The parser is ANZ New Zealand only** (`services/bank_statement_parser.go`,
+  `ParseAnzStatementText`, pure — text in, `structs.BankStatementPreview` out). Anything it does not
+  recognise returns `ErrUnsupportedBankStatement`. Another bank is a sibling parser plus a dispatcher,
+  not a change to this one.
+- **The running balance is the safety net.** After reading every row by column position,
+  `verifyAnzRunningBalance` checks each row's balance equals the next (older) row's balance ± its
+  amount and refuses the whole statement on a mismatch. A misread column would otherwise import
+  spending as income silently. Note page footers (`12 Oct 2026 15:31 NZT … Page 1 of 3`) start with a
+  date too — they are excluded because they do not match the row shape, so do not count rows by
+  "lines starting with a date".
+- **Income is the category's `IsIncome` flag, never a sign** (see "Budgets"). Amounts are always
+  positive, so the import enforces both directions: a deposit **must** carry an income-flagged category
+  (command validation: required; service: must be `IsIncome`), and a withdrawal must not carry one. A
+  deposit without a category would be counted as spending by the budget and pie chart.
+- **Preview defaults** (`BankStatementTransaction.selected`): `Transfer` rows are unselected (moving
+  money between the user's own accounts is not income), and so are **duplicates** — rows matching an
+  existing receipt in the group on date + name (case-insensitive) + amount. Matching consumes existing
+  receipts one for one, so two identical purchases on one day are only both flagged when both exist.
+- **Category suggestions are best-effort** (`suggestCategories`). Distinct merchants go to the
+  configured AI provider in **one** chat completion with their own response schema —
+  `AiChatCompletionOptions.ResponseSchema` overrides `ReceiptExtractionSchema()` (all three clients
+  read it through `BaseClient.responseSchema()`). Candidates are the caller's grant-visible categories.
+  A suggestion is kept only if it names a candidate of the right kind (income vs expense); anything
+  else, and any AI failure or missing AI config, just leaves the row unsuggested — the preview never
+  fails because of it. With exactly one income category, deposits default to it without AI.
+- **Import writes receipts directly, not through `ReceiptRepository.CreateReceipt`**: one transaction,
+  `Omit("Categories.*")` so only join rows are written (never upsert the category row — see the
+  blanked-name hazard under "Quick Scan Field Configuration"), status `RESOLVED` with `ResolvedDate`
+  set, dates at UTC midnight like every other receipt, and **one** group notification for the whole
+  import instead of one per receipt. It does not apply group default custom fields (a statement row
+  has none) and writes no per-receipt system task.
+- **Authorization inside the service** mirrors receipt create: `ValidateCategoryTagSelection` (category
+  grants) and `ValidateReceiptUserSelection` (payer visibility) → `ErrBankStatementForbidden` (403). The
+  All group is rejected (400).
+- **No closed enums on the contract** — direction is the boolean `isIncome`, dates are `YYYY-MM-DD`
+  strings, amounts are decimal strings — so the regenerated Dart client cannot fail on a new value.
+- Tests: `services/bank_statement_parser_test.go` (a **synthetic** statement built by
+  `buildAnzStatementText`; never commit a real statement as a fixture), `services/bank_statement_import_test.go`
+  (duplicates, AI suggestions incl. wrong-kind/invented ids, AI failure, import, all-or-nothing
+  rejection), `handlers/bank_statement_import_test.go`, `ai/base_client_test.go` (schema override). The
+  two tests that shell out to `pdftotext` skip when it is not installed.
 
 ## Reporting Engine (`internal/reporting`)
 

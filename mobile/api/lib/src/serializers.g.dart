@@ -20,6 +20,11 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(AssociatedApiKeys.serializer)
       ..add(AssociatedEntityType.serializer)
       ..add(AssociatedGroup.serializer)
+      ..add(BankStatementImportCommand.serializer)
+      ..add(BankStatementImportResult.serializer)
+      ..add(BankStatementImportTransaction.serializer)
+      ..add(BankStatementPreview.serializer)
+      ..add(BankStatementTransaction.serializer)
       ..add(BudgetCategory.serializer)
       ..add(BudgetData.serializer)
       ..add(BulkStatusUpdateCommand.serializer)
@@ -143,6 +148,14 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(UserView.serializer)
       ..add(Widget.serializer)
       ..add(WidgetType.serializer)
+      ..addBuilderFactory(
+          const FullType(BuiltList,
+              const [const FullType(BankStatementImportTransaction)]),
+          () => ListBuilder<BankStatementImportTransaction>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(BankStatementTransaction)]),
+          () => ListBuilder<BankStatementTransaction>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(BudgetCategory)]),
           () => ListBuilder<BudgetCategory>())

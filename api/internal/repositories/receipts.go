@@ -1014,3 +1014,21 @@ func (repository ReceiptRepository) GetReceiptsByIds(ids []string, associations 
 
 	return receipts, nil
 }
+
+// GetReceiptsByGroupIdInDateRange returns the name, amount and date of every
+// receipt in a group dated within [start, end). Used to spot statement rows that
+// were already imported.
+func (repository ReceiptRepository) GetReceiptsByGroupIdInDateRange(groupId uint, start time.Time, end time.Time) ([]models.Receipt, error) {
+	db := repository.GetDB()
+	var receipts []models.Receipt
+
+	err := db.Model(models.Receipt{}).
+		Select("id, name, amount, date").
+		Where("group_id = ? AND date >= ? AND date < ?", groupId, start, end).
+		Find(&receipts).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return receipts, nil
+}

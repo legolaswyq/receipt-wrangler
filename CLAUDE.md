@@ -298,6 +298,22 @@ income-vs-expense separation. The pieces must agree:
   amounts, any legacy/seed data that modelled income as *negative* amounts will read wrong until
   re-seeded positive + flagged.
 
+### Bank Statement Import
+
+Upload a bank statement PDF and get one receipt per transaction, after a review step.
+
+- **Backend** parses and creates — `pdftotext -layout` (poppler, installed by
+  `api/set-up-dependencies.sh`) feeds an **ANZ New Zealand** parser; `POST /api/import/bankStatement/preview`
+  returns the rows (duplicates flagged, transfers unselected, AI category suggestions), and
+  `POST /api/import/bankStatement` creates resolved receipts atomically. See `api/CLAUDE.md` → "Bank
+  Statement Import".
+- **Desktop** owns the review UI — Settings menu → Import Bank Statement. See `desktop/CLAUDE.md` →
+  "Bank statement import".
+- **Mobile has the regenerated client only** — there is no mobile screen for it yet.
+- **Deposits become income through the category's `isIncome` flag**, exactly like the rest of Budgets:
+  amounts stay positive, and a deposit must be given an income category or it would read as spending.
+- **Never commit a real statement.** Tests use a synthetic statement generated in code.
+
 ### State Management Patterns
 - **Backend**: Service layer handles business logic, repositories handle data access
 - **Desktop**: NGXS store with actions/selectors, persistent storage for auth/preferences
@@ -336,7 +352,7 @@ Version is embedded in Docker builds via `VERSION` and `BUILD_DATE` build args.
 
 1. **Forgot to regenerate clients**: After API changes, clients are out of sync → regenerate!
 2. **Editing generated code**: Changes to `desktop/src/open-api/` or `mobile/api/` will be lost
-3. **Missing system dependencies**: API requires Tesseract, ImageMagick → run `api/set-up-dependencies.sh`
+3. **Missing system dependencies**: API requires Tesseract, ImageMagick, poppler (`pdftotext`) → run `api/set-up-dependencies.sh`
 4. **Test database cleanup**: Failed Go tests leave `app.db` in test dirs → remove before rerunning
 5. **Port conflicts**: API (8081), desktop dev (4200), docker prod (80) must be available
 6. **CORS in development**: Desktop proxy handles CORS, but mobile needs proper API base URL

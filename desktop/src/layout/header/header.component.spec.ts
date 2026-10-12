@@ -3,13 +3,13 @@ import { provideHttpClient, withInterceptorsFromDi } from "@angular/common/http"
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 import { NO_ERRORS_SCHEMA, provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { MatDialogModule } from "@angular/material/dialog";
+import { MatDialog, MatDialogModule } from "@angular/material/dialog";
 import { MatIconModule } from "@angular/material/icon";
 import { MatMenuModule, MatMenuTrigger } from "@angular/material/menu";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { By } from "@angular/platform-browser";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
-import { Router } from "@angular/router";
+import { Router, RouteReuseStrategy } from "@angular/router";
 import { RouterTestingModule } from "@angular/router/testing";
 import { Store } from "@ngxs/store";
 import { NgbPopoverModule } from "@ng-bootstrap/ng-bootstrap";
@@ -254,6 +254,45 @@ describe("HeaderComponent", () => {
     await openSettingsMenu();
 
     expect(overlayTestId("header-add-group")).toBeFalsy();
+  });
+
+  it("shows Import Bank Statement with receipt-create on the selected group", async () => {
+    logIn();
+    selectGroupOne();
+    grantGroupPerms(1, [Permission.GroupReceiptsCreate]);
+    await openSettingsMenu();
+
+    expect(overlayTestId("header-import-bank-statement")).toBeTruthy();
+  });
+
+  it("hides Import Bank Statement without receipt-create on the selected group", async () => {
+    logIn();
+    selectGroupOne();
+    grantGroupPerms(1, [Permission.GroupReceiptsRead]);
+    await openSettingsMenu();
+
+    expect(overlayTestId("header-import-bank-statement")).toBeFalsy();
+  });
+
+  it("rebuilds the current page after a bank statement import, and not after a cancel", async () => {
+    const dialog = TestBed.inject(MatDialog);
+    const router = TestBed.inject(Router);
+    const reuseStrategy = TestBed.inject(RouteReuseStrategy);
+    const originalShouldReuse = reuseStrategy.shouldReuseRoute;
+    const navigate = jest.spyOn(router, "navigateByUrl").mockResolvedValue(true);
+    const open = jest.spyOn(dialog, "open");
+
+    open.mockReturnValue({ afterClosed: () => of(false) } as any);
+    component.openBankStatementImportDialog();
+    expect(navigate).not.toHaveBeenCalled();
+
+    open.mockReturnValue({ afterClosed: () => of(true) } as any);
+    component.openBankStatementImportDialog();
+    expect(navigate).toHaveBeenCalledWith(router.url, { onSameUrlNavigation: "reload" });
+
+    // Route reuse is only switched off for that one navigation.
+    await fixture.whenStable();
+    expect(reuseStrategy.shouldReuseRoute).toBe(originalShouldReuse);
   });
 
   it("hides User Settings without any settings read permission", async () => {

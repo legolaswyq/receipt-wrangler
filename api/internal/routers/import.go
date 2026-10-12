@@ -11,6 +11,8 @@ func BuildImportRouter() *chi.Mux {
 
 	router.Use(middleware.UnifiedAuthMiddleware)
 	router.Post("/importConfigJson", handlers.ImportConfigJson)
+	router.Post("/bankStatement/preview", handlers.PreviewBankStatement)
+	router.Post("/bankStatement", handlers.ImportBankStatement)
 
 	return router
 }

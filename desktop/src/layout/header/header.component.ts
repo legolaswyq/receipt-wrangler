@@ -1,16 +1,25 @@
 import { Component, computed, signal } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
-import { Router } from "@angular/router";
+import { Router, RouteReuseStrategy } from "@angular/router";
 import { Store } from "@ngxs/store";
 import { switchMap, take } from "rxjs";
 import { LayoutState } from "src/store/layout.state";
 import { AboutComponent } from "../../about/about/about.component";
 import { DEFAULT_DIALOG_CONFIG } from "../../constants";
+import { BankStatementImportComponent } from "../../import/bank-statement-import/bank-statement-import.component";
 import { ImportFormComponent } from "../../import/import-form/import-form.component";
 import { AuthService, Permission } from "../../open-api";
 import { AuthState, GroupState, Logout } from "../../store";
 import { FeatureConfigState } from "../../store/feature-config.state";
 import { hasAll } from "../../utils/permission.utils";
+
+// The review list has a row per transaction, so it gets more room than the
+// default half-width dialog.
+const BANK_STATEMENT_DIALOG_CONFIG = {
+  ...DEFAULT_DIALOG_CONFIG,
+  width: "70%",
+  maxWidth: "960px",
+};
 
 @Component({
     selector: "app-header",
@@ -97,6 +106,7 @@ export class HeaderComponent {
     private authService: AuthService,
     private matDialog: MatDialog,
     private router: Router,
+    private routeReuseStrategy: RouteReuseStrategy,
     private store: Store
   ) {}
 
@@ -113,6 +123,30 @@ export class HeaderComponent {
 
   public openImportDialog(): void {
     this.matDialog.open(ImportFormComponent, DEFAULT_DIALOG_CONFIG);
+  }
+
+  public openBankStatementImportDialog(): void {
+    this.matDialog
+      .open(BankStatementImportComponent, BANK_STATEMENT_DIALOG_CONFIG)
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((imported) => {
+        if (imported) {
+          this.reloadCurrentRoute();
+        }
+      });
+  }
+
+  // Rebuilds the routed page in place so its list or dashboard picks up newly
+  // imported receipts. A same-URL navigation alone keeps the existing component,
+  // so route reuse is switched off for just this one navigation.
+  private reloadCurrentRoute(): void {
+    const shouldReuseRoute = this.routeReuseStrategy.shouldReuseRoute;
+    this.routeReuseStrategy.shouldReuseRoute = () => false;
+
+    this.router
+      .navigateByUrl(this.router.url, { onSameUrlNavigation: "reload" })
+      .finally(() => (this.routeReuseStrategy.shouldReuseRoute = shouldReuseRoute));
   }
 
   public openAboutDialog(): void {

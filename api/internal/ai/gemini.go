@@ -49,7 +49,7 @@ func (gemini GeminiClient) GetChatCompletion() (structs.ChatCompletionResult, er
 		// ReceiptExtractionSchema, so the response shape no longer depends on the model having
 		// correctly followed prose instructions.
 		model.GenerationConfig.ResponseMIMEType = "application/json"
-		model.GenerationConfig.ResponseSchema = toGenaiSchema(ReceiptExtractionSchema())
+		model.GenerationConfig.ResponseSchema = toGenaiSchema(gemini.responseSchema())
 	}
 	parts := make([]genai.Part, 0)
 	for _, aiMessage := range gemini.Options.Messages {

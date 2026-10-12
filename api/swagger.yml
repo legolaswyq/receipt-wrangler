@@ -3156,6 +3156,60 @@ paths:
           $ref: "#/components/responses/BadRequest"
         403:
           $ref: "#/components/responses/Forbidden"
+  /import/bankStatement/preview:
+    post:
+      tags:
+        - Import
+      summary: Preview a bank statement
+      description: Parses a bank statement PDF and returns its transactions for review. Nothing is created.
+      operationId: previewBankStatement
+      requestBody:
+        description: Bank statement to parse
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/BankStatementPreviewCommand"
+      responses:
+        200:
+          description: The parsed statement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BankStatementPreview"
+        500:
+          $ref: "#/components/responses/Internal"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        403:
+          $ref: "#/components/responses/Forbidden"
+  /import/bankStatement:
+    post:
+      tags:
+        - Import
+      summary: Import bank statement transactions
+      description: Creates one resolved receipt per reviewed bank statement transaction
+      operationId: importBankStatement
+      requestBody:
+        description: Reviewed transactions to import
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BankStatementImportCommand"
+      responses:
+        200:
+          description: How many receipts were created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BankStatementImportResult"
+        500:
+          $ref: "#/components/responses/Internal"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        403:
+          $ref: "#/components/responses/Forbidden"
   /apiKey/:
     post:
       tags:
@@ -6254,6 +6308,147 @@ components:
           type: string
           format: binary
           description: Files to quick scan
+    BankStatementPreviewCommand:
+      type: object
+      required:
+        - file
+        - groupId
+      properties:
+        file:
+          type: string
+          format: binary
+          description: Bank statement PDF
+        groupId:
+          type: integer
+          description: Group the transactions will be imported into
+    BankStatementTransaction:
+      type: object
+      required:
+        - date
+        - type
+        - details
+        - reference
+        - name
+        - amount
+        - balance
+        - isIncome
+        - selected
+        - duplicate
+      properties:
+        date:
+          type: string
+          description: Transaction date as YYYY-MM-DD
+        type:
+          type: string
+          description: Transaction type as printed on the statement
+        details:
+          type: string
+          description: Merchant or counterparty as printed on the statement
+        reference:
+          type: string
+          description: Extra reference line, such as a masked card number
+        name:
+          type: string
+          description: Suggested receipt name
+        amount:
+          type: string
+          description: Transaction amount, always positive
+        balance:
+          type: string
+          description: Running balance after the transaction
+        isIncome:
+          type: boolean
+          description: True for a deposit, false for a withdrawal
+        selected:
+          type: boolean
+          description: Whether the row is suggested for import by default
+        duplicate:
+          type: boolean
+          description: Whether a matching receipt already exists in the group
+        suggestedCategoryId:
+          type: integer
+          nullable: true
+          description: Suggested category, when one could be worked out
+    BankStatementPreview:
+      type: object
+      required:
+        - bank
+        - accountName
+        - accountNumber
+        - periodStart
+        - periodEnd
+        - transactions
+      properties:
+        bank:
+          type: string
+          description: Bank the statement was recognised as
+        accountName:
+          type: string
+          description: Account name
+        accountNumber:
+          type: string
+          description: Account number
+        periodStart:
+          type: string
+          description: Statement period start as YYYY-MM-DD
+        periodEnd:
+          type: string
+          description: Statement period end as YYYY-MM-DD
+        transactions:
+          type: array
+          description: Parsed transactions, newest first
+          items:
+            $ref: "#/components/schemas/BankStatementTransaction"
+    BankStatementImportTransaction:
+      type: object
+      required:
+        - date
+        - name
+        - amount
+        - isIncome
+      properties:
+        date:
+          type: string
+          description: Transaction date as YYYY-MM-DD
+        name:
+          type: string
+          description: Receipt name
+        amount:
+          type: string
+          description: Transaction amount, always positive
+        isIncome:
+          type: boolean
+          description: True for a deposit, false for a withdrawal
+        categoryId:
+          type: integer
+          nullable: true
+          description: Category to assign. Required, and must be an income category, when isIncome is true
+    BankStatementImportCommand:
+      type: object
+      required:
+        - groupId
+        - paidByUserId
+        - transactions
+      properties:
+        groupId:
+          type: integer
+          description: Group to create the receipts in
+        paidByUserId:
+          type: integer
+          description: User recorded as having paid
+        transactions:
+          type: array
+          description: Reviewed transactions to import
+          items:
+            $ref: "#/components/schemas/BankStatementImportTransaction"
+    BankStatementImportResult:
+      type: object
+      required:
+        - createdCount
+      properties:
+        createdCount:
+          type: integer
+          description: Number of receipts created
     Icon:
       type: object
       required:

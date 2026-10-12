@@ -1,0 +1,143 @@
+<app-dialog
+  headerText="Import Bank Statement"
+  [actionsTemplate]="actionsTemplate"
+>
+  <form [formGroup]="form">
+    <app-upload-image
+      [acceptFileTypes]="acceptedFileTypes"
+      [multiple]="false"
+      [convertToPreview]="false"
+      (fileLoaded)="fileLoaded($event)"
+    ></app-upload-image>
+
+    <div class="statement-options">
+      <app-group-autocomplete
+        class="statement-options__field"
+        [inputFormControl]="form | formGet: 'groupId'"
+      ></app-group-autocomplete>
+      <app-user-autocomplete
+        class="statement-options__field"
+        label="Paid By"
+        [inputFormControl]="form | formGet: 'paidByUserId'"
+        [groupId]="form.get('groupId')?.value"
+        [selectGroupMembersOnly]="true"
+      ></app-user-autocomplete>
+    </div>
+
+    @if (loading()) {
+      <mat-progress-bar
+        data-testid="bank-statement-loading"
+        mode="indeterminate"
+      ></mat-progress-bar>
+    }
+
+    @if (preview(); as statement) {
+      <div class="statement-header">
+        <div>
+          <strong>{{ statement.bank }} {{ statement.accountName }}</strong>
+          <div class="statement-muted">
+            {{ statement.periodStart | date: "d MMM y" }} to
+            {{ statement.periodEnd | date: "d MMM y" }} ·
+            {{ statement.transactions.length }} transactions
+          </div>
+        </div>
+        <div class="statement-header__actions">
+          <app-button
+            buttonText="Select all"
+            matButtonType="basic"
+            (clicked)="setAllSelected(true)"
+          ></app-button>
+          <app-button
+            buttonText="Select none"
+            matButtonType="basic"
+            (clicked)="setAllSelected(false)"
+          ></app-button>
+        </div>
+      </div>
+
+      <div class="statement-rows">
+        @for (transaction of statement.transactions; track $index) {
+          @let row = rows.at($index);
+          <div
+            class="statement-row"
+            data-testid="bank-statement-row"
+            [class.statement-row--unselected]="!row.controls.selected.value"
+          >
+            <app-checkbox
+              class="statement-row__select"
+              [inputFormControl]="row.controls.selected"
+            ></app-checkbox>
+            <div class="statement-row__main">
+              <div class="statement-row__name">{{ transaction.name }}</div>
+              <div class="statement-muted">
+                {{ transaction.date | date: "d MMM y" }} · {{ transaction.type }}
+                @if (transaction.reference) {
+                  · {{ transaction.reference }}
+                }
+              </div>
+              @if (transaction.duplicate) {
+                <div class="statement-row__flag" data-testid="bank-statement-duplicate">
+                  Already imported
+                </div>
+              }
+            </div>
+            <div
+              class="statement-row__amount"
+              [class.statement-row__amount--income]="transaction.isIncome"
+            >
+              {{ transaction.isIncome ? "+" : "−" }}{{ transaction.amount | customCurrency }}
+            </div>
+            <div class="statement-row__category">
+              <app-select
+                optionValueKey="id"
+                optionDisplayKey="name"
+                [label]="transaction.isIncome ? 'Income category' : 'Category'"
+                [addEmptyOption]="true"
+                [options]="transaction.isIncome ? incomeCategories() : expenseCategories()"
+                [inputFormControl]="row.controls.categoryId"
+              ></app-select>
+              @if (needsIncomeCategory($index)) {
+                <div class="statement-row__error" data-testid="bank-statement-income-required">
+                  @if (incomeCategories().length === 0) {
+                    No income category exists yet. Mark a category as income first.
+                  } @else {
+                    Choose an income category, or this deposit would count as spending.
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="statement-summary" data-testid="bank-statement-summary">
+        <span>{{ summary().selectedCount }} selected</span>
+        <span>Spending {{ summary().spending | customCurrency }}</span>
+        <span>Income {{ summary().income | customCurrency }}</span>
+      </div>
+    } @else if (!loading()) {
+      <div class="statement-empty" data-testid="bank-statement-empty">
+        <strong>Upload an ANZ transactions PDF</strong>
+        <div class="statement-muted">
+          Each transaction becomes a resolved receipt. You review them before anything is created.
+        </div>
+      </div>
+    }
+  </form>
+  <app-dialog-footer
+    submitButtonTooltip="Import selected transactions"
+    submitButtonType="button"
+    (submitClicked)="submit()"
+    (cancelClicked)="closeDialog()"
+  ></app-dialog-footer>
+</app-dialog>
+
+<ng-template #actionsTemplate>
+  <app-button
+    data-testid="bank-statement-upload"
+    matButtonType="iconButton"
+    tooltip="Upload statement PDF"
+    icon="upload"
+    (clicked)="openFileUploadDialog()"
+  ></app-button>
+</ng-template>

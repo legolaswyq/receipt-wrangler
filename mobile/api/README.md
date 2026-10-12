@@ -106,7 +106,9 @@ Class | Method | HTTP request | Description
 [*GroupsApi*](doc/GroupsApi.md) | [**updateGroupMemberGrants**](doc/GroupsApi.md#updategroupmembergrants) | **PUT** /group/{groupId}/member/{userId}/grants | Update a group member&#39;s category and tag assignment
 [*GroupsApi*](doc/GroupsApi.md) | [**updateGroupReceiptSettings**](doc/GroupsApi.md#updategroupreceiptsettings) | **PUT** /group/{groupId}/groupReceiptSettings | Update group receipt settings
 [*GroupsApi*](doc/GroupsApi.md) | [**updateGroupSettings**](doc/GroupsApi.md#updategroupsettings) | **PUT** /group/{groupId}/groupSettings | Update group settings
+[*ImportApi*](doc/ImportApi.md) | [**importBankStatement**](doc/ImportApi.md#importbankstatement) | **POST** /import/bankStatement | Import bank statement transactions
 [*ImportApi*](doc/ImportApi.md) | [**importConfigJson**](doc/ImportApi.md#importconfigjson) | **POST** /import/importConfigJson | Import config json
+[*ImportApi*](doc/ImportApi.md) | [**previewBankStatement**](doc/ImportApi.md#previewbankstatement) | **POST** /import/bankStatement/preview | Preview a bank statement
 [*NotificationsApi*](doc/NotificationsApi.md) | [**deleteAllNotificationsForUser**](doc/NotificationsApi.md#deleteallnotificationsforuser) | **DELETE** /notifications/ | Delete all notifications for user
 [*NotificationsApi*](doc/NotificationsApi.md) | [**deleteNotificationById**](doc/NotificationsApi.md#deletenotificationbyid) | **DELETE** /notifications/{notificationId} | Delete notification by id
 [*NotificationsApi*](doc/NotificationsApi.md) | [**getNotificationCount**](doc/NotificationsApi.md#getnotificationcount) | **GET** /notifications/notificationCount | Notification count
@@ -206,6 +208,11 @@ Class | Method | HTTP request | Description
  - [AssociatedApiKeys](doc/AssociatedApiKeys.md)
  - [AssociatedEntityType](doc/AssociatedEntityType.md)
  - [AssociatedGroup](doc/AssociatedGroup.md)
+ - [BankStatementImportCommand](doc/BankStatementImportCommand.md)
+ - [BankStatementImportResult](doc/BankStatementImportResult.md)
+ - [BankStatementImportTransaction](doc/BankStatementImportTransaction.md)
+ - [BankStatementPreview](doc/BankStatementPreview.md)
+ - [BankStatementTransaction](doc/BankStatementTransaction.md)
  - [BaseModel](doc/BaseModel.md)
  - [BudgetCategory](doc/BudgetCategory.md)
  - [BudgetData](doc/BudgetData.md)

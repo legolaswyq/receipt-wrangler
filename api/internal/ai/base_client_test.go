@@ -5,6 +5,8 @@ import (
 	"receipt-wrangler/api/internal/structs"
 	"receipt-wrangler/api/internal/utils"
 	"testing"
+
+	"github.com/sashabaranov/go-openai/jsonschema"
 )
 
 func newBaseClientWithKey(key string) BaseClient {
@@ -105,5 +107,23 @@ func TestGetKey_Decrypt_DelegatesToDecryptKey(t *testing.T) {
 	}
 	if got != "unwrapped" {
 		utils.PrintTestError(t, got, "unwrapped")
+	}
+}
+
+func TestResponseSchema_DefaultsToReceiptExtraction(t *testing.T) {
+	client := BaseClient{}
+
+	schema := client.responseSchema()
+	if _, ok := schema.Properties["receiptItems"]; !ok {
+		t.Errorf("expected the receipt extraction schema by default")
+	}
+}
+
+func TestResponseSchema_UsesCallerOverride(t *testing.T) {
+	override := &jsonschema.Definition{Type: jsonschema.Object}
+	client := BaseClient{Options: structs.AiChatCompletionOptions{ResponseSchema: override}}
+
+	if client.responseSchema() != override {
+		t.Errorf("expected the caller's schema to be used")
 	}
 }

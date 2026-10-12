@@ -32,6 +32,9 @@ apt-get install -y -qq imagemagick-7.q16 libmagickwand-7.q16-dev
 # Install Chromium for HTML-to-PDF rendering of email bodies via chromedp
 apt-get install -y -qq chromium
 
+# Install poppler (pdftotext) for reading the text layer of bank statement PDFs
+apt-get install -y -qq poppler-utils
+
 # Adjust ImageMagick policy to allow for PDF conversion
 POLICY_FILE="/etc/ImageMagick-7/policy.xml"
 if [ -f "$POLICY_FILE" ]; then
