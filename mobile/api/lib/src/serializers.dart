@@ -25,6 +25,7 @@ import 'package:openapi/src/model/app_data.dart';
 import 'package:openapi/src/model/associated_api_keys.dart';
 import 'package:openapi/src/model/associated_entity_type.dart';
 import 'package:openapi/src/model/associated_group.dart';
+import 'package:openapi/src/model/bank_statement_account.dart';
 import 'package:openapi/src/model/bank_statement_import_command.dart';
 import 'package:openapi/src/model/bank_statement_import_result.dart';
 import 'package:openapi/src/model/bank_statement_import_transaction.dart';
@@ -165,6 +166,7 @@ part 'serializers.g.dart';
   AssociatedApiKeys,
   AssociatedEntityType,
   AssociatedGroup,
+  BankStatementAccount,
   BankStatementImportCommand,
   BankStatementImportResult,
   BankStatementImportTransaction,

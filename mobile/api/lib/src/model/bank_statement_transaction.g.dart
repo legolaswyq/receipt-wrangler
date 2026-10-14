@@ -8,6 +8,12 @@ part of 'bank_statement_transaction.dart';
 
 class _$BankStatementTransaction extends BankStatementTransaction {
   @override
+  final String accountName;
+  @override
+  final String accountNumber;
+  @override
+  final bool transfer;
+  @override
   final String date;
   @override
   final String type;
@@ -35,7 +41,10 @@ class _$BankStatementTransaction extends BankStatementTransaction {
       (BankStatementTransactionBuilder()..update(updates))._build();
 
   _$BankStatementTransaction._(
-      {required this.date,
+      {required this.accountName,
+      required this.accountNumber,
+      required this.transfer,
+      required this.date,
       required this.type,
       required this.details,
       required this.reference,
@@ -60,6 +69,9 @@ class _$BankStatementTransaction extends BankStatementTransaction {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is BankStatementTransaction &&
+        accountName == other.accountName &&
+        accountNumber == other.accountNumber &&
+        transfer == other.transfer &&
         date == other.date &&
         type == other.type &&
         details == other.details &&
@@ -76,6 +88,9 @@ class _$BankStatementTransaction extends BankStatementTransaction {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, accountName.hashCode);
+    _$hash = $jc(_$hash, accountNumber.hashCode);
+    _$hash = $jc(_$hash, transfer.hashCode);
     _$hash = $jc(_$hash, date.hashCode);
     _$hash = $jc(_$hash, type.hashCode);
     _$hash = $jc(_$hash, details.hashCode);
@@ -94,6 +109,9 @@ class _$BankStatementTransaction extends BankStatementTransaction {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'BankStatementTransaction')
+          ..add('accountName', accountName)
+          ..add('accountNumber', accountNumber)
+          ..add('transfer', transfer)
           ..add('date', date)
           ..add('type', type)
           ..add('details', details)
@@ -113,6 +131,19 @@ class BankStatementTransactionBuilder
     implements
         Builder<BankStatementTransaction, BankStatementTransactionBuilder> {
   _$BankStatementTransaction? _$v;
+
+  String? _accountName;
+  String? get accountName => _$this._accountName;
+  set accountName(String? accountName) => _$this._accountName = accountName;
+
+  String? _accountNumber;
+  String? get accountNumber => _$this._accountNumber;
+  set accountNumber(String? accountNumber) =>
+      _$this._accountNumber = accountNumber;
+
+  bool? _transfer;
+  bool? get transfer => _$this._transfer;
+  set transfer(bool? transfer) => _$this._transfer = transfer;
 
   String? _date;
   String? get date => _$this._date;
@@ -166,6 +197,9 @@ class BankStatementTransactionBuilder
   BankStatementTransactionBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _accountName = $v.accountName;
+      _accountNumber = $v.accountNumber;
+      _transfer = $v.transfer;
       _date = $v.date;
       _type = $v.type;
       _details = $v.details;
@@ -198,6 +232,12 @@ class BankStatementTransactionBuilder
   _$BankStatementTransaction _build() {
     final _$result = _$v ??
         _$BankStatementTransaction._(
+          accountName: BuiltValueNullFieldError.checkNotNull(
+              accountName, r'BankStatementTransaction', 'accountName'),
+          accountNumber: BuiltValueNullFieldError.checkNotNull(
+              accountNumber, r'BankStatementTransaction', 'accountNumber'),
+          transfer: BuiltValueNullFieldError.checkNotNull(
+              transfer, r'BankStatementTransaction', 'transfer'),
           date: BuiltValueNullFieldError.checkNotNull(
               date, r'BankStatementTransaction', 'date'),
           type: BuiltValueNullFieldError.checkNotNull(

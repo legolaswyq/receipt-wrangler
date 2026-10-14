@@ -5,9 +5,9 @@
   <form [formGroup]="form">
     <app-upload-image
       [acceptFileTypes]="acceptedFileTypes"
-      [multiple]="false"
+      [multiple]="true"
       [convertToPreview]="false"
-      (fileLoaded)="fileLoaded($event)"
+      (filesSelected)="filesSelected($event)"
     ></app-upload-image>
 
     <div class="statement-options">
@@ -34,10 +34,17 @@
     @if (preview(); as statement) {
       <div class="statement-header">
         <div>
-          <strong>{{ statement.bank }} {{ statement.accountName }}</strong>
+          @for (account of statement.accounts; track account.accountNumber) {
+            <div data-testid="bank-statement-account">
+              <strong>{{ account.bank }} {{ account.accountName }}</strong>
+              <span class="statement-muted">
+                {{ account.accountNumber }} ·
+                {{ account.periodStart | date: "d MMM y" }} to
+                {{ account.periodEnd | date: "d MMM y" }}
+              </span>
+            </div>
+          }
           <div class="statement-muted">
-            {{ statement.periodStart | date: "d MMM y" }} to
-            {{ statement.periodEnd | date: "d MMM y" }} ·
             {{ statement.transactions.length }} transactions
           </div>
         </div>
@@ -70,11 +77,17 @@
             <div class="statement-row__main">
               <div class="statement-row__name">{{ transaction.name }}</div>
               <div class="statement-muted">
-                {{ transaction.date | date: "d MMM y" }} · {{ transaction.type }}
+                {{ transaction.date | date: "d MMM y" }} · {{ transaction.accountName }} ·
+                {{ transaction.type }}
                 @if (transaction.reference) {
                   · {{ transaction.reference }}
                 }
               </div>
+              @if (transaction.transfer) {
+                <div class="statement-row__flag" data-testid="bank-statement-transfer">
+                  Transfer between your accounts
+                </div>
+              }
               @if (transaction.duplicate) {
                 <div class="statement-row__flag" data-testid="bank-statement-duplicate">
                   Already imported
@@ -117,9 +130,11 @@
       </div>
     } @else if (!loading()) {
       <div class="statement-empty" data-testid="bank-statement-empty">
-        <strong>Upload an ANZ transactions PDF</strong>
+        <strong>Upload your ANZ transactions PDFs</strong>
         <div class="statement-muted">
           Each transaction becomes a resolved receipt. You review them before anything is created.
+          Pick the statements of all your accounts together, so money moved between them is
+          recognised as a transfer and left out.
         </div>
       </div>
     }
@@ -136,7 +151,7 @@
   <app-button
     data-testid="bank-statement-upload"
     matButtonType="iconButton"
-    tooltip="Upload statement PDF"
+    tooltip="Upload statement PDFs"
     icon="upload"
     (clicked)="openFileUploadDialog()"
   ></app-button>

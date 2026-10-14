@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"receipt-wrangler/api/internal/constants"
 	"receipt-wrangler/api/internal/structs"
@@ -18,10 +19,13 @@ import (
 // create an unbounded number of receipts in a single transaction.
 const MaxBankStatementTransactions = 2000
 
-// BankStatementPreviewCommand is the multipart upload of a statement PDF to be
-// parsed for review. Nothing is created from it.
+// MaxBankStatementFiles caps how many statements one preview may parse.
+const MaxBankStatementFiles = 20
+
+// BankStatementPreviewCommand is the multipart upload of one or more statement
+// PDFs (one per account) to be parsed for review. Nothing is created from it.
 type BankStatementPreviewCommand struct {
-	File    []byte
+	Files   [][]byte
 	GroupId uint
 }
 
@@ -37,14 +41,25 @@ func (command *BankStatementPreviewCommand) LoadDataFromRequest(w http.ResponseW
 	}
 	command.GroupId = groupId
 
-	file, _, err := r.FormFile("file")
+	for _, header := range r.MultipartForm.File["files"] {
+		bytes, err := readMultipartFile(header)
+		if err != nil {
+			return err
+		}
+		command.Files = append(command.Files, bytes)
+	}
+
+	return nil
+}
+
+func readMultipartFile(header *multipart.FileHeader) ([]byte, error) {
+	file, err := header.Open()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer file.Close()
 
-	command.File, err = io.ReadAll(file)
-	return err
+	return io.ReadAll(file)
 }
 
 func (command *BankStatementPreviewCommand) Validate() structs.ValidatorError {
@@ -54,8 +69,18 @@ func (command *BankStatementPreviewCommand) Validate() structs.ValidatorError {
 		errors["groupId"] = "Group Id is required"
 	}
 
-	if len(command.File) == 0 {
-		errors["file"] = "File is required"
+	if len(command.Files) == 0 {
+		errors["files"] = "At least one file is required"
+	}
+
+	if len(command.Files) > MaxBankStatementFiles {
+		errors["files"] = fmt.Sprintf("At most %d statements can be read at once", MaxBankStatementFiles)
+	}
+
+	for _, file := range command.Files {
+		if len(file) == 0 {
+			errors["files"] = "A file is empty"
+		}
 	}
 
 	return structs.ValidatorError{Errors: errors}

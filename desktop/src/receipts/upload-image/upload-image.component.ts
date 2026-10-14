@@ -29,6 +29,10 @@ export class UploadImageComponent {
 
   public readonly fileLoaded = output<ReceiptFileUploadCommand>();
 
+  // Every accepted file of one pick, emitted once. For callers that need the
+  // picked files as a set rather than one fileLoaded per file.
+  public readonly filesSelected = output<File[]>();
+
   public formMode = FormMode;
   
   constructor(private receiptImageService: ReceiptImageService) {}
@@ -42,6 +46,10 @@ export class UploadImageComponent {
     const acceptedFiles = files.filter((f) =>
       this.acceptFileTypes().some((t) => new RegExp(t).test(f.type))
     );
+
+    if (acceptedFiles.length > 0) {
+      this.filesSelected.emit(acceptedFiles);
+    }
 
     for (let i = 0; i < acceptedFiles.length; i++) {
       const reader = new FileReader();

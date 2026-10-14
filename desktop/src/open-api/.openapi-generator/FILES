@@ -44,6 +44,7 @@ model/appData.ts
 model/associatedApiKeys.ts
 model/associatedEntityType.ts
 model/associatedGroup.ts
+model/bankStatementAccount.ts
 model/bankStatementImportCommand.ts
 model/bankStatementImportResult.ts
 model/bankStatementImportTransaction.ts

@@ -7,32 +7,17 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { BankStatementAccount } from './bankStatementAccount';
 import { BankStatementTransaction } from './bankStatementTransaction';
 
 
 export interface BankStatementPreview { 
     /**
-     * Bank the statement was recognised as
+     * The statements that were read, one per account
      */
-    bank: string;
+    accounts: Array<BankStatementAccount>;
     /**
-     * Account name
-     */
-    accountName: string;
-    /**
-     * Account number
-     */
-    accountNumber: string;
-    /**
-     * Statement period start as YYYY-MM-DD
-     */
-    periodStart: string;
-    /**
-     * Statement period end as YYYY-MM-DD
-     */
-    periodEnd: string;
-    /**
-     * Parsed transactions, newest first
+     * Parsed transactions across all accounts, newest first
      */
     transactions: Array<BankStatementTransaction>;
 }

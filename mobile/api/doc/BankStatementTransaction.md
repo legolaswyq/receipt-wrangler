@@ -8,6 +8,9 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**accountName** | **String** | Name of the account the row came from | 
+**accountNumber** | **String** | Number of the account the row came from | 
+**transfer** | **bool** | True when the row moves money between the user's own accounts, so it is neither spending nor income | 
 **date** | **String** | Transaction date as YYYY-MM-DD | 
 **type** | **String** | Transaction type as printed on the statement | 
 **details** | **String** | Merchant or counterparty as printed on the statement | 

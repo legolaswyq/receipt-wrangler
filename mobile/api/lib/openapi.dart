@@ -49,6 +49,7 @@ export 'package:openapi/src/model/app_data.dart';
 export 'package:openapi/src/model/associated_api_keys.dart';
 export 'package:openapi/src/model/associated_entity_type.dart';
 export 'package:openapi/src/model/associated_group.dart';
+export 'package:openapi/src/model/bank_statement_account.dart';
 export 'package:openapi/src/model/bank_statement_import_command.dart';
 export 'package:openapi/src/model/bank_statement_import_result.dart';
 export 'package:openapi/src/model/bank_statement_import_transaction.dart';

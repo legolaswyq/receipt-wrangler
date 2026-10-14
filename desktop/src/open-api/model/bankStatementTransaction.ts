@@ -11,6 +11,18 @@
 
 export interface BankStatementTransaction { 
     /**
+     * Name of the account the row came from
+     */
+    accountName: string;
+    /**
+     * Number of the account the row came from
+     */
+    accountNumber: string;
+    /**
+     * True when the row moves money between the user\'s own accounts, so it is neither spending nor income
+     */
+    transfer: boolean;
+    /**
      * Transaction date as YYYY-MM-DD
      */
     date: string;

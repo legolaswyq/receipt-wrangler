@@ -35,6 +35,13 @@ var (
 	anzFooterRegex  = regexp.MustCompile(`Page \d+ of \d+|^Copyright `)
 )
 
+// ParsedBankStatement is one statement as read from its text: the account it
+// belongs to and its transactions in statement order.
+type ParsedBankStatement struct {
+	structs.BankStatementAccount
+	Transactions []structs.BankStatementTransaction
+}
+
 // ExtractPdfText returns the text layer of a PDF with its column layout
 // preserved, using poppler's pdftotext. Statement parsing depends on that layout
 // to tell the deposit column from the withdrawal column.
@@ -54,10 +61,10 @@ func ExtractPdfText(pdfPath string) (string, error) {
 
 // ParseAnzStatementText parses the layout-preserved text of an ANZ New Zealand
 // transaction PDF. Transactions are returned in statement order (newest first).
-func ParseAnzStatementText(text string) (structs.BankStatementPreview, error) {
-	preview := structs.BankStatementPreview{
-		Bank:         anzBankName,
-		Transactions: []structs.BankStatementTransaction{},
+func ParseAnzStatementText(text string) (ParsedBankStatement, error) {
+	preview := ParsedBankStatement{
+		BankStatementAccount: structs.BankStatementAccount{Bank: anzBankName},
+		Transactions:         []structs.BankStatementTransaction{},
 	}
 
 	// Each page starts with a form feed glued to its first line.
@@ -75,7 +82,7 @@ func ParseAnzStatementText(text string) (structs.BankStatementPreview, error) {
 		}
 
 		if depositsEnd < 0 {
-			parseAnzPreamble(&preview, lines, i)
+			parseAnzPreamble(&preview.BankStatementAccount, lines, i)
 			continue
 		}
 
@@ -107,10 +114,15 @@ func ParseAnzStatementText(text string) (structs.BankStatementPreview, error) {
 		return preview, err
 	}
 
+	for i := range preview.Transactions {
+		preview.Transactions[i].AccountName = preview.AccountName
+		preview.Transactions[i].AccountNumber = preview.AccountNumber
+	}
+
 	return preview, nil
 }
 
-func parseAnzPreamble(preview *structs.BankStatementPreview, lines []string, index int) {
+func parseAnzPreamble(preview *structs.BankStatementAccount, lines []string, index int) {
 	line := lines[index]
 
 	if period := anzPeriodRegex.FindStringSubmatch(line); period != nil {
@@ -155,6 +167,7 @@ func buildAnzTransaction(line string, match []int, depositsEnd int, withdrawalsE
 
 	transactionType := group(2)
 	details := group(3)
+	isTransfer := transactionType == anzTransferType
 
 	return structs.BankStatementTransaction{
 		Date:     date.Format(structs.BankStatementDateFormat),
@@ -164,7 +177,8 @@ func buildAnzTransaction(line string, match []int, depositsEnd int, withdrawalsE
 		Amount:   amount,
 		Balance:  balance,
 		IsIncome: isIncome,
-		Selected: transactionType != anzTransferType,
+		Transfer: isTransfer,
+		Selected: !isTransfer,
 	}, nil
 }
 

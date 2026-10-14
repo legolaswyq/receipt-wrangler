@@ -15,6 +15,9 @@ import { SystemSettingsState } from "../../store/system-settings.state";
 import { BankStatementImportComponent } from "./bank-statement-import.component";
 
 const transaction = (overrides: Partial<BankStatementTransaction>): BankStatementTransaction => ({
+  accountName: "Everyday Account",
+  accountNumber: "01-0001-0000001-00",
+  transfer: false,
   date: "2026-01-20",
   type: "Visa Purchase",
   details: "Corner Groc",
@@ -29,15 +32,26 @@ const transaction = (overrides: Partial<BankStatementTransaction>): BankStatemen
 });
 
 const buildPreview = (): BankStatementPreview => ({
-  bank: "ANZ",
-  accountName: "Everyday Account",
-  accountNumber: "01-0001-0000001-00",
-  periodStart: "2026-01-01",
-  periodEnd: "2026-01-31",
+  accounts: [
+    {
+      bank: "ANZ",
+      accountName: "Everyday Account",
+      accountNumber: "01-0001-0000001-00",
+      periodStart: "2026-01-01",
+      periodEnd: "2026-01-31",
+    },
+    {
+      bank: "ANZ",
+      accountName: "Savings Account",
+      accountNumber: "01-0001-0000001-50",
+      periodStart: "2026-01-01",
+      periodEnd: "2026-01-31",
+    },
+  ],
   transactions: [
     transaction({ suggestedCategoryId: 10 }),
     transaction({ name: "Employer Limited", amount: "1500.00", isIncome: true, type: "Direct Credit" }),
-    transaction({ name: "Transfer From: 06", amount: "1000.00", isIncome: true, type: "Transfer", selected: false }),
+    transaction({ name: "Transfer From: 06", amount: "1000.00", isIncome: true, type: "Transfer", transfer: true, selected: false }),
     transaction({ name: "Acme Trading", amount: "40.00", duplicate: true, selected: false }),
   ],
 });
@@ -54,7 +68,10 @@ describe("BankStatementImportComponent", () => {
     Array.from(fixture.nativeElement.querySelectorAll(`[data-testid="${id}"]`));
 
   const loadFile = async () => {
-    component.fileLoaded({ file: new File(["%PDF"], "statement.pdf", { type: "application/pdf" }) } as any);
+    component.filesSelected([
+      new File(["%PDF"], "everyday.pdf", { type: "application/pdf" }),
+      new File(["%PDF"], "savings.pdf", { type: "application/pdf" }),
+    ]);
     await fixture.whenStable();
   };
 
@@ -126,8 +143,10 @@ describe("BankStatementImportComponent", () => {
   it("previews the uploaded statement and applies the server's defaults", async () => {
     await loadFile();
 
-    expect(importService.previewBankStatement).toHaveBeenCalledWith(expect.any(File), 1);
+    expect(importService.previewBankStatement).toHaveBeenCalledWith([expect.any(File), expect.any(File)], 1);
+    expect(queryAll("bank-statement-account").length).toBe(2);
     expect(queryAll("bank-statement-row").length).toBe(4);
+    expect(queryAll("bank-statement-transfer").length).toBe(1);
     expect(queryAll("bank-statement-duplicate").length).toBe(1);
     expect(component.rows.getRawValue()).toEqual([
       { selected: true, categoryId: 10 },
@@ -203,7 +222,7 @@ describe("BankStatementImportComponent", () => {
     component.form.get("groupId")?.setValue(3);
     await fixture.whenStable();
 
-    expect(importService.previewBankStatement).toHaveBeenLastCalledWith(expect.any(File), 3);
+    expect(importService.previewBankStatement).toHaveBeenLastCalledWith([expect.any(File), expect.any(File)], 3);
     expect(component.expenseCategories().map((c) => c.id)).toEqual([30]);
     expect(component.incomeCategories()).toEqual([]);
   });

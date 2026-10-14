@@ -1,0 +1,175 @@
+//
+// AUTO-GENERATED FILE, DO NOT MODIFY!
+//
+
+// ignore_for_file: unused_element
+import 'package:built_value/built_value.dart';
+import 'package:built_value/serializer.dart';
+
+part 'bank_statement_account.g.dart';
+
+/// BankStatementAccount
+///
+/// Properties:
+/// * [bank] - Bank the statement was recognised as
+/// * [accountName] - Account name
+/// * [accountNumber] - Account number
+/// * [periodStart] - Statement period start as YYYY-MM-DD
+/// * [periodEnd] - Statement period end as YYYY-MM-DD
+@BuiltValue()
+abstract class BankStatementAccount implements Built<BankStatementAccount, BankStatementAccountBuilder> {
+  /// Bank the statement was recognised as
+  @BuiltValueField(wireName: r'bank')
+  String get bank;
+
+  /// Account name
+  @BuiltValueField(wireName: r'accountName')
+  String get accountName;
+
+  /// Account number
+  @BuiltValueField(wireName: r'accountNumber')
+  String get accountNumber;
+
+  /// Statement period start as YYYY-MM-DD
+  @BuiltValueField(wireName: r'periodStart')
+  String get periodStart;
+
+  /// Statement period end as YYYY-MM-DD
+  @BuiltValueField(wireName: r'periodEnd')
+  String get periodEnd;
+
+  BankStatementAccount._();
+
+  factory BankStatementAccount([void updates(BankStatementAccountBuilder b)]) = _$BankStatementAccount;
+
+  @BuiltValueHook(initializeBuilder: true)
+  static void _defaults(BankStatementAccountBuilder b) => b;
+
+  @BuiltValueSerializer(custom: true)
+  static Serializer<BankStatementAccount> get serializer => _$BankStatementAccountSerializer();
+}
+
+class _$BankStatementAccountSerializer implements PrimitiveSerializer<BankStatementAccount> {
+  @override
+  final Iterable<Type> types = const [BankStatementAccount, _$BankStatementAccount];
+
+  @override
+  final String wireName = r'BankStatementAccount';
+
+  Iterable<Object?> _serializeProperties(
+    Serializers serializers,
+    BankStatementAccount object, {
+    FullType specifiedType = FullType.unspecified,
+  }) sync* {
+    yield r'bank';
+    yield serializers.serialize(
+      object.bank,
+      specifiedType: const FullType(String),
+    );
+    yield r'accountName';
+    yield serializers.serialize(
+      object.accountName,
+      specifiedType: const FullType(String),
+    );
+    yield r'accountNumber';
+    yield serializers.serialize(
+      object.accountNumber,
+      specifiedType: const FullType(String),
+    );
+    yield r'periodStart';
+    yield serializers.serialize(
+      object.periodStart,
+      specifiedType: const FullType(String),
+    );
+    yield r'periodEnd';
+    yield serializers.serialize(
+      object.periodEnd,
+      specifiedType: const FullType(String),
+    );
+  }
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    BankStatementAccount object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+  }
+
+  void _deserializeProperties(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+    required List<Object?> serializedList,
+    required BankStatementAccountBuilder result,
+    required List<Object?> unhandled,
+  }) {
+    for (var i = 0; i < serializedList.length; i += 2) {
+      final key = serializedList[i] as String;
+      final value = serializedList[i + 1];
+      switch (key) {
+        case r'bank':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.bank = valueDes;
+          break;
+        case r'accountName':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.accountName = valueDes;
+          break;
+        case r'accountNumber':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.accountNumber = valueDes;
+          break;
+        case r'periodStart':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.periodStart = valueDes;
+          break;
+        case r'periodEnd':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.periodEnd = valueDes;
+          break;
+        default:
+          unhandled.add(key);
+          unhandled.add(value);
+          break;
+      }
+    }
+  }
+
+  @override
+  BankStatementAccount deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    final result = BankStatementAccountBuilder();
+    final serializedList = (serialized as Iterable<Object?>).toList();
+    final unhandled = <Object?>[];
+    _deserializeProperties(
+      serializers,
+      serialized,
+      specifiedType: specifiedType,
+      serializedList: serializedList,
+      unhandled: unhandled,
+      result: result,
+    );
+    return result.build();
+  }
+}
+

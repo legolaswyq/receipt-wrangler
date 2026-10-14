@@ -11,6 +11,9 @@ part 'bank_statement_transaction.g.dart';
 /// BankStatementTransaction
 ///
 /// Properties:
+/// * [accountName] - Name of the account the row came from
+/// * [accountNumber] - Number of the account the row came from
+/// * [transfer] - True when the row moves money between the user's own accounts, so it is neither spending nor income
 /// * [date] - Transaction date as YYYY-MM-DD
 /// * [type] - Transaction type as printed on the statement
 /// * [details] - Merchant or counterparty as printed on the statement
@@ -24,6 +27,18 @@ part 'bank_statement_transaction.g.dart';
 /// * [suggestedCategoryId] - Suggested category, when one could be worked out
 @BuiltValue()
 abstract class BankStatementTransaction implements Built<BankStatementTransaction, BankStatementTransactionBuilder> {
+  /// Name of the account the row came from
+  @BuiltValueField(wireName: r'accountName')
+  String get accountName;
+
+  /// Number of the account the row came from
+  @BuiltValueField(wireName: r'accountNumber')
+  String get accountNumber;
+
+  /// True when the row moves money between the user's own accounts, so it is neither spending nor income
+  @BuiltValueField(wireName: r'transfer')
+  bool get transfer;
+
   /// Transaction date as YYYY-MM-DD
   @BuiltValueField(wireName: r'date')
   String get date;
@@ -91,6 +106,21 @@ class _$BankStatementTransactionSerializer implements PrimitiveSerializer<BankSt
     BankStatementTransaction object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    yield r'accountName';
+    yield serializers.serialize(
+      object.accountName,
+      specifiedType: const FullType(String),
+    );
+    yield r'accountNumber';
+    yield serializers.serialize(
+      object.accountNumber,
+      specifiedType: const FullType(String),
+    );
+    yield r'transfer';
+    yield serializers.serialize(
+      object.transfer,
+      specifiedType: const FullType(bool),
+    );
     yield r'date';
     yield serializers.serialize(
       object.date,
@@ -171,6 +201,27 @@ class _$BankStatementTransactionSerializer implements PrimitiveSerializer<BankSt
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'accountName':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.accountName = valueDes;
+          break;
+        case r'accountNumber':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.accountNumber = valueDes;
+          break;
+        case r'transfer':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
+          result.transfer = valueDes;
+          break;
         case r'date':
           final valueDes = serializers.deserialize(
             value,

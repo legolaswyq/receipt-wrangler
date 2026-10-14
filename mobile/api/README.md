@@ -208,6 +208,7 @@ Class | Method | HTTP request | Description
  - [AssociatedApiKeys](doc/AssociatedApiKeys.md)
  - [AssociatedEntityType](doc/AssociatedEntityType.md)
  - [AssociatedGroup](doc/AssociatedGroup.md)
+ - [BankStatementAccount](doc/BankStatementAccount.md)
  - [BankStatementImportCommand](doc/BankStatementImportCommand.md)
  - [BankStatementImportResult](doc/BankStatementImportResult.md)
  - [BankStatementImportTransaction](doc/BankStatementImportTransaction.md)

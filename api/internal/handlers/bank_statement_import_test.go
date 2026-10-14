@@ -35,7 +35,7 @@ func bankStatementPreviewRequest(t *testing.T, userId uint, groupId string, file
 		_ = writer.WriteField("groupId", groupId)
 	}
 	if file != nil {
-		part, err := writer.CreateFormFile("file", "statement.pdf")
+		part, err := writer.CreateFormFile("files", "statement.pdf")
 		if err != nil {
 			t.Fatalf("create form file: %v", err)
 		}

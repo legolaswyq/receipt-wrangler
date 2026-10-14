@@ -14,6 +14,7 @@ doc/AssociatedApiKeys.md
 doc/AssociatedEntityType.md
 doc/AssociatedGroup.md
 doc/AuthApi.md
+doc/BankStatementAccount.md
 doc/BankStatementImportCommand.md
 doc/BankStatementImportResult.md
 doc/BankStatementImportTransaction.md
@@ -211,6 +212,7 @@ lib/src/model/app_data.dart
 lib/src/model/associated_api_keys.dart
 lib/src/model/associated_entity_type.dart
 lib/src/model/associated_group.dart
+lib/src/model/bank_statement_account.dart
 lib/src/model/bank_statement_import_command.dart
 lib/src/model/bank_statement_import_result.dart
 lib/src/model/bank_statement_import_transaction.dart
@@ -339,3 +341,4 @@ lib/src/model/widget.dart
 lib/src/model/widget_type.dart
 lib/src/serializers.dart
 pubspec.yaml
+test/bank_statement_account_test.dart

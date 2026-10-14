@@ -1635,11 +1635,16 @@ renders the **full dataset** (not the capped builder preview) and re-resolves ac
 `group.receipts.create` on the selected group) opens `BankStatementImportComponent`
 (`src/import/bank-statement-import/`). The server side is in `api/CLAUDE.md` → "Bank Statement Import".
 
-- **Flow:** pick a PDF → `ImportService.previewBankStatement(file, groupId)` → a review list (one row
-  per transaction: checkbox, name/date/type/reference, signed amount, category `app-select`) →
+- **Flow:** pick one or more PDFs (one per account) → `ImportService.previewBankStatement(files,
+  groupId)` → the accounts read, then one review list across them (one row per transaction: checkbox,
+  name/date/account/type/reference, signed amount, category `app-select`) →
   `importBankStatement` with only the ticked rows. Nothing is created until the user confirms.
 - **The server decides the defaults; the dialog only renders them.** `selected`, `duplicate` and
   `suggestedCategoryId` come from the preview. Transfers and "Already imported" rows arrive unticked.
+  A row with `transfer` shows "Transfer between your accounts" (`bank-statement-transfer`). The server
+  can only recognise an unlabelled transfer when both accounts' statements are in the same pick, so
+  picking again **replaces** the set rather than adding to it, and the empty state says to pick them
+  all together.
 - **A ticked deposit must have an income category.** Income is the category's `isIncome` flag, so a
   deposit saved without one would count as spending. The row shows an inline message
   (`bank-statement-income-required`) and `submit()` refuses with a snackbar; the server enforces the
@@ -1652,7 +1657,9 @@ renders the **full dataset** (not the capped builder preview) and re-resolves ac
   argument).** Angular parses a date-only string as *local* midnight, so forcing `"UTC"` shows the
   previous day in any zone ahead of UTC.
 - **`app-upload-image` gained `convertToPreview`** (default `true`). The statement dialog sets it to
-  `false` so a PDF is handed over as-is instead of being rendered to a JPG preview first.
+  `false` so a PDF is handed over as-is instead of being rendered to a JPG preview first. It also
+  gained a **`filesSelected`** output — every accepted file of one pick, emitted once — which the
+  dialog uses instead of the per-file `fileLoaded`.
 - **After a successful import the header rebuilds the current route** (`reloadCurrentRoute`: route reuse
   off for one same-URL navigation, then restored) so the dashboard or receipt list shows the new
   receipts without a manual refresh.

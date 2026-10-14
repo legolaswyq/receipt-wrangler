@@ -8,6 +8,7 @@ import 'package:built_value/json_object.dart';
 import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
+import 'package:built_collection/built_collection.dart';
 import 'package:openapi/src/api_util.dart';
 import 'package:openapi/src/model/bank_statement_import_command.dart';
 import 'package:openapi/src/model/bank_statement_import_result.dart';
@@ -208,10 +209,10 @@ class ImportApi {
   }
 
   /// Preview a bank statement
-  /// Parses a bank statement PDF and returns its transactions for review. Nothing is created.
+  /// Parses one or more bank statement PDFs (one per account) and returns their transactions for review, with transfers between the uploaded accounts flagged. Nothing is created.
   ///
   /// Parameters:
-  /// * [file] - Bank statement PDF
+  /// * [files] - Bank statement PDFs, one per account
   /// * [groupId] - Group the transactions will be imported into
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -223,7 +224,7 @@ class ImportApi {
   /// Returns a [Future] containing a [Response] with a [BankStatementPreview] as data
   /// Throws [DioException] if API call or serialization fails
   Future<Response<BankStatementPreview>> previewBankStatement({ 
-    required MultipartFile file,
+    required BuiltList<MultipartFile> files,
     required int groupId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -261,7 +262,7 @@ class ImportApi {
 
     try {
       _bodyData = FormData.fromMap(<String, dynamic>{
-        r'file': file,
+        r'files': files.toList(),
         r'groupId': encodeFormParameter(_serializers, groupId, const FullType(int)),
       });
 

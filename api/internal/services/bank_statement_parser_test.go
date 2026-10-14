@@ -102,6 +102,12 @@ func TestParseAnzStatementText_ParsesRowsAcrossPages(t *testing.T) {
 		if got.IsIncome != want.isIncome || got.Selected != want.selected {
 			t.Errorf("row %d: expected isIncome=%t selected=%t, got %t / %t", i, want.isIncome, want.selected, got.IsIncome, got.Selected)
 		}
+		if got.Transfer != (want.kind == "Transfer") {
+			t.Errorf("row %d: expected only bank-labelled transfers to be flagged, got transfer=%t", i, got.Transfer)
+		}
+		if got.AccountName != "Everyday Account" || got.AccountNumber != "01-0001-0000001-00" {
+			t.Errorf("row %d: expected the statement's account on the row, got %q %q", i, got.AccountName, got.AccountNumber)
+		}
 		if got.Duplicate || got.SuggestedCategoryId != nil {
 			t.Errorf("row %d: parser must not set duplicate/suggestion", i)
 		}

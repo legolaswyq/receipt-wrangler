@@ -4,7 +4,6 @@ import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from "@ang
 import { MatDialogRef } from "@angular/material/dialog";
 import { Store } from "@ngxs/store";
 import { finalize, take, tap } from "rxjs";
-import { ReceiptFileUploadCommand } from "../../interfaces";
 import {
   BankStatementImportTransaction,
   BankStatementPreview,
@@ -61,7 +60,9 @@ export class BankStatementImportComponent implements OnInit {
 
   public readonly incomeCategories = signal<Category[]>([]);
 
-  private file: File | null = null;
+  // The picked statements, one per account. Read together so a transfer between
+  // two of the accounts can be recognised from its two sides.
+  private files: File[] = [];
 
   constructor(
     private destroyRef: DestroyRef,
@@ -89,8 +90,8 @@ export class BankStatementImportComponent implements OnInit {
     this.uploadImageComponent().clickInput();
   }
 
-  public fileLoaded(fileData: ReceiptFileUploadCommand): void {
-    this.file = fileData.file;
+  public filesSelected(files: File[]): void {
+    this.files = files;
     this.loadPreview();
   }
 
@@ -175,13 +176,13 @@ export class BankStatementImportComponent implements OnInit {
     // valueChanges, which fires before the parent form's value is updated.
     const groupId = Number(this.form.get("groupId")?.value);
     this.clearPreview();
-    if (!this.file || !groupId) {
+    if (this.files.length === 0 || !groupId) {
       return;
     }
 
     this.loading.set(true);
     this.importService
-      .previewBankStatement(this.file, groupId)
+      .previewBankStatement(this.files, groupId)
       .pipe(
         take(1),
         tap((preview) => this.setPreview(preview, groupId)),

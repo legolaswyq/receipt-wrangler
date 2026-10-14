@@ -1642,8 +1642,9 @@ Turns a bank statement PDF into one receipt per transaction, with a review step 
 endpoints on the existing import router, both gated by **`group.receipts.create`** on the target group
 (not `app.imports.run`, which is the admin config import — this creates the caller's own receipts):
 
-- `POST /import/bankStatement/preview` (multipart `file` + `groupId`) → `BankStatementPreview`. Parses
-  only; **creates nothing**.
+- `POST /import/bankStatement/preview` (multipart `files` — one PDF per account, up to
+  `MaxBankStatementFiles` — + `groupId`) → `BankStatementPreview` (`accounts` + one `transactions` list
+  across them, newest first). Parses only; **creates nothing**.
 - `POST /import/bankStatement` (JSON `BankStatementImportCommand`) → `{createdCount}`. Creates the
   reviewed rows.
 
@@ -1655,7 +1656,7 @@ Both handlers load + validate the command **before** building the `structs.Handl
   from withdrawals by which column header an amount is right-aligned under. A non-zero exit maps to
   `ErrUnsupportedBankStatement` (400); a missing binary is a 500.
 - **The parser is ANZ New Zealand only** (`services/bank_statement_parser.go`,
-  `ParseAnzStatementText`, pure — text in, `structs.BankStatementPreview` out). Anything it does not
+  `ParseAnzStatementText`, pure — text in, one `ParsedBankStatement` out). Anything it does not
   recognise returns `ErrUnsupportedBankStatement`. Another bank is a sibling parser plus a dispatcher,
   not a change to this one.
 - **The running balance is the safety net.** After reading every row by column position,
@@ -1668,8 +1669,17 @@ Both handlers load + validate the command **before** building the `structs.Handl
   positive, so the import enforces both directions: a deposit **must** carry an income-flagged category
   (command validation: required; service: must be `IsIncome`), and a withdrawal must not carry one. A
   deposit without a category would be counted as spending by the budget and pie chart.
-- **Preview defaults** (`BankStatementTransaction.selected`): `Transfer` rows are unselected (moving
-  money between the user's own accounts is not income), and so are **duplicates** — rows matching an
+- **Own-account transfers are neither spending nor income** (`BankStatementTransaction.transfer`,
+  always unselected). Two sources: the parser flags rows the bank types `Transfer`, and
+  `markOwnAccountTransfers` pairs the rest across the uploaded statements — a withdrawal from one
+  account with a deposit into a **different** account on the same day, for the same amount **and the
+  same `details`** (ANZ prints the account holder on both sides, e.g. an automatic payment into a
+  savings account). The counterparty match is load-bearing: date + amount alone paired a $20 EFTPOS
+  purchase with an unrelated $20 savings deposit. Pairing therefore only works when both accounts'
+  statements are in the same preview; a deposit from someone else (salary, another person) is never a
+  transfer. The same statement picked twice (same account + period) is read once.
+- **Preview defaults** (`BankStatementTransaction.selected`): transfers are unselected, and so are
+  **duplicates** — rows matching an
   existing receipt in the group on date + name (case-insensitive) + amount. Matching consumes existing
   receipts one for one, so two identical purchases on one day are only both flagged when both exist.
 - **Category suggestions are best-effort** (`suggestCategories`). Distinct merchants go to the

@@ -11,6 +11,7 @@ import (
 	"receipt-wrangler/api/internal/repositories"
 	"receipt-wrangler/api/internal/structs"
 	"receipt-wrangler/api/internal/utils"
+	"sort"
 	"strings"
 	"time"
 
@@ -40,25 +41,56 @@ func NewBankStatementImportService(tx *gorm.DB) BankStatementImportService {
 	}
 }
 
-// Preview parses an uploaded statement PDF and returns its rows for review:
-// flagged when they look already imported, and with a suggested category where
-// one can be worked out. It creates nothing.
+// Preview parses the uploaded statement PDFs and returns their rows for review
+// as one list: transfers between the user's own accounts unselected, rows that
+// look already imported flagged, and a suggested category where one can be
+// worked out. It creates nothing.
 func (service BankStatementImportService) Preview(userId uint, command commands.BankStatementPreviewCommand) (structs.BankStatementPreview, error) {
-	text, err := service.extractText(command.File)
-	if err != nil {
-		return structs.BankStatementPreview{}, err
+	texts := make([]string, len(command.Files))
+	for i, file := range command.Files {
+		text, err := service.extractText(file)
+		if err != nil {
+			return structs.BankStatementPreview{}, err
+		}
+		texts[i] = text
 	}
 
-	return service.previewFromText(userId, command.GroupId, text)
+	return service.previewFromTexts(userId, command.GroupId, texts)
 }
 
-func (service BankStatementImportService) previewFromText(userId uint, groupId uint, text string) (structs.BankStatementPreview, error) {
-	preview, err := ParseAnzStatementText(text)
-	if err != nil {
-		return structs.BankStatementPreview{}, err
+func (service BankStatementImportService) previewFromTexts(userId uint, groupId uint, texts []string) (structs.BankStatementPreview, error) {
+	preview := structs.BankStatementPreview{
+		Accounts:     []structs.BankStatementAccount{},
+		Transactions: []structs.BankStatementTransaction{},
 	}
 
-	err = service.markDuplicates(groupId, preview.Transactions)
+	seen := map[structs.BankStatementAccount]bool{}
+	for _, text := range texts {
+		statement, err := ParseAnzStatementText(text)
+		if err != nil {
+			return structs.BankStatementPreview{}, err
+		}
+
+		// The same statement picked twice (a re-downloaded copy) is read once,
+		// or every one of its rows would be offered for import twice.
+		if seen[statement.BankStatementAccount] {
+			continue
+		}
+		seen[statement.BankStatementAccount] = true
+
+		preview.Accounts = append(preview.Accounts, statement.BankStatementAccount)
+		preview.Transactions = append(preview.Transactions, statement.Transactions...)
+	}
+
+	markOwnAccountTransfers(preview.Transactions)
+
+	// Newest first across accounts. Dates are YYYY-MM-DD, and the sort is stable
+	// so rows of one account keep their statement order within a day.
+	sort.SliceStable(preview.Transactions, func(i, j int) bool {
+		return preview.Transactions[i].Date > preview.Transactions[j].Date
+	})
+
+	err := service.markDuplicates(groupId, preview.Transactions)
 	if err != nil {
 		return structs.BankStatementPreview{}, err
 	}
@@ -90,6 +122,52 @@ func (service BankStatementImportService) extractText(file []byte) (string, erro
 	}
 
 	return ExtractPdfText(tempFile.Name())
+}
+
+// markOwnAccountTransfers finds money moved between the uploaded accounts that
+// the bank did not label a transfer (an automatic payment into a savings
+// account, say). The two sides of one movement are a withdrawal from one account
+// and a deposit into a different account, on the same day, for the same amount
+// and naming the same counterparty: the bank prints the account holder on both.
+// The counterparty is what keeps an unrelated purchase of the same amount on the
+// same day from being taken for the other side. Both rows are flagged and
+// unselected, since importing them would count the same money as spending and as
+// income. Pairs are matched one for one, and never within a single account.
+func markOwnAccountTransfers(transactions []structs.BankStatementTransaction) {
+	sideKey := func(transaction structs.BankStatementTransaction, isIncome bool) string {
+		return fmt.Sprintf("%s|%s|%s|%t", transaction.Date, transaction.Amount.StringFixed(2),
+			strings.ToLower(strings.TrimSpace(transaction.Details)), isIncome)
+	}
+
+	unmatched := map[string][]int{}
+	for i := range transactions {
+		transaction := transactions[i]
+		if transaction.Transfer {
+			continue
+		}
+
+		oppositeKey := sideKey(transaction, !transaction.IsIncome)
+		candidates := unmatched[oppositeKey]
+		position := -1
+		for p, candidate := range candidates {
+			if transactions[candidate].AccountNumber != transaction.AccountNumber {
+				position = p
+				break
+			}
+		}
+
+		if position < 0 {
+			ownKey := sideKey(transaction, transaction.IsIncome)
+			unmatched[ownKey] = append(unmatched[ownKey], i)
+			continue
+		}
+
+		for _, index := range []int{i, candidates[position]} {
+			transactions[index].Transfer = true
+			transactions[index].Selected = false
+		}
+		unmatched[oppositeKey] = append(candidates[:position:position], candidates[position+1:]...)
+	}
 }
 
 func statementDuplicateKey(date time.Time, name string, amount string) string {

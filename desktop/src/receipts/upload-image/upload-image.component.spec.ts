@@ -63,5 +63,19 @@ describe("UploadImageComponent", () => {
       expect(convertToJpg).not.toHaveBeenCalled();
       expect(emitted).toEqual([{ file, receiptId: 0 }]);
     });
+
+    it("emits the accepted files of one pick together, leaving out other types", async () => {
+      const picked: File[][] = [];
+      component.filesSelected.subscribe((files) => picked.push(files));
+      fixture.componentRef.setInput("acceptFileTypes", ["application/pdf"]);
+      fixture.componentRef.setInput("convertToPreview", false);
+
+      const first = new File(["%PDF"], "a.pdf", { type: "application/pdf" });
+      const second = new File(["%PDF"], "b.pdf", { type: "application/pdf" });
+      const other = new File(["x"], "notes.txt", { type: "text/plain" });
+      await component.onFileChange({ target: { files: [first, other, second] } });
+
+      expect(picked).toEqual([[first, second]]);
+    });
   });
 });

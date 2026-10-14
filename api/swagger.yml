@@ -3161,7 +3161,7 @@ paths:
       tags:
         - Import
       summary: Preview a bank statement
-      description: Parses a bank statement PDF and returns its transactions for review. Nothing is created.
+      description: Parses one or more bank statement PDFs (one per account) and returns their transactions for review, with transfers between the uploaded accounts flagged. Nothing is created.
       operationId: previewBankStatement
       requestBody:
         description: Bank statement to parse
@@ -6311,19 +6311,24 @@ components:
     BankStatementPreviewCommand:
       type: object
       required:
-        - file
+        - files
         - groupId
       properties:
-        file:
-          type: string
-          format: binary
-          description: Bank statement PDF
+        files:
+          type: array
+          description: Bank statement PDFs, one per account
+          items:
+            type: string
+            format: binary
         groupId:
           type: integer
           description: Group the transactions will be imported into
     BankStatementTransaction:
       type: object
       required:
+        - accountName
+        - accountNumber
+        - transfer
         - date
         - type
         - details
@@ -6335,6 +6340,15 @@ components:
         - selected
         - duplicate
       properties:
+        accountName:
+          type: string
+          description: Name of the account the row came from
+        accountNumber:
+          type: string
+          description: Number of the account the row came from
+        transfer:
+          type: boolean
+          description: True when the row moves money between the user's own accounts, so it is neither spending nor income
         date:
           type: string
           description: Transaction date as YYYY-MM-DD
@@ -6369,7 +6383,7 @@ components:
           type: integer
           nullable: true
           description: Suggested category, when one could be worked out
-    BankStatementPreview:
+    BankStatementAccount:
       type: object
       required:
         - bank
@@ -6377,7 +6391,6 @@ components:
         - accountNumber
         - periodStart
         - periodEnd
-        - transactions
       properties:
         bank:
           type: string
@@ -6394,9 +6407,20 @@ components:
         periodEnd:
           type: string
           description: Statement period end as YYYY-MM-DD
+    BankStatementPreview:
+      type: object
+      required:
+        - accounts
+        - transactions
+      properties:
+        accounts:
+          type: array
+          description: The statements that were read, one per account
+          items:
+            $ref: "#/components/schemas/BankStatementAccount"
         transactions:
           type: array
-          description: Parsed transactions, newest first
+          description: Parsed transactions across all accounts, newest first
           items:
             $ref: "#/components/schemas/BankStatementTransaction"
     BankStatementImportTransaction:

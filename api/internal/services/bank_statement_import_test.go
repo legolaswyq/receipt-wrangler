@@ -6,6 +6,7 @@ import (
 	"receipt-wrangler/api/internal/models"
 	"receipt-wrangler/api/internal/repositories"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -72,7 +73,7 @@ func TestBankStatementPreview_FlagsDuplicatesAndDefaultsSoleIncomeCategory(t *te
 	}
 
 	service := NewBankStatementImportService(nil)
-	preview, err := service.previewFromText(user.ID, group.ID, buildAnzStatementText(sampleStatementRows(), 10))
+	preview, err := service.previewFromTexts(user.ID, group.ID, []string{buildAnzStatementText(sampleStatementRows(), 10)})
 	if err != nil {
 		t.Fatalf("preview: %v", err)
 	}
@@ -118,7 +119,7 @@ func TestBankStatementPreview_DuplicateMatchingConsumesOneReceiptPerRow(t *testi
 	}
 
 	service := NewBankStatementImportService(nil)
-	preview, err := service.previewFromText(user.ID, group.ID, buildAnzStatementText(rows, 10))
+	preview, err := service.previewFromTexts(user.ID, group.ID, []string{buildAnzStatementText(rows, 10)})
 	if err != nil {
 		t.Fatalf("preview: %v", err)
 	}
@@ -159,7 +160,7 @@ func TestBankStatementPreview_AppliesAiSuggestionsOfTheRightKind(t *testing.T) {
 	]}`)
 
 	service := NewBankStatementImportService(nil)
-	preview, err := service.previewFromText(user.ID, group.ID, buildAnzStatementText(sampleStatementRows(), 10))
+	preview, err := service.previewFromTexts(user.ID, group.ID, []string{buildAnzStatementText(sampleStatementRows(), 10)})
 	if err != nil {
 		t.Fatalf("preview: %v", err)
 	}
@@ -180,6 +181,85 @@ func TestBankStatementPreview_AppliesAiSuggestionsOfTheRightKind(t *testing.T) {
 	}
 }
 
+// buildSavingsStatementText is a second account's statement for the same
+// period, so previews can be exercised across accounts.
+func buildSavingsStatementText(rows []statementRow) string {
+	text := buildAnzStatementText(rows, 10)
+	text = strings.Replace(text, "Everyday Account", "Savings Account ", 1)
+	return strings.Replace(text, "01-0001-0000001-00", "01-0001-0000001-50", 1)
+}
+
+func TestBankStatementPreview_PairsTransfersAcrossUploadedAccounts(t *testing.T) {
+	defer repositories.TruncateTestDb()
+	user, group, _, _ := seedStatementImport(t)
+
+	everyday := buildAnzStatementText([]statementRow{
+		{date: "20 Jan 2026", kind: "Automatic Payment", details: "T Person", withdrawal: "$20.00", balance: "$1,440.00", reference: "To Savings Acc"},
+		{date: "20 Jan 2026", kind: "Payment", details: "Acme Trading", withdrawal: "$40.00", balance: "$1,460.00"},
+		{date: "15 Jan 2026", kind: "Direct Credit", details: "Employer Limited", deposit: "$1,500.00", balance: "$1,500.00", reference: "Salary"},
+	}, 10)
+	savings := buildSavingsStatementText([]statementRow{
+		{date: "20 Jan 2026", kind: "Credit", details: "T Person", deposit: "$20.00", balance: "$60.00", reference: "From Everyday Acc"},
+		// Same day and amount as the Acme payment, but also a withdrawal: not its other side.
+		{date: "20 Jan 2026", kind: "Payment", details: "Other Shop", withdrawal: "$40.00", balance: "$40.00"},
+		// Same day and amount as the Acme payment and a deposit, but from someone
+		// else: an unrelated $40, not the other side of that payment.
+		{date: "20 Jan 2026", kind: "Direct Credit", details: "A Friend", deposit: "$40.00", balance: "$80.00"},
+		{date: "19 Jan 2026", kind: "Direct Credit", details: "Interest Paid", deposit: "$40.00", balance: "$40.00"},
+	})
+
+	service := NewBankStatementImportService(nil)
+	// The everyday statement is picked twice; its rows must appear once.
+	preview, err := service.previewFromTexts(user.ID, group.ID, []string{everyday, savings, everyday})
+	if err != nil {
+		t.Fatalf("preview: %v", err)
+	}
+
+	if len(preview.Accounts) != 2 || preview.Accounts[0].AccountNumber != "01-0001-0000001-00" || preview.Accounts[1].AccountNumber != "01-0001-0000001-50" {
+		t.Fatalf("expected the two distinct accounts, got %+v", preview.Accounts)
+	}
+	if len(preview.Transactions) != 7 {
+		t.Fatalf("expected 7 transactions, got %d", len(preview.Transactions))
+	}
+
+	for i, transaction := range preview.Transactions {
+		if i > 0 && transaction.Date > preview.Transactions[i-1].Date {
+			t.Errorf("rows must be newest first across accounts, got %s after %s", transaction.Date, preview.Transactions[i-1].Date)
+		}
+
+		isTransfer := transaction.Name == "T Person"
+		if transaction.Transfer != isTransfer {
+			t.Errorf("%s %s: expected transfer=%t, got %t", transaction.AccountName, transaction.Name, isTransfer, transaction.Transfer)
+		}
+		if transaction.Selected == isTransfer {
+			t.Errorf("%s %s: expected selected=%t", transaction.AccountName, transaction.Name, !isTransfer)
+		}
+	}
+}
+
+func TestBankStatementPreview_DoesNotPairWithinOneAccount(t *testing.T) {
+	defer repositories.TruncateTestDb()
+	user, group, _, _ := seedStatementImport(t)
+
+	// A purchase refunded the same day: same account, so both rows are real.
+	text := buildAnzStatementText([]statementRow{
+		{date: "20 Jan 2026", kind: "Credit", details: "Corner Groc", deposit: "$30.00", balance: "$100.00"},
+		{date: "20 Jan 2026", kind: "Visa Purchase", details: "Corner Groc", withdrawal: "$30.00", balance: "$70.00"},
+	}, 10)
+
+	service := NewBankStatementImportService(nil)
+	preview, err := service.previewFromTexts(user.ID, group.ID, []string{text})
+	if err != nil {
+		t.Fatalf("preview: %v", err)
+	}
+
+	for _, transaction := range preview.Transactions {
+		if transaction.Transfer || !transaction.Selected {
+			t.Errorf("%s: rows of a single account must not be paired as a transfer", transaction.Name)
+		}
+	}
+}
+
 func TestBankStatementPreview_SurvivesAiFailure(t *testing.T) {
 	defer repositories.TruncateTestDb()
 	body := "not json at all"
@@ -188,7 +268,7 @@ func TestBankStatementPreview_SurvivesAiFailure(t *testing.T) {
 	seedStatementCategories(t)
 
 	service := NewBankStatementImportService(nil)
-	preview, err := service.previewFromText(user.ID, group.ID, buildAnzStatementText(sampleStatementRows(), 10))
+	preview, err := service.previewFromTexts(user.ID, group.ID, []string{buildAnzStatementText(sampleStatementRows(), 10)})
 	if err != nil {
 		t.Fatalf("a failed suggestion call must not fail the preview: %v", err)
 	}

@@ -300,18 +300,18 @@ export class ImportService {
 
     /**
      * Preview a bank statement
-     * Parses a bank statement PDF and returns its transactions for review. Nothing is created.
-     * @param file Bank statement PDF
+     * Parses one or more bank statement PDFs (one per account) and returns their transactions for review, with transfers between the uploaded accounts flagged. Nothing is created.
+     * @param files Bank statement PDFs, one per account
      * @param groupId Group the transactions will be imported into
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public previewBankStatement(file: Blob, groupId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<BankStatementPreview>;
-    public previewBankStatement(file: Blob, groupId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<BankStatementPreview>>;
-    public previewBankStatement(file: Blob, groupId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<BankStatementPreview>>;
-    public previewBankStatement(file: Blob, groupId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
-        if (file === null || file === undefined) {
-            throw new Error('Required parameter file was null or undefined when calling previewBankStatement.');
+    public previewBankStatement(files: Array<Blob>, groupId: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<BankStatementPreview>;
+    public previewBankStatement(files: Array<Blob>, groupId: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<BankStatementPreview>>;
+    public previewBankStatement(files: Array<Blob>, groupId: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<BankStatementPreview>>;
+    public previewBankStatement(files: Array<Blob>, groupId: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (files === null || files === undefined) {
+            throw new Error('Required parameter files was null or undefined when calling previewBankStatement.');
         }
         if (groupId === null || groupId === undefined) {
             throw new Error('Required parameter groupId was null or undefined when calling previewBankStatement.');
@@ -373,8 +373,14 @@ export class ImportService {
             localVarFormParams = new HttpParams({encoder: this.encoder});
         }
 
-        if (file !== undefined) {
-            localVarFormParams = localVarFormParams.append('file', <any>file) as any || localVarFormParams;
+        if (files) {
+            if (localVarUseForm) {
+                files.forEach((element) => {
+                    localVarFormParams = localVarFormParams.append('files', <any>element) as any || localVarFormParams;
+            })
+            } else {
+                localVarFormParams = localVarFormParams.append('files', [...files].join(COLLECTION_FORMATS['csv'])) as any || localVarFormParams;
+            }
         }
         if (groupId !== undefined) {
             localVarFormParams = localVarFormParams.append('groupId', <any>groupId) as any || localVarFormParams;

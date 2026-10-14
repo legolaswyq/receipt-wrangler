@@ -108,11 +108,11 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **previewBankStatement**
-> BankStatementPreview previewBankStatement(file, groupId)
+> BankStatementPreview previewBankStatement(files, groupId)
 
 Preview a bank statement
 
-Parses a bank statement PDF and returns its transactions for review. Nothing is created.
+Parses one or more bank statement PDFs (one per account) and returns their transactions for review, with transfers between the uploaded accounts flagged. Nothing is created.
 
 ### Example
 ```dart
@@ -123,11 +123,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('apiKeyAuth').apiKeyPrefix = 'Bearer';
 
 final api = Openapi().getImportApi();
-final MultipartFile file = BINARY_DATA_HERE; // MultipartFile | Bank statement PDF
+final BuiltList<MultipartFile> files = /path/to/file.txt; // BuiltList<MultipartFile> | Bank statement PDFs, one per account
 final int groupId = 56; // int | Group the transactions will be imported into
 
 try {
-    final response = api.previewBankStatement(file, groupId);
+    final response = api.previewBankStatement(files, groupId);
     print(response);
 } catch on DioException (e) {
     print('Exception when calling ImportApi->previewBankStatement: $e\n');
@@ -138,7 +138,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **file** | **MultipartFile**| Bank statement PDF | 
+ **files** | [**BuiltList&lt;MultipartFile&gt;**](MultipartFile.md)| Bank statement PDFs, one per account | 
  **groupId** | **int**| Group the transactions will be imported into | 
 
 ### Return type

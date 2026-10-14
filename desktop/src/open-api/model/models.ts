@@ -9,6 +9,7 @@ export * from './appData';
 export * from './associatedApiKeys';
 export * from './associatedEntityType';
 export * from './associatedGroup';
+export * from './bankStatementAccount';
 export * from './bankStatementImportCommand';
 export * from './bankStatementImportResult';
 export * from './bankStatementImportTransaction';

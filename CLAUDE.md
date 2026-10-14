@@ -315,6 +315,10 @@ Upload a bank statement PDF and get one receipt per transaction, after a review 
 - **Desktop** owns the review UI — Settings menu → Import Bank Statement. See `desktop/CLAUDE.md` →
   "Bank statement import".
 - **Mobile has the regenerated client only** — there is no mobile screen for it yet.
+- **Several accounts are read together, and money moved between them is left out.** The preview takes
+  one PDF per account; a transfer between two uploaded accounts is flagged and unselected on both
+  sides, so it counts as neither spending nor income. Only deposits from outside (salary, other people,
+  interest) are offered as income.
 - **Deposits become income through the category's `isIncome` flag**, exactly like the rest of Budgets:
   amounts stay positive, and a deposit must be given an income category or it would read as spending.
 - **Never commit a real statement.** Tests use a synthetic statement generated in code.
