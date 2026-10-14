@@ -1375,14 +1375,22 @@ re-queries on change (`ngOnChanges`). Registered like the pie chart (widget-opti
 dashboard-form config reusing `buildPieChartConfigForm`). No new backend endpoint — only the
 `SPENDING_TABLE` widget-type enum value.
 
+**Income mode.** Both the pie chart and the spending table read `configuration.incomeOnly` and pass
+it as `PieChartDataCommand.incomeOnly`, which makes the API return income-flagged categories instead
+of spending (see `api/CLAUDE.md` → "Budgets"). It is set by the "Show income instead of spending"
+checkbox in the dashboard form (`buildPieChartConfigForm`); the table's empty state reads "No income
+in this range." There is no separate widget type — an income breakdown is a `SPENDING_TABLE` with the
+flag on.
+
 ### Single-dashboard model
 
 `GroupDashboardsComponent` (`src/dashboard/group-dashboards/`) is a **one-dashboard** page: the
 "All Dashboards" header/description, Add/Edit/Delete controls, and the dashboard chip selector were
 removed — the template is just `<router-outlet>` rendering the single dashboard (date range +
 widgets). Its effect auto-selects the group's dashboard, or **auto-creates a default one** when the
-group has none (only for callers with `group.dashboards.create`), seeded with Spending by Category
-(pie), Category Breakdown (spending table), and Monthly Budget — so a dashboard works with zero setup.
+group has none (only for callers with `group.dashboards.create`), seeded with Income Breakdown and
+Spending Breakdown (spending tables), Income by Category and Spending by Category (pies), then Monthly
+Budget — so a dashboard works with zero setup. An existing dashboard is never re-seeded.
 The dashboard-form/CRUD and NGXS actions still exist and aren't removed (other flows/tests use them);
 they're simply no longer surfaced on this page.
 

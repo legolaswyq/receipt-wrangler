@@ -74,10 +74,16 @@ func (service PieChartService) GetPieChartData(
 		return structs.PieChartData{}, err
 	}
 
-	// The pie chart is a spending chart, so drop receipts in income-flagged
-	// categories (mirrors BudgetService.GetBudgetData). Income categories default
-	// to IsIncome=false, so installs that never flag income are unaffected.
-	receipts = excludeIncomeReceipts(receipts)
+	// Income is a category flag, not a sign, so one chart can only show one side:
+	// spending by default (income receipts dropped, mirroring
+	// BudgetService.GetBudgetData), or income alone when the command asks for it.
+	// Categories default to IsIncome=false, so installs that never flag income
+	// are unaffected.
+	if command.IncomeOnly {
+		receipts = onlyIncomeReceipts(receipts)
+	} else {
+		receipts = excludeIncomeReceipts(receipts)
+	}
 
 	// Narrow to the widget's selected date range (all-time when both are empty).
 	receipts = filterReceiptsByDateRange(receipts, command.StartDate, command.EndDate)
@@ -136,15 +142,34 @@ func filterReceiptsByDateRange(receipts []models.Receipt, startDate string, endD
 func excludeIncomeReceipts(receipts []models.Receipt) []models.Receipt {
 	result := make([]models.Receipt, 0, len(receipts))
 	for _, receipt := range receipts {
-		isIncome := false
-		for _, category := range receipt.Categories {
-			if category.IsIncome {
-				isIncome = true
-				break
-			}
-		}
-		if !isIncome {
+		if len(incomeCategories(receipt)) == 0 {
 			result = append(result, receipt)
+		}
+	}
+	return result
+}
+
+// onlyIncomeReceipts is the complement of excludeIncomeReceipts: it keeps exactly
+// the receipts that function drops, so every receipt lands in one chart or the
+// other. Each kept receipt is narrowed to its income categories, so a category
+// grouping never attributes income to a spending category it also carries.
+func onlyIncomeReceipts(receipts []models.Receipt) []models.Receipt {
+	result := make([]models.Receipt, 0, len(receipts))
+	for _, receipt := range receipts {
+		categories := incomeCategories(receipt)
+		if len(categories) > 0 {
+			receipt.Categories = categories
+			result = append(result, receipt)
+		}
+	}
+	return result
+}
+
+func incomeCategories(receipt models.Receipt) []models.Category {
+	result := make([]models.Category, 0, len(receipt.Categories))
+	for _, category := range receipt.Categories {
+		if category.IsIncome {
+			result = append(result, category)
 		}
 	}
 	return result

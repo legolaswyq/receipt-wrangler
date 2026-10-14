@@ -86,6 +86,23 @@ describe("SpendingTableComponent", () => {
     });
   });
 
+  it("asks for income and words the empty state accordingly for an income widget", () => {
+    widgetService.getPieChartData.mockReturnValue(of({ data: [] }));
+    fixture.componentRef.setInput("widget", {
+      ...mockWidget,
+      configuration: { chartGrouping: ChartGrouping.Categories, incomeOnly: true },
+    });
+    fixture.detectChanges();
+
+    expect(widgetService.getPieChartData.mock.calls[0][1].incomeOnly).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain("No income in this range.");
+  });
+
+  it("does not ask for income by default", () => {
+    fixture.detectChanges();
+    expect(widgetService.getPieChartData.mock.calls[0][1].incomeOnly).toBeUndefined();
+  });
+
   it("reloads when the date range changes", () => {
     fixture.detectChanges();
     widgetService.getPieChartData.mockClear();

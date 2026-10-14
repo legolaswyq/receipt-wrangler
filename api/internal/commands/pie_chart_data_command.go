@@ -16,6 +16,9 @@ type PieChartDataCommand struct {
 	// means all-time. The client computes these from the widget's chosen period.
 	StartDate string `json:"startDate"`
 	EndDate   string `json:"endDate"`
+	// IncomeOnly flips the chart from spending (the default, income excluded) to
+	// income: only receipts in an income-flagged category are counted.
+	IncomeOnly bool `json:"incomeOnly"`
 }
 
 func (command *PieChartDataCommand) LoadDataFromRequest(w http.ResponseWriter, r *http.Request) error {

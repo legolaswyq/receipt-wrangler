@@ -6,6 +6,7 @@ import 'package:receipt_wrangler_mobile/utils/group.dart';
 
 import '../../../client/client.dart';
 import '../constants/text_styles.dart';
+import 'income_only.dart';
 
 /// Category Breakdown table — the mobile counterpart of the desktop
 /// SpendingTable widget. Reuses the same `getPieChartData` endpoint as the pie
@@ -85,6 +86,7 @@ class _SpendingTableState extends State<SpendingTable> {
     var groupId = int.tryParse(getGroupId(context)) ?? 0;
     var command = api.PieChartDataCommand((b) => b
       ..chartGrouping = _getChartGrouping()
+      ..incomeOnly = isIncomeOnlyWidget(widget.dashboardWidget) ? true : null
       ..startDate = widget.startDate
       ..endDate = widget.endDate);
 
@@ -176,7 +178,10 @@ class _SpendingTableState extends State<SpendingTable> {
         } else if (points.isEmpty) {
           body = Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Text('No spending in this range.',
+            child: Text(
+                isIncomeOnlyWidget(widget.dashboardWidget)
+                    ? 'No income in this range.'
+                    : 'No spending in this range.',
                 style: TextStyle(color: Colors.grey[600])),
           );
         } else {

@@ -113,13 +113,23 @@ export class GroupDashboardsComponent {
       period: DEFAULT_DASHBOARD_PERIOD,
       widgets: [
         {
-          name: "Spending by Category",
-          widgetType: WidgetType.PieChart,
+          name: "Income Breakdown",
+          widgetType: WidgetType.SpendingTable,
+          configuration: { chartGrouping: ChartGrouping.Categories, incomeOnly: true },
+        },
+        {
+          name: "Spending Breakdown",
+          widgetType: WidgetType.SpendingTable,
           configuration: { chartGrouping: ChartGrouping.Categories },
         },
         {
-          name: "Category Breakdown",
-          widgetType: WidgetType.SpendingTable,
+          name: "Income by Category",
+          widgetType: WidgetType.PieChart,
+          configuration: { chartGrouping: ChartGrouping.Categories, incomeOnly: true },
+        },
+        {
+          name: "Spending by Category",
+          widgetType: WidgetType.PieChart,
           configuration: { chartGrouping: ChartGrouping.Categories },
         },
         {

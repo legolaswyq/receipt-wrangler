@@ -339,8 +339,3 @@ lib/src/model/widget.dart
 lib/src/model/widget_type.dart
 lib/src/serializers.dart
 pubspec.yaml
-test/bank_statement_import_command_test.dart
-test/bank_statement_import_result_test.dart
-test/bank_statement_import_transaction_test.dart
-test/bank_statement_preview_test.dart
-test/bank_statement_transaction_test.dart

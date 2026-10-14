@@ -116,7 +116,7 @@ export class PieChartComponent implements OnInit, OnChanges {
       return;
     }
 
-    const config = widget.configuration as { chartGrouping?: ChartGrouping; filter?: any };
+    const config = widget.configuration as { chartGrouping?: ChartGrouping; filter?: any; incomeOnly?: boolean };
     if (!config.chartGrouping) {
       this.isLoading.set(false);
       return;
@@ -127,6 +127,7 @@ export class PieChartComponent implements OnInit, OnChanges {
       filter: config.filter,
       startDate: this.startDate() || undefined,
       endDate: this.endDate() || undefined,
+      incomeOnly: config.incomeOnly || undefined,
     };
 
     this.isLoading.set(true);

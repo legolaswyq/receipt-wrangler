@@ -199,6 +199,7 @@ export class DashboardFormComponent extends BaseFormComponent implements OnInit 
   private buildPieChartConfigForm(config: any): FormGroup {
     return this.formBuilder.group({
       chartGrouping: [config?.chartGrouping ?? ChartGrouping.Categories, Validators.required],
+      incomeOnly: [config?.incomeOnly ?? false],
       filter: buildReceiptFilterForm(config?.filter ?? {}, this),
     });
   }

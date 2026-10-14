@@ -28,6 +28,10 @@ export interface PieChartDataCommand {
      * Exclusive RFC3339 upper bound on receipt date (empty for open)
      */
     endDate?: string;
+    /**
+     * Count only receipts in income-flagged categories instead of spending
+     */
+    incomeOnly?: boolean;
 }
 export namespace PieChartDataCommand {
 }

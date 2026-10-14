@@ -17,6 +17,7 @@ part 'pie_chart_data_command.g.dart';
 /// * [filter] - Optional filter for receipts
 /// * [startDate] - Inclusive RFC3339 lower bound on receipt date (empty for open)
 /// * [endDate] - Exclusive RFC3339 upper bound on receipt date (empty for open)
+/// * [incomeOnly] - Count only receipts in income-flagged categories instead of spending
 @BuiltValue()
 abstract class PieChartDataCommand implements Built<PieChartDataCommand, PieChartDataCommandBuilder> {
   /// What to group the pie chart by
@@ -35,6 +36,10 @@ abstract class PieChartDataCommand implements Built<PieChartDataCommand, PieChar
   /// Exclusive RFC3339 upper bound on receipt date (empty for open)
   @BuiltValueField(wireName: r'endDate')
   String? get endDate;
+
+  /// Count only receipts in income-flagged categories instead of spending
+  @BuiltValueField(wireName: r'incomeOnly')
+  bool? get incomeOnly;
 
   PieChartDataCommand._();
 
@@ -83,6 +88,13 @@ class _$PieChartDataCommandSerializer implements PrimitiveSerializer<PieChartDat
       yield serializers.serialize(
         object.endDate,
         specifiedType: const FullType(String),
+      );
+    }
+    if (object.incomeOnly != null) {
+      yield r'incomeOnly';
+      yield serializers.serialize(
+        object.incomeOnly,
+        specifiedType: const FullType(bool),
       );
     }
   }
@@ -135,6 +147,13 @@ class _$PieChartDataCommandSerializer implements PrimitiveSerializer<PieChartDat
             specifiedType: const FullType(String),
           ) as String;
           result.endDate = valueDes;
+          break;
+        case r'incomeOnly':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
+          result.incomeOnly = valueDes;
           break;
         default:
           unhandled.add(key);

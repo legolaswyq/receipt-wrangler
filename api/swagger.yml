@@ -6724,6 +6724,9 @@ components:
         endDate:
           type: string
           description: Exclusive RFC3339 upper bound on receipt date (empty for open)
+        incomeOnly:
+          type: boolean
+          description: Count only receipts in income-flagged categories instead of spending
     BudgetCategory:
       type: object
       properties:

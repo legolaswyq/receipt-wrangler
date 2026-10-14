@@ -1626,6 +1626,11 @@ plus income-vs-expense separation. Three-component feature (see root `CLAUDE.md`
   drops any receipt carrying an income-flagged category (`excludeIncomeReceipts`, same rule as
   `BudgetService`) before grouping — for **all** groupings (categories/tags/paid-by), so income never
   shows as a slice. Because `IsIncome` defaults false, installs that never flag income are unaffected.
+- **`PieChartDataCommand.IncomeOnly` flips the chart to income.** It keeps exactly the receipts the
+  default mode drops (`onlyIncomeReceipts` is the complement of `excludeIncomeReceipts`, so every
+  receipt lands in one chart or the other) and narrows each to its income categories, so a receipt
+  carrying both kinds is attributed to the income category only. It is a plain request bool (no enum),
+  stored by the clients on the widget as `configuration.incomeOnly`. Test: `_IncomeOnly`.
 - **Tests**: `repositories/category_budgets_test.go` (upsert/list/delete, unique-constraint,
   category-delete cascade), `services/budget_test.go` (the income/spend/untracked/month split),
   `services/pie_chart_test.go` (`_ExcludesIncomeCategories`), `handlers/budgets_test.go` (200 data,

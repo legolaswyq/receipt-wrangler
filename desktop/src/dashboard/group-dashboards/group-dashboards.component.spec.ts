@@ -180,9 +180,18 @@ describe("GroupDashboardsComponent", () => {
     expect(createSpy).toHaveBeenCalledTimes(1);
     const command = createSpy.mock.calls[0][0] as any;
     expect(command.widgets.map((w: any) => w.widgetType)).toEqual([
-      "PIE_CHART",
       "SPENDING_TABLE",
+      "SPENDING_TABLE",
+      "PIE_CHART",
+      "PIE_CHART",
       "BUDGET",
+    ]);
+    expect(command.widgets.map((w: any) => !!w.configuration.incomeOnly)).toEqual([
+      true,
+      false,
+      true,
+      false,
+      false,
     ]);
     expect(dispatchSpy).toHaveBeenCalledWith(
       new AddDashboardToGroup("1", created)

@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **filter** | [**ReceiptPagedRequestFilter**](ReceiptPagedRequestFilter.md) | Optional filter for receipts | [optional] 
 **startDate** | **String** | Inclusive RFC3339 lower bound on receipt date (empty for open) | [optional] 
 **endDate** | **String** | Exclusive RFC3339 upper bound on receipt date (empty for open) | [optional] 
+**incomeOnly** | **bool** | Count only receipts in income-flagged categories instead of spending | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

@@ -87,6 +87,12 @@
             "
             [options]="chartGroupingOptions"
           ></app-select>
+          <app-checkbox
+            label="Show income instead of spending"
+            [inputFormControl]="
+              form | formGet : 'widgets.' + i + '.configuration.incomeOnly'
+            "
+          ></app-checkbox>
           <app-form-section
             headerText="Filter (Optional)"
             [collapsed]="true"
@@ -114,6 +120,12 @@
             "
             [options]="chartGroupingOptions"
           ></app-select>
+          <app-checkbox
+            label="Show income instead of spending"
+            [inputFormControl]="
+              form | formGet : 'widgets.' + i + '.configuration.incomeOnly'
+            "
+          ></app-checkbox>
           <app-form-section
             headerText="Filter (Optional)"
             [collapsed]="true"

@@ -15,13 +15,19 @@ class _$PieChartDataCommand extends PieChartDataCommand {
   final String? startDate;
   @override
   final String? endDate;
+  @override
+  final bool? incomeOnly;
 
   factory _$PieChartDataCommand(
           [void Function(PieChartDataCommandBuilder)? updates]) =>
       (PieChartDataCommandBuilder()..update(updates))._build();
 
   _$PieChartDataCommand._(
-      {required this.chartGrouping, this.filter, this.startDate, this.endDate})
+      {required this.chartGrouping,
+      this.filter,
+      this.startDate,
+      this.endDate,
+      this.incomeOnly})
       : super._();
   @override
   PieChartDataCommand rebuild(
@@ -39,7 +45,8 @@ class _$PieChartDataCommand extends PieChartDataCommand {
         chartGrouping == other.chartGrouping &&
         filter == other.filter &&
         startDate == other.startDate &&
-        endDate == other.endDate;
+        endDate == other.endDate &&
+        incomeOnly == other.incomeOnly;
   }
 
   @override
@@ -49,6 +56,7 @@ class _$PieChartDataCommand extends PieChartDataCommand {
     _$hash = $jc(_$hash, filter.hashCode);
     _$hash = $jc(_$hash, startDate.hashCode);
     _$hash = $jc(_$hash, endDate.hashCode);
+    _$hash = $jc(_$hash, incomeOnly.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -59,7 +67,8 @@ class _$PieChartDataCommand extends PieChartDataCommand {
           ..add('chartGrouping', chartGrouping)
           ..add('filter', filter)
           ..add('startDate', startDate)
-          ..add('endDate', endDate))
+          ..add('endDate', endDate)
+          ..add('incomeOnly', incomeOnly))
         .toString();
   }
 }
@@ -87,6 +96,10 @@ class PieChartDataCommandBuilder
   String? get endDate => _$this._endDate;
   set endDate(String? endDate) => _$this._endDate = endDate;
 
+  bool? _incomeOnly;
+  bool? get incomeOnly => _$this._incomeOnly;
+  set incomeOnly(bool? incomeOnly) => _$this._incomeOnly = incomeOnly;
+
   PieChartDataCommandBuilder() {
     PieChartDataCommand._defaults(this);
   }
@@ -98,6 +111,7 @@ class PieChartDataCommandBuilder
       _filter = $v.filter?.toBuilder();
       _startDate = $v.startDate;
       _endDate = $v.endDate;
+      _incomeOnly = $v.incomeOnly;
       _$v = null;
     }
     return this;
@@ -126,6 +140,7 @@ class PieChartDataCommandBuilder
             filter: _filter?.build(),
             startDate: startDate,
             endDate: endDate,
+            incomeOnly: incomeOnly,
           );
     } catch (_) {
       late String _$failedField;

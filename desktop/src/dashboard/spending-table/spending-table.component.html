@@ -9,7 +9,7 @@
     @if (isLoading()) {
       <div class="text-center p-3">Loading…</div>
     } @else if (rows().length === 0) {
-      <div class="text-muted small">No spending in this range.</div>
+      <div class="text-muted small">No {{ isIncome() ? 'income' : 'spending' }} in this range.</div>
     } @else {
       <table class="spending-table">
         <thead>

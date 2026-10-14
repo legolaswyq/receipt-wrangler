@@ -292,6 +292,11 @@ income-vs-expense separation. The pieces must agree:
   `Dashboard.period`/`periodStartDate`/`periodEndDate` fields via `updateDashboard`, so switching
   clients preserves the selection. Threaded into the pie chart and Category Breakdown table (not the
   budget widget, which is always current-month on both clients).
+- **The pie chart and Category Breakdown table show spending by default and income when the widget's
+  `configuration.incomeOnly` is true** (sent as `PieChartDataCommand.incomeOnly`). Desktop sets it
+  from the dashboard form; mobile reads it through `isIncomeOnlyWidget`
+  (`lib/groups/widgets/dashboard_widgets/income_only.dart`) in both widgets. A client that ignores
+  the flag would render an "Income" widget full of spending, so both must honour it.
 - **`amount` serializes as a decimal STRING** on the wire (matching `Item.quantity`); an empty budget
   set is fine (the widget shows an empty state / "Untracked" only).
 - **Income data caveat:** because income is now identified by the `isIncome` category flag with positive

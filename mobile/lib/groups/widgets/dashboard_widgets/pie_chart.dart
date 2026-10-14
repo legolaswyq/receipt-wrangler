@@ -5,6 +5,7 @@ import 'package:receipt_wrangler_mobile/utils/group.dart';
 
 import '../../../client/client.dart';
 import '../constants/text_styles.dart';
+import 'income_only.dart';
 
 class DashboardPieChart extends StatefulWidget {
   const DashboardPieChart({
@@ -70,6 +71,7 @@ class _DashboardPieChartState extends State<DashboardPieChart> {
     // Build the command
     var command = api.PieChartDataCommand((b) => b
       ..chartGrouping = chartGrouping
+      ..incomeOnly = isIncomeOnlyWidget(widget.dashboardWidget) ? true : null
       ..startDate = widget.startDate
       ..endDate = widget.endDate
     );

@@ -201,6 +201,48 @@ func TestPieChartService_GetPieChartData_ExcludesIncomeCategories(t *testing.T) 
 	}
 }
 
+func TestPieChartService_GetPieChartData_IncomeOnly(t *testing.T) {
+	defer tearDownPieChartTest()
+	setupPieChartTest()
+
+	db := repositories.GetDB()
+
+	var expenseCategory models.Category
+	db.First(&expenseCategory, 1)
+
+	incomeCategory := models.Category{Name: "Salary", IsIncome: true}
+	db.Create(&incomeCategory)
+
+	createTestReceipt("Groceries", 100.00, 1, 1, []models.Category{expenseCategory}, nil)
+	createTestReceipt("Uncategorized spend", 40.00, 1, 1, nil, nil)
+	createTestReceipt("Paycheck", 5000.00, 1, 1, []models.Category{incomeCategory}, nil)
+	// Carries both kinds: it is income, and must be attributed to Salary only.
+	createTestReceipt("Bonus", 250.00, 1, 1, []models.Category{incomeCategory, expenseCategory}, nil)
+
+	service := NewPieChartService(nil)
+	command := commands.PieChartDataCommand{
+		ChartGrouping: models.CHART_GROUPING_CATEGORIES,
+		IncomeOnly:    true,
+	}
+
+	result, err := service.GetPieChartData(1, "1", command)
+	if err != nil {
+		utils.PrintTestError(t, err, "no error")
+		return
+	}
+
+	if len(result.Data) != 1 {
+		utils.PrintTestError(t, len(result.Data), 1)
+		return
+	}
+	if result.Data[0].Label != incomeCategory.Name {
+		utils.PrintTestError(t, result.Data[0].Label, incomeCategory.Name)
+	}
+	if result.Data[0].Value != 5250.0 {
+		utils.PrintTestError(t, result.Data[0].Value, 5250.0)
+	}
+}
+
 func TestPieChartService_GetPieChartData_GroupByCategories_Uncategorized(t *testing.T) {
 	defer tearDownPieChartTest()
 	setupPieChartTest()
